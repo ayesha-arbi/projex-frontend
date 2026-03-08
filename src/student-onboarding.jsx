@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { registerStudent } from '../services/api';
 
 /* ─── FONTS ─── */
 const FontLoader = () => (
@@ -193,7 +194,7 @@ function MultiSelect({ label, required, options, selected, onChange, hint }) {
 }
 
 /* ─── Avatar Upload ─── */
-function AvatarUpload({onChange }) {
+function AvatarUpload({ onChange }) {
   const inputRef = useRef(null);
   const [preview, setPreview] = useState(null);
 
@@ -252,9 +253,9 @@ function StepBar({ current, total, labels }) {
     <div style={{ marginBottom:36 }}>
       <div style={{ display:"flex", alignItems:"center", gap:0 }}>
         {Array.from({ length: total }, (_, i) => {
-          const done    = i < current;
-          const active  = i === current;
-          const isLast  = i === total - 1;
+          const done   = i < current;
+          const active = i === current;
+          const isLast = i === total - 1;
           return (
             <div key={i} style={{ display:"flex", alignItems:"center", flex: isLast ? "0 0 auto" : 1 }}>
               {/* Circle */}
@@ -448,10 +449,13 @@ function SuccessScreen() {
         <p style={{ fontSize:"0.8rem", color:C.blue, fontWeight:600 }}>📧 Verification email sent to your .edu.pk address</p>
       </div>
       <div style={{ marginTop:28 }}>
-        <button style={{ background:C.blue, color:"#fff", border:"none", borderRadius:9, padding:"13px 32px", fontSize:"0.95rem", fontWeight:700, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all 0.18s" }}
+        <button
+          style={{ background:C.blue, color:"#fff", border:"none", borderRadius:9, padding:"13px 32px", fontSize:"0.95rem", fontWeight:700, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all 0.18s" }}
           onMouseEnter={e => e.currentTarget.style.background=C.blueMid}
           onMouseLeave={e => e.currentTarget.style.background=C.blue}
-        >Go to Dashboard →</button>
+        >
+          Go to Dashboard →
+        </button>
       </div>
     </div>
   );
@@ -463,22 +467,22 @@ function SuccessScreen() {
 function validateStep(step, data) {
   const errs = {};
   if (step === 0) {
-    if (!data.name.trim())                                    errs.name = "Full name is required";
-    if (!data.email.trim())                                   errs.email = "Email is required";
-    else if (!data.email.toLowerCase().endsWith(".edu.pk"))   errs.email = "Must be a .edu.pk email address";
-    if (!data.password)                                       errs.password = "Password is required";
-    else if (data.password.length < 8)                        errs.password = "At least 8 characters required";
-    if (!data.confirmPassword)                                errs.confirmPassword = "Please confirm your password";
-    else if (data.password !== data.confirmPassword)          errs.confirmPassword = "Passwords don't match";
-    if (!data.terms)                                          errs.terms = "You must agree to the Terms of Service";
+    if (!data.name.trim())                                  errs.name = "Full name is required";
+    if (!data.email.trim())                                 errs.email = "Email is required";
+    else if (!data.email.toLowerCase().endsWith(".edu.pk")) errs.email = "Must be a .edu.pk email address";
+    if (!data.password)                                     errs.password = "Password is required";
+    else if (data.password.length < 8)                      errs.password = "At least 8 characters required";
+    if (!data.confirmPassword)                              errs.confirmPassword = "Please confirm your password";
+    else if (data.password !== data.confirmPassword)        errs.confirmPassword = "Passwords don't match";
+    if (!data.terms)                                        errs.terms = "You must agree to the Terms of Service";
   }
   if (step === 1) {
-    if (!data.university)   errs.university = "Select your university";
-    if (!data.degree)       errs.degree     = "Select your degree program";
-    if (!data.major.trim()) errs.major      = "Enter your major or specialization";
-    if (!data.semester)     errs.semester   = "Select your current semester";
+    if (!data.university)   errs.university   = "Select your university";
+    if (!data.degree)       errs.degree       = "Select your degree program";
+    if (!data.major.trim()) errs.major        = "Enter your major or specialization";
+    if (!data.semester)     errs.semester     = "Select your current semester";
     if (!data.gradSemester) errs.gradSemester = "Required";
-    if (!data.gradYear)     errs.gradYear   = "Required";
+    if (!data.gradYear)     errs.gradYear     = "Required";
   }
   return errs;
 }
@@ -487,9 +491,9 @@ function validateStep(step, data) {
    MAIN COMPONENT
 ═══════════════════════════════════════════ */
 export default function StudentOnboarding({ onBack }) {
-  const [step, setStep]       = useState(0);
-  const [errors, setErrors]   = useState({});
-  const [done, setDone]       = useState(false);
+  const [step, setStep]             = useState(0);
+  const [errors, setErrors]         = useState({});
+  const [done, setDone]             = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const [data, setData] = useState({
@@ -514,18 +518,76 @@ export default function StudentOnboarding({ onBack }) {
 
   const back = () => { setErrors({}); setStep(s => s - 1); };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitting(true);
-    // Store in-memory — API integration later
-    const payload = { ...data, createdAt: new Date().toISOString(), role:"student" };
-    console.log("Student registration payload:", payload);
-    setTimeout(() => { setSubmitting(false); setDone(true); }, 1200);
+    try {
+      // Map frontend fields to backend expected fields
+      const payload = {
+        full_name:           data.name,
+        email:               data.email,
+        password:            data.password,
+        university_name:     data.university,
+        degree_program:      data.degree,
+        major:               data.major,
+        current_semester:    parseInt(data.semester),                    // "4th" → 4
+        graduation_semester: `${data.gradSemester} ${data.gradYear}`,   // "Spring 2028"
+        linkedin_url:        data.linkedin || undefined,
+        bio:                 data.bio      || undefined,
+        skills:              data.skills.length ? data.skills.join(', ') : undefined,
+      };
+
+      await registerStudent(payload);
+      setDone(true);
+
+    } catch (err) {
+      // Handle validation errors from backend
+      if (err.response?.data?.errors) {
+        const backendErrors = {};
+        err.response.data.errors.forEach(e => {
+          // Map backend field names back to frontend field names
+          const fieldMap = {
+            full_name:           'name',
+            email:               'email',
+            password:            'password',
+            university_name:     'university',
+            degree_program:      'degree',
+            major:               'major',
+            current_semester:    'semester',
+            graduation_semester: 'gradSemester',
+            linkedin_url:        'linkedin',
+          };
+          const frontendField = fieldMap[e.path] || e.path;
+          backendErrors[frontendField] = e.msg;
+        });
+        // Go back to step with error
+        if (backendErrors.name || backendErrors.email || backendErrors.password) {
+          setStep(0);
+        } else if (backendErrors.university || backendErrors.degree || backendErrors.major || backendErrors.semester) {
+          setStep(1);
+        }
+        setErrors(backendErrors);
+
+      } else {
+        // Single error message — show on current step
+        const msg = err.response?.data?.message || 'Something went wrong. Try again.';
+
+        // Email already registered — go back to step 1
+        if (msg.includes('already registered')) {
+          setStep(0);
+          setErrors({ email: 'This email is already registered.' });
+        } else {
+          setErrors({ general: msg });
+        }
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   /* ─── Left panel art ─── */
   const panels = [
-    { icon:"🎓", title:"Showcase your work", body:"Post your final-year project and let verified companies find you — with your IP fully protected at every step." },
-    { icon:"🏫", title:"Academic credibility", body:"Your .edu.pk email ties you to your institution. Companies trust students with verified university affiliations." },
+    { icon:"🎓", title:"Showcase your work",    body:"Post your final-year project and let verified companies find you — with your IP fully protected at every step." },
+    { icon:"🏫", title:"Academic credibility",  body:"Your .edu.pk email ties you to your institution. Companies trust students with verified university affiliations." },
     { icon:"🌟", title:"Stand out from day one", body:"Skills tags, bio, and LinkedIn make your profile pop. The more you fill in, the better your matches." },
   ];
 
@@ -550,7 +612,8 @@ export default function StudentOnboarding({ onBack }) {
           }} />
 
           {/* Logo */}
-          <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }} style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none", marginBottom:56, position:"relative", zIndex:1 }}>
+          <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
+            style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none", marginBottom:56, position:"relative", zIndex:1 }}>
             <div style={{ width:32, height:32, background:"rgba(255,255,255,0.12)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
               <div style={{ position:"absolute", bottom:0, right:0, width:12, height:12, background:C.green, borderRadius:"4px 0 0 0" }} />
               <span style={{ fontSize:"0.7rem", fontWeight:800, color:"#fff", zIndex:1 }}>Px</span>
@@ -582,7 +645,8 @@ export default function StudentOnboarding({ onBack }) {
 
           {/* bottom note */}
           <p style={{ fontSize:"0.74rem", color:"rgba(255,255,255,0.25)", position:"relative", zIndex:1, marginTop:32 }}>
-            <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }} style={{ color:"rgba(255,255,255,0.35)", fontWeight:500, textDecoration:"none" }}>← Back to home</a>
+            <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
+              style={{ color:"rgba(255,255,255,0.35)", fontWeight:500, textDecoration:"none" }}>← Back to home</a>
             {"  ·  "}
             Already have an account?{" "}
             <a href="#" style={{ color:C.green, fontWeight:600, textDecoration:"none" }}>Sign in</a>
@@ -601,6 +665,22 @@ export default function StudentOnboarding({ onBack }) {
                     {step === 0 && <Step1 data={data} setData={setData} errors={errors} />}
                     {step === 1 && <Step2 data={data} setData={setData} errors={errors} />}
                     {step === 2 && <Step3 data={data} setData={setData} errors={errors} />}
+
+                    {/* General Error */}
+                    {errors.general && (
+                      <div style={{
+                        background: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        borderRadius: 8,
+                        padding: '10px 14px',
+                        marginBottom: 16,
+                        fontSize: '0.82rem',
+                        color: '#dc2626',
+                        fontWeight: 600,
+                      }}>
+                        ⚠ {errors.general}
+                      </div>
+                    )}
 
                     {/* Navigation */}
                     <div style={{ display:"flex", gap:12, marginTop:28, paddingTop:24, borderTop:`1px solid ${C.border}` }}>
