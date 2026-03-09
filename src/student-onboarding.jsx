@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-
+import { registerStudent } from '../src/services/api';  // adjust path if needed
 /* ─── FONTS ─── */
 const FontLoader = () => (
   <style>{`
@@ -514,13 +514,37 @@ export default function StudentOnboarding({ onBack }) {
 
   const back = () => { setErrors({}); setStep(s => s - 1); };
 
-  const handleSubmit = () => {
-    setSubmitting(true);
-    // Store in-memory — API integration later
-    const payload = { ...data, createdAt: new Date().toISOString(), role:"student" };
-    console.log("Student registration payload:", payload);
-    setTimeout(() => { setSubmitting(false); setDone(true); }, 1200);
+  const handleSubmit = async () => {
+  setSubmitting(true);
+  setErrors({});
+
+  // Map frontend field names → what backend expects
+  const payload = {
+    full_name:           data.name,
+    email:               data.email,
+    password:            data.password,
+    university_name:     data.university,
+    degree_program:      data.degree,
+    major:               data.major,
+    current_semester:    parseInt(data.semester),   // "4th" → 4
+    graduation_semester: `${data.gradSemester} ${data.gradYear}`,  // "Spring 2028"
+    linkedin_url:        data.linkedin,
+    skills:              data.skills.join(', '),    // ["React","Node.js"] → "React, Node.js"
+    bio:                 data.bio,
   };
+
+  try {
+  await registerStudent(payload);
+  setDone(true);
+  
+} catch (err) {
+  console.log('Full error:', err.response);  // ← add here
+  const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
+  setErrors({ submit: msg });
+} finally {
+  setSubmitting(false);
+}
+};
 
   /* ─── Left panel art ─── */
   const panels = [
@@ -622,7 +646,11 @@ export default function StudentOnboarding({ onBack }) {
                         }
                       </button>
                     </div>
-
+                        {errors.submit && (
+  <p style={{ textAlign:'center', fontSize:'0.8rem', color:C.error, marginTop:12 }}>
+    ⚠ {errors.submit}
+  </p>
+)}
                     {/* Skip hint for step 3 */}
                     {step === 2 && (
                       <p style={{ textAlign:"center", fontSize:"0.76rem", color:C.muted2, marginTop:12 }}>
