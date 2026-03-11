@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { registerCompany } from '../services/api';
 
 /* ─── FONTS ─── */
 const FontLoader = () => (
@@ -617,14 +618,52 @@ export default function CompanyOnboarding({ onBack }) {
 
   const back = () => { setErrors({}); setStep(s => s - 1); };
 
-  const handleSubmit = () => {
-    const errs = validateStep(3, data);
-    if (Object.keys(errs).length) { setErrors(errs); return; }
-    setSubmitting(true);
-    const payload = { ...data, createdAt: new Date().toISOString(), role:"company", status:"pending_verification" };
-    console.log("Company registration payload:", payload);
-    setTimeout(() => { setSubmitting(false); setDone(true); }, 1400);
-  };
+  const handleSubmit = async () => {
+  const errs = validateStep(3, data);
+  if (Object.keys(errs).length) { setErrors(errs); return; }
+  
+  setSubmitting(true);
+  try {
+    const formData = new FormData();
+
+    // Required
+    formData.append('company_name',          data.companyName);
+    formData.append('email',                 data.email);
+    formData.append('password',              data.password);
+    formData.append('industry',              data.industry);
+    formData.append('company_size',          data.size);
+    formData.append('city',                  data.city);
+    formData.append('looking_for',           data.lookingFor.join(', '));
+    formData.append('verification_doc_type', data.docType);
+    formData.append('docFile',               data.docFile);
+
+    // Optional
+    if (data.website)               formData.append('website',                 data.website);
+    if (data.description)           formData.append('description',             data.description);
+    if (data.logo)                  formData.append('logo',                    data.logo);
+    if (data.techCats.length)       formData.append('preferred_tech',          data.techCats.join(', '));
+    if (data.prefIndustries.length) formData.append('preferred_industry',      data.prefIndustries.join(', '));
+    if (data.prefUniversities.length) formData.append('preferred_universities', data.prefUniversities.join(', '));
+
+    await registerCompany(formData);
+    setDone(true);
+
+  } catch (err) {
+    const msg = err.response?.data?.message || 'Something went wrong. Try again.';
+    if (msg.includes('already registered')) {
+      setStep(0);
+      setErrors({ email: 'This email is already registered.' });
+    } else if (msg.includes('work email')) {
+      setStep(0);
+      setErrors({ email: msg });
+    } else {
+      setErrors({ general: msg });
+    }
+  } finally {
+    setSubmitting(false);
+  }
+};
+
 
   /* ─── Left panel content per step ─── */
   const panels = [
@@ -702,6 +741,22 @@ export default function CompanyOnboarding({ onBack }) {
                     {step === 1 && <Step2 data={data} setData={setData} errors={errors} />}
                     {step === 2 && <Step3 data={data} setData={setData} errors={errors} />}
                     {step === 3 && <Step4 data={data} setData={setData} errors={errors} />}
+
+                    {/* General Error */}
+                    {errors.general && (
+                      <div style={{
+                        background: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        borderRadius: 8,
+                        padding: '10px 14px',
+                        marginBottom: 16,
+                        fontSize: '0.82rem',
+                        color: '#dc2626',
+                        fontWeight: 600
+                        }}>
+                          ⚠ {errors.general}
+                          </div>
+                        )}
 
                     {/* Navigation */}
                     <div style={{ display:"flex", gap:12, marginTop:28, paddingTop:24, borderTop:`1px solid ${C.border}` }}>
