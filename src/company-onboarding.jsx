@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { registerCompany } from '..src/services/api';
+import { registerCompany } from './services/api';
 
 /* ─── FONTS ─── */
 const FontLoader = () => (
