@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { registerStudent } from '../src/services/api';  // adjust path if needed
+import { registerStudent, loginStudent } from './services/api';
+
 /* ─── FONTS ─── */
 const FontLoader = () => (
   <style>{`
@@ -257,7 +258,6 @@ function StepBar({ current, total, labels }) {
           const isLast  = i === total - 1;
           return (
             <div key={i} style={{ display:"flex", alignItems:"center", flex: isLast ? "0 0 auto" : 1 }}>
-              {/* Circle */}
               <div style={{
                 width:32, height:32, borderRadius:"50%", flexShrink:0,
                 background: done ? C.green : active ? C.blue : C.white,
@@ -270,7 +270,6 @@ function StepBar({ current, total, labels }) {
               }}>
                 {done ? "✓" : i + 1}
               </div>
-              {/* Line */}
               {!isLast && (
                 <div style={{ flex:1, height:2, background: done ? C.green : C.border, transition:"background 0.4s", margin:"0 2px" }} />
               )}
@@ -278,7 +277,6 @@ function StepBar({ current, total, labels }) {
           );
         })}
       </div>
-      {/* Labels */}
       <div style={{ display:"flex", marginTop:8 }}>
         {labels.map((l, i) => {
           const done   = i < current;
@@ -305,7 +303,6 @@ function Step1({ data, setData, errors }) {
         <h2 style={{ fontSize:"1.55rem", fontWeight:800, color:C.ink, letterSpacing:"-0.025em", marginBottom:6 }}>Let's get you set up</h2>
         <p style={{ fontSize:"0.88rem", color:C.muted, lineHeight:1.6 }}>Create your student account. Use your university email to unlock platform access.</p>
       </div>
-
       <Input label="Full Name" required
         value={data.name} onChange={e => setData({...data, name:e.target.value})}
         placeholder="e.g. Zainab Mirza" error={errors.name}
@@ -319,7 +316,7 @@ function Step1({ data, setData, errors }) {
       <Input label="Password" required type="password"
         value={data.password} onChange={e => setData({...data, password:e.target.value})}
         placeholder="At least 8 characters"
-        hint="Use a mix of letters, numbers & symbols."
+        hint="Min 8 characters, one uppercase letter & one number."
         error={errors.password}
       />
       <Input label="Confirm Password" required type="password"
@@ -327,8 +324,6 @@ function Step1({ data, setData, errors }) {
         placeholder="Re-enter your password"
         error={errors.confirmPassword}
       />
-
-      {/* Terms */}
       <label style={{ display:"flex", alignItems:"flex-start", gap:10, cursor:"pointer", marginTop:4 }}>
         <input type="checkbox" checked={data.terms} onChange={e => setData({...data, terms:e.target.checked})}
           style={{ marginTop:2, accentColor:C.blue, width:16, height:16, flexShrink:0 }} />
@@ -350,29 +345,24 @@ function Step2({ data, setData, errors }) {
         <h2 style={{ fontSize:"1.55rem", fontWeight:800, color:C.ink, letterSpacing:"-0.025em", marginBottom:6 }}>Academic Info</h2>
         <p style={{ fontSize:"0.88rem", color:C.muted, lineHeight:1.6 }}>Help companies understand your academic background and timeline.</p>
       </div>
-
       <Select label="University" required value={data.university} onChange={e => setData({...data, university:e.target.value})} error={errors.university}>
         <option value="">Select your university</option>
         {UNIVERSITIES.map(u => <option key={u} value={u}>{u}</option>)}
       </Select>
-
       <Select label="Degree Program" required value={data.degree} onChange={e => setData({...data, degree:e.target.value})} error={errors.degree}>
         <option value="">Select your degree</option>
         {DEGREES.map(d => <option key={d} value={d}>{d}</option>)}
       </Select>
-
       <Input label="Major / Specialization" required
         value={data.major} onChange={e => setData({...data, major:e.target.value})}
         placeholder="e.g. Machine Learning, Embedded Systems, FinTech"
         error={errors.major}
       />
-
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
         <Select label="Current Semester" required value={data.semester} onChange={e => setData({...data, semester:e.target.value})} error={errors.semester}>
           <option value="">Select semester</option>
           {["1st","2nd","3rd","4th","5th","6th","7th","8th"].map(s => <option key={s} value={s}>{s} Semester</option>)}
         </Select>
-
         <div>
           <Label required>Expected Graduation</Label>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
@@ -402,14 +392,11 @@ function Step3({ data, setData }) {
         <h2 style={{ fontSize:"1.55rem", fontWeight:800, color:C.ink, letterSpacing:"-0.025em", marginBottom:6 }}>Your Profile</h2>
         <p style={{ fontSize:"0.88rem", color:C.muted, lineHeight:1.6 }}>Make a great first impression. All fields on this step are optional.</p>
       </div>
-
       <AvatarUpload value={data.avatar} onChange={f => setData({...data, avatar:f})} />
-
       <Input label={<>LinkedIn URL <span style={{ fontWeight:400, color:C.muted }}>(optional)</span></>}
         value={data.linkedin} onChange={e => setData({...data, linkedin:e.target.value})}
         placeholder="https://linkedin.com/in/your-profile"
       />
-
       <MultiSelect
         label={<>Skills <span style={{ fontWeight:400, color:C.muted }}>(optional)</span></>}
         options={SKILLS_LIST}
@@ -417,7 +404,6 @@ function Step3({ data, setData }) {
         onChange={s => setData({...data, skills:s})}
         hint="Select all that apply — companies use these to filter projects."
       />
-
       <Textarea
         label={<>Bio <span style={{ fontWeight:400, color:C.muted }}>(optional)</span></>}
         value={data.bio}
@@ -468,6 +454,8 @@ function validateStep(step, data) {
     else if (!data.email.toLowerCase().endsWith(".edu.pk"))   errs.email = "Must be a .edu.pk email address";
     if (!data.password)                                       errs.password = "Password is required";
     else if (data.password.length < 8)                        errs.password = "At least 8 characters required";
+    else if (!/[A-Z]/.test(data.password))                    errs.password = "Must contain at least one uppercase letter";
+    else if (!/[0-9]/.test(data.password))                    errs.password = "Must contain at least one number";
     if (!data.confirmPassword)                                errs.confirmPassword = "Please confirm your password";
     else if (data.password !== data.confirmPassword)          errs.confirmPassword = "Passwords don't match";
     if (!data.terms)                                          errs.terms = "You must agree to the Terms of Service";
@@ -484,20 +472,213 @@ function validateStep(step, data) {
 }
 
 /* ═══════════════════════════════════════════
+   LOGIN COMPONENT
+═══════════════════════════════════════════ */
+export function StudentLogin({ onBack, onSwitchToRegister,onForgotPassword }) {
+  const [loginData, setLoginData]   = useState({ email:"", password:"" });
+  const [errors, setErrors]         = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [showPass, setShowPass]     = useState(false);
+
+  const validate = () => {
+    const errs = {};
+    if (!loginData.email.trim())                                  errs.email = "Email is required";
+    else if (!loginData.email.toLowerCase().endsWith(".edu.pk"))  errs.email = "Must be a .edu.pk email";
+    if (!loginData.password)                                      errs.password = "Password is required";
+    return errs;
+  };
+
+  const handleLogin = async () => {
+    const errs = validate();
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    setErrors({});
+    setSubmitting(true);
+    try {
+      const res = await loginStudent({ email: loginData.email, password: loginData.password });
+      // Save token + user to localStorage
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      // TODO: redirect to dashboard — e.g. navigate('/dashboard') if using react-router
+      window.location.href = '/dashboard';
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Invalid email or password.';
+      setErrors({ submit: msg });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      <FontLoader />
+      <div style={{ minHeight:"100vh", display:"flex", background:C.off }}>
+
+        {/* ── Left Panel ── */}
+        <div style={{
+          width:380, flexShrink:0, background:C.blue,
+          display:"flex", flexDirection:"column",
+          padding:"48px 40px", position:"relative", overflow:"hidden",
+        }}>
+          {/* decorative circles */}
+          <div style={{ position:"absolute", top:-60, right:-60, width:280, height:280, borderRadius:"50%", background:"rgba(163,207,62,0.08)", pointerEvents:"none" }} />
+          <div style={{ position:"absolute", bottom:-80, left:-40, width:200, height:200, borderRadius:"50%", background:"rgba(163,207,62,0.05)", pointerEvents:"none" }} />
+          <div style={{ position:"absolute", inset:0, backgroundImage:`radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)`, backgroundSize:"24px 24px", pointerEvents:"none" }} />
+
+          {/* Logo */}
+          <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
+            style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none", marginBottom:56, position:"relative", zIndex:1 }}>
+            <div style={{ width:32, height:32, background:"rgba(255,255,255,0.12)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
+              <div style={{ position:"absolute", bottom:0, right:0, width:12, height:12, background:C.green, borderRadius:"4px 0 0 0" }} />
+              <span style={{ fontSize:"0.7rem", fontWeight:800, color:"#fff", zIndex:1 }}>Px</span>
+            </div>
+            <span style={{ fontSize:"1.1rem", fontWeight:800, color:"#fff", letterSpacing:"-0.4px" }}>
+              Projex<span style={{ color:C.green }}>.pk</span>
+            </span>
+          </a>
+
+          {/* Panel content */}
+          <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center", position:"relative", zIndex:1, animation:"fadeIn 0.4s ease both" }}>
+            <div style={{ fontSize:"3rem", marginBottom:16 }}>👋</div>
+            <h3 style={{ fontSize:"1.4rem", fontWeight:800, color:"#fff", letterSpacing:"-0.025em", marginBottom:10, lineHeight:1.2 }}>
+              Welcome back
+            </h3>
+            <p style={{ fontSize:"0.88rem", color:"rgba(255,255,255,0.55)", lineHeight:1.75 }}>
+              Sign in to manage your projects, track company interest, and keep your profile up to date.
+            </p>
+
+            {/* decorative divider */}
+            <div style={{ marginTop:40, display:"flex", flexDirection:"column", gap:14 }}>
+              {["🔒 Your IP stays protected", "📬 Real company connections", "🎓 Student-verified access"].map(item => (
+                <div key={item} style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <div style={{ width:6, height:6, borderRadius:"50%", background:C.green, flexShrink:0 }} />
+                  <span style={{ fontSize:"0.82rem", color:"rgba(255,255,255,0.5)", fontWeight:500 }}>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* bottom note */}
+          <p style={{ fontSize:"0.74rem", color:"rgba(255,255,255,0.25)", position:"relative", zIndex:1, marginTop:32 }}>
+            <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
+              style={{ color:"rgba(255,255,255,0.35)", fontWeight:500, textDecoration:"none" }}>← Back to home</a>
+            {"  ·  "}
+            New here?{" "}
+            <a href="#" onClick={e => { e.preventDefault(); onSwitchToRegister && onSwitchToRegister(); }}
+              style={{ color:C.green, fontWeight:600, textDecoration:"none" }}>Create account</a>
+          </p>
+        </div>
+
+        {/* ── Right Form Panel ── */}
+        <div style={{ flex:1, overflowY:"auto", display:"flex", alignItems:"center", justifyContent:"center", padding:"48px 40px" }}>
+          <div style={{ width:"100%", maxWidth:460, animation:"fadeUp 0.4s ease both" }}>
+
+            <div style={{ marginBottom:32 }}>
+              <div style={{ fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:C.green, marginBottom:8 }}>Student Login</div>
+              <h2 style={{ fontSize:"1.7rem", fontWeight:800, color:C.ink, letterSpacing:"-0.03em", marginBottom:8 }}>Sign in to Projex</h2>
+              <p style={{ fontSize:"0.88rem", color:C.muted, lineHeight:1.6 }}>Use your university email and password to access your account.</p>
+            </div>
+
+            <div style={{ background:C.white, borderRadius:16, padding:"36px", border:`1px solid ${C.border}`, boxShadow:"0 2px 12px rgba(3,62,102,0.06)" }}>
+
+              <Input
+                label="University Email" required type="email"
+                value={loginData.email}
+                onChange={e => setLoginData({...loginData, email:e.target.value})}
+                placeholder="yourname@university.edu.pk"
+                error={errors.email}
+              />
+
+              {/* Password with show/hide toggle */}
+              <div style={{ marginBottom:8 }}>
+                <Label required>Password</Label>
+                <div style={{ position:"relative" }}>
+                  <input
+                    type={showPass ? "text" : "password"}
+                    value={loginData.password}
+                    onChange={e => setLoginData({...loginData, password:e.target.value})}
+                    onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                    placeholder="Your password"
+                    style={{
+                      display:"block", width:"100%",
+                      padding:"11px 44px 11px 14px", fontSize:"0.9rem",
+                      fontFamily:"'Plus Jakarta Sans',sans-serif",
+                      background:C.white, color:C.text,
+                      border:`1.5px solid ${errors.password ? C.error : C.border2}`,
+                      borderRadius:9, outline:"none",
+                      transition:"border-color 0.18s, box-shadow 0.18s",
+                    }}
+                    onFocus={e => { e.target.style.borderColor=C.blue; e.target.style.boxShadow=`0 0 0 3px ${C.blue}18`; }}
+                    onBlur={e => { e.target.style.borderColor=errors.password?C.error:C.border2; e.target.style.boxShadow="none"; }}
+                  />
+                  <button type="button" onClick={() => setShowPass(p => !p)}
+                    style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:"1rem", color:C.muted2, padding:2 }}>
+                    {showPass ? "🙈" : "👁️"}
+                  </button>
+                </div>
+                {errors.password && <p style={{ fontSize:"0.75rem", color:C.error, marginTop:5 }}>⚠ {errors.password}</p>}
+              </div>
+
+              {/* Forgot password link */}
+              <div style={{ textAlign:"right", marginBottom:24, marginTop:6, fontSize:"0.78rem"}}>
+                <a style={{ color: C.blue, fontWeight: 700, textDecoration: "none" }} href="#" onClick={e => { e.preventDefault(); onForgotPassword && onForgotPassword(); }}
+                  onMouseEnter={e => e.currentTarget.style.textDecoration="none"}
+                  onMouseLeave={e => e.currentTarget.style.textDecoration="none"}
+                >Forgot password? </a>
+              </div>
+
+              {/* Submit error */}
+              {errors.submit && (
+                <div style={{ background:C.errorPale, border:`1px solid ${C.error}20`, borderRadius:8, padding:"10px 14px", marginBottom:20 }}>
+                  <p style={{ fontSize:"0.8rem", color:C.error, fontWeight:600 }}>⚠ {errors.submit}</p>
+                </div>
+              )}
+
+              {/* Login button */}
+              <button type="button" onClick={handleLogin} disabled={submitting}
+                style={{
+                  width:"100%", padding:"13px", borderRadius:9,
+                  fontSize:"0.95rem", fontWeight:700,
+                  cursor: submitting ? "wait" : "pointer",
+                  border:"none",
+                  background: submitting ? C.muted2 : C.blue,
+                  color:"#fff", transition:"all 0.18s",
+                  fontFamily:"'Plus Jakarta Sans',sans-serif",
+                  display:"flex", alignItems:"center", justifyContent:"center", gap:8,
+                }}
+                onMouseEnter={e => { if (!submitting) e.currentTarget.style.background=C.blueMid; }}
+                onMouseLeave={e => { if (!submitting) e.currentTarget.style.background=C.blue; }}
+              >
+                {submitting
+                  ? <><span style={{ width:14, height:14, border:"2px solid rgba(255,255,255,0.4)", borderTopColor:"#fff", borderRadius:"50%", display:"inline-block", animation:"spin 0.7s linear infinite" }} /> Signing in...</>
+                  : "Sign In →"
+                }
+              </button>
+            </div>
+
+            <p style={{ textAlign:"center", fontSize:"0.78rem", color:C.muted, marginTop:20 }}>
+              Don't have an account?{" "}
+              <a href="#" onClick={e => { e.preventDefault(); onSwitchToRegister && onSwitchToRegister(); }}
+                style={{ color:C.blue, fontWeight:700, textDecoration:"none" }}>Register here</a>
+            </p>
+          </div>
+        </div>
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </>
+  );
+}
+
+/* ═══════════════════════════════════════════
    MAIN COMPONENT
 ═══════════════════════════════════════════ */
-export default function StudentOnboarding({ onBack }) {
-  const [step, setStep]       = useState(0);
+export default function StudentOnboarding({ onBack, onSwitchToLogin }) {  const [step, setStep]       = useState(0);
   const [errors, setErrors]   = useState({});
   const [done, setDone]       = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const [data, setData] = useState({
-    // Step 1
     name:"", email:"", password:"", confirmPassword:"", terms:false,
-    // Step 2
     university:"", degree:"", major:"", semester:"", gradSemester:"", gradYear:"",
-    // Step 3
     avatar:null, linkedin:"", skills:[], bio:"",
   });
 
@@ -515,38 +696,40 @@ export default function StudentOnboarding({ onBack }) {
   const back = () => { setErrors({}); setStep(s => s - 1); };
 
   const handleSubmit = async () => {
-  setSubmitting(true);
-  setErrors({});
+    setSubmitting(true);
+    setErrors({});
 
-  // Map frontend field names → what backend expects
-  const payload = {
-    full_name:           data.name,
-    email:               data.email,
-    password:            data.password,
-    university_name:     data.university,
-    degree_program:      data.degree,
-    major:               data.major,
-    current_semester:    parseInt(data.semester),   // "4th" → 4
-    graduation_semester: `${data.gradSemester} ${data.gradYear}`,  // "Spring 2028"
-    linkedin_url:        data.linkedin,
-    skills:              data.skills.join(', '),    // ["React","Node.js"] → "React, Node.js"
-    bio:                 data.bio,
+    const payload = {
+      full_name:           data.name,
+      email:               data.email,
+      password:            data.password,
+      university_name:     data.university,
+      degree_program:      data.degree,
+      major:               data.major,
+      current_semester:    parseInt(data.semester),
+      graduation_semester: `${data.gradSemester} ${data.gradYear}`,
+      linkedin_url:        data.linkedin,
+      skills:              data.skills.join(', '),
+      bio:                 data.bio,
+    };
+
+    try {
+      await registerStudent(payload);
+      setDone(true);
+    } catch (err) {
+      console.log('Full error:', err.response);
+      if (err.response?.data?.errors?.length > 0) {
+        const msg = err.response.data.errors.map(e => e.msg).join(' • ');
+        setErrors({ submit: msg });
+      } else {
+        const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
+        setErrors({ submit: msg });
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  try {
-  await registerStudent(payload);
-  setDone(true);
-  
-} catch (err) {
-  console.log('Full error:', err.response);  // ← add here
-  const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
-  setErrors({ submit: msg });
-} finally {
-  setSubmitting(false);
-}
-};
-
-  /* ─── Left panel art ─── */
   const panels = [
     { icon:"🎓", title:"Showcase your work", body:"Post your final-year project and let verified companies find you — with your IP fully protected at every step." },
     { icon:"🏫", title:"Academic credibility", body:"Your .edu.pk email ties you to your institution. Companies trust students with verified university affiliations." },
@@ -564,17 +747,13 @@ export default function StudentOnboarding({ onBack }) {
           display:"flex", flexDirection:"column",
           padding:"48px 40px", position:"relative", overflow:"hidden",
         }}>
-          {/* decorative */}
           <div style={{ position:"absolute", top:-60, right:-60, width:280, height:280, borderRadius:"50%", background:"rgba(163,207,62,0.08)", pointerEvents:"none" }} />
           <div style={{ position:"absolute", bottom:-80, left:-40, width:200, height:200, borderRadius:"50%", background:"rgba(163,207,62,0.05)", pointerEvents:"none" }} />
-          <div style={{
-            position:"absolute", inset:0,
-            backgroundImage:`radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)`,
-            backgroundSize:"24px 24px", pointerEvents:"none",
-          }} />
+          <div style={{ position:"absolute", inset:0, backgroundImage:`radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)`, backgroundSize:"24px 24px", pointerEvents:"none" }} />
 
-          {/* Logo */}
-          <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }} style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none", marginBottom:56, position:"relative", zIndex:1 }}>
+          {/* Logo — clicking goes back to home via onBack */}
+          <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
+            style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none", marginBottom:56, position:"relative", zIndex:1 }}>
             <div style={{ width:32, height:32, background:"rgba(255,255,255,0.12)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
               <div style={{ position:"absolute", bottom:0, right:0, width:12, height:12, background:C.green, borderRadius:"4px 0 0 0" }} />
               <span style={{ fontSize:"0.7rem", fontWeight:800, color:"#fff", zIndex:1 }}>Px</span>
@@ -584,7 +763,6 @@ export default function StudentOnboarding({ onBack }) {
             </span>
           </a>
 
-          {/* Dynamic panel card */}
           <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center", position:"relative", zIndex:1 }}>
             <div key={step} style={{ animation:"fadeIn 0.4s ease both" }}>
               <div style={{ fontSize:"3rem", marginBottom:16 }}>{panels[Math.min(step, panels.length-1)].icon}</div>
@@ -595,8 +773,6 @@ export default function StudentOnboarding({ onBack }) {
                 {panels[Math.min(step, panels.length-1)].body}
               </p>
             </div>
-
-            {/* step dots */}
             <div style={{ display:"flex", gap:6, marginTop:40 }}>
               {STEPS.map((_,i) => (
                 <div key={i} style={{ width: i===step?20:6, height:6, borderRadius:3, background: i===step?C.green:"rgba(255,255,255,0.2)", transition:"all 0.3s" }} />
@@ -604,12 +780,15 @@ export default function StudentOnboarding({ onBack }) {
             </div>
           </div>
 
-          {/* bottom note */}
+          {/* ── BACK FIXED: both "Back to home" and "Sign in" now work ── */}
           <p style={{ fontSize:"0.74rem", color:"rgba(255,255,255,0.25)", position:"relative", zIndex:1, marginTop:32 }}>
-            <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }} style={{ color:"rgba(255,255,255,0.35)", fontWeight:500, textDecoration:"none" }}>← Back to home</a>
+            <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
+              style={{ color:"rgba(255,255,255,0.35)", fontWeight:500, textDecoration:"none" }}>← Back to home</a>
             {"  ·  "}
             Already have an account?{" "}
-            <a href="#" style={{ color:C.green, fontWeight:600, textDecoration:"none" }}>Sign in</a>
+            <a href="#" onClick={e => { e.preventDefault(); onSwitchToLogin && onSwitchToLogin(); }}
+  style={{ color:C.green, fontWeight:600, textDecoration:"none" }}>Sign in</a>
+
           </p>
         </div>
 
@@ -626,7 +805,6 @@ export default function StudentOnboarding({ onBack }) {
                     {step === 1 && <Step2 data={data} setData={setData} errors={errors} />}
                     {step === 2 && <Step3 data={data} setData={setData} errors={errors} />}
 
-                    {/* Navigation */}
                     <div style={{ display:"flex", gap:12, marginTop:28, paddingTop:24, borderTop:`1px solid ${C.border}` }}>
                       {step > 0 && (
                         <button type="button" onClick={back}
@@ -646,12 +824,13 @@ export default function StudentOnboarding({ onBack }) {
                         }
                       </button>
                     </div>
-                        {errors.submit && (
-  <p style={{ textAlign:'center', fontSize:'0.8rem', color:C.error, marginTop:12 }}>
-    ⚠ {errors.submit}
-  </p>
-)}
-                    {/* Skip hint for step 3 */}
+
+                    {errors.submit && (
+                      <p style={{ textAlign:'center', fontSize:'0.8rem', color:C.error, marginTop:12 }}>
+                        ⚠ {errors.submit}
+                      </p>
+                    )}
+
                     {step === 2 && (
                       <p style={{ textAlign:"center", fontSize:"0.76rem", color:C.muted2, marginTop:12 }}>
                         All fields optional — you can update your profile anytime from settings.
@@ -664,15 +843,14 @@ export default function StudentOnboarding({ onBack }) {
             {step === 0 && !done && (
               <p style={{ textAlign:"center", fontSize:"0.78rem", color:C.muted, marginTop:20 }}>
                 Already have an account?{" "}
-                <a href="#" style={{ color:C.blue, fontWeight:700, textDecoration:"none" }}>Sign in here</a>
+                <a href="#" onClick={e => { e.preventDefault(); onSwitchToLogin && onSwitchToLogin(); }}
+  style={{ color:C.blue, fontWeight:700, textDecoration:"none" }}>Sign in here</a>
               </p>
             )}
           </div>
         </div>
       </div>
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg) } }
-      `}</style>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </>
   );
 }
