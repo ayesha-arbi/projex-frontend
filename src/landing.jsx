@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import StudentOnboarding from "./student-onboarding.jsx";
-import CompanyOnboarding from "./company-onboarding.jsx";
+import StudentOnboarding from "./student/student-onboarding.jsx";
+import CompanyOnboarding from "./company/company-onboarding.jsx";
 
 /* ─── GOOGLE FONTS ─── */
 const FontLoader = () => (

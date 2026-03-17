@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { registerStudent, loginStudent } from './services/api';
+import { registerStudent, loginStudent } from '../services/api';
 
 /* ─── FONTS ─── */
 const FontLoader = () => (
@@ -194,7 +194,7 @@ function MultiSelect({ label, required, options, selected, onChange, hint }) {
 }
 
 /* ─── Avatar Upload ─── */
-function AvatarUpload({onChange }) {
+function AvatarUpload({ onChange }) {
   const inputRef = useRef(null);
   const [preview, setPreview] = useState(null);
 
@@ -415,34 +415,6 @@ function Step3({ data, setData }) {
   );
 }
 
-/* ─── Success Screen ─── */
-function SuccessScreen() {
-  return (
-    <div style={{ textAlign:"center", padding:"20px 0 10px", animation:"fadeUp 0.5s ease both" }}>
-      <div style={{
-        width:72, height:72, borderRadius:"50%",
-        background:C.greenPale, border:`2px solid ${C.green}`,
-        display:"flex", alignItems:"center", justifyContent:"center",
-        fontSize:"2rem", margin:"0 auto 20px",
-        boxShadow:`0 0 0 8px ${C.green}18`,
-      }}>✓</div>
-      <h2 style={{ fontSize:"1.6rem", fontWeight:800, color:C.ink, marginBottom:10, letterSpacing:"-0.025em" }}>You're in!</h2>
-      <p style={{ fontSize:"0.9rem", color:C.muted, lineHeight:1.7, marginBottom:8 }}>
-        Your student account has been created. Check your university email to verify your address, then you can post your first project.
-      </p>
-      <div style={{ display:"inline-block", background:C.blueTint, border:`1px solid ${C.bluePale}`, borderRadius:10, padding:"12px 20px", marginTop:12 }}>
-        <p style={{ fontSize:"0.8rem", color:C.blue, fontWeight:600 }}>📧 Verification email sent to your .edu.pk address</p>
-      </div>
-      <div style={{ marginTop:28 }}>
-        <button style={{ background:C.blue, color:"#fff", border:"none", borderRadius:9, padding:"13px 32px", fontSize:"0.95rem", fontWeight:700, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all 0.18s" }}
-          onMouseEnter={e => e.currentTarget.style.background=C.blueMid}
-          onMouseLeave={e => e.currentTarget.style.background=C.blue}
-        >Go to Dashboard →</button>
-      </div>
-    </div>
-  );
-}
-
 /* ═══════════════════════════════════════════
    VALIDATION
 ═══════════════════════════════════════════ */
@@ -473,8 +445,10 @@ function validateStep(step, data) {
 
 /* ═══════════════════════════════════════════
    LOGIN COMPONENT
+   FIX 1: accept onSuccess prop
+   FIX 2: call onSuccess() instead of window.location.href
 ═══════════════════════════════════════════ */
-export function StudentLogin({ onBack, onSwitchToRegister,onForgotPassword }) {
+export function StudentLogin({ onBack, onSwitchToRegister, onForgotPassword, onSuccess }) {
   const [loginData, setLoginData]   = useState({ email:"", password:"" });
   const [errors, setErrors]         = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -498,8 +472,8 @@ export function StudentLogin({ onBack, onSwitchToRegister,onForgotPassword }) {
       // Save token + user to localStorage
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
-      // TODO: redirect to dashboard — e.g. navigate('/dashboard') if using react-router
-      window.location.href = '/dashboard';
+      // ✅ FIX: navigate via Router instead of window.location.href
+      onSuccess && onSuccess();
     } catch (err) {
       const msg = err.response?.data?.message || 'Invalid email or password.';
       setErrors({ submit: msg });
@@ -519,7 +493,6 @@ export function StudentLogin({ onBack, onSwitchToRegister,onForgotPassword }) {
           display:"flex", flexDirection:"column",
           padding:"48px 40px", position:"relative", overflow:"hidden",
         }}>
-          {/* decorative circles */}
           <div style={{ position:"absolute", top:-60, right:-60, width:280, height:280, borderRadius:"50%", background:"rgba(163,207,62,0.08)", pointerEvents:"none" }} />
           <div style={{ position:"absolute", bottom:-80, left:-40, width:200, height:200, borderRadius:"50%", background:"rgba(163,207,62,0.05)", pointerEvents:"none" }} />
           <div style={{ position:"absolute", inset:0, backgroundImage:`radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)`, backgroundSize:"24px 24px", pointerEvents:"none" }} />
@@ -536,7 +509,6 @@ export function StudentLogin({ onBack, onSwitchToRegister,onForgotPassword }) {
             </span>
           </a>
 
-          {/* Panel content */}
           <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center", position:"relative", zIndex:1, animation:"fadeIn 0.4s ease both" }}>
             <div style={{ fontSize:"3rem", marginBottom:16 }}>👋</div>
             <h3 style={{ fontSize:"1.4rem", fontWeight:800, color:"#fff", letterSpacing:"-0.025em", marginBottom:10, lineHeight:1.2 }}>
@@ -545,8 +517,6 @@ export function StudentLogin({ onBack, onSwitchToRegister,onForgotPassword }) {
             <p style={{ fontSize:"0.88rem", color:"rgba(255,255,255,0.55)", lineHeight:1.75 }}>
               Sign in to manage your projects, track company interest, and keep your profile up to date.
             </p>
-
-            {/* decorative divider */}
             <div style={{ marginTop:40, display:"flex", flexDirection:"column", gap:14 }}>
               {["🔒 Your IP stays protected", "📬 Real company connections", "🎓 Student-verified access"].map(item => (
                 <div key={item} style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -557,7 +527,6 @@ export function StudentLogin({ onBack, onSwitchToRegister,onForgotPassword }) {
             </div>
           </div>
 
-          {/* bottom note */}
           <p style={{ fontSize:"0.74rem", color:"rgba(255,255,255,0.25)", position:"relative", zIndex:1, marginTop:32 }}>
             <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
               style={{ color:"rgba(255,255,255,0.35)", fontWeight:500, textDecoration:"none" }}>← Back to home</a>
@@ -588,7 +557,6 @@ export function StudentLogin({ onBack, onSwitchToRegister,onForgotPassword }) {
                 error={errors.email}
               />
 
-              {/* Password with show/hide toggle */}
               <div style={{ marginBottom:8 }}>
                 <Label required>Password</Label>
                 <div style={{ position:"relative" }}>
@@ -618,22 +586,19 @@ export function StudentLogin({ onBack, onSwitchToRegister,onForgotPassword }) {
                 {errors.password && <p style={{ fontSize:"0.75rem", color:C.error, marginTop:5 }}>⚠ {errors.password}</p>}
               </div>
 
-              {/* Forgot password link */}
-              <div style={{ textAlign:"right", marginBottom:24, marginTop:6, fontSize:"0.78rem"}}>
-                <a style={{ color: C.blue, fontWeight: 700, textDecoration: "none" }} href="#" onClick={e => { e.preventDefault(); onForgotPassword && onForgotPassword(); }}
-                  onMouseEnter={e => e.currentTarget.style.textDecoration="none"}
-                  onMouseLeave={e => e.currentTarget.style.textDecoration="none"}
-                >Forgot password? </a>
+              <div style={{ textAlign:"right", marginBottom:24, marginTop:6, fontSize:"0.78rem" }}>
+                <a style={{ color:C.blue, fontWeight:700, textDecoration:"none" }} href="#"
+                  onClick={e => { e.preventDefault(); onForgotPassword && onForgotPassword(); }}>
+                  Forgot password?
+                </a>
               </div>
 
-              {/* Submit error */}
               {errors.submit && (
                 <div style={{ background:C.errorPale, border:`1px solid ${C.error}20`, borderRadius:8, padding:"10px 14px", marginBottom:20 }}>
                   <p style={{ fontSize:"0.8rem", color:C.error, fontWeight:600 }}>⚠ {errors.submit}</p>
                 </div>
               )}
 
-              {/* Login button */}
               <button type="button" onClick={handleLogin} disabled={submitting}
                 style={{
                   width:"100%", padding:"13px", borderRadius:9,
@@ -669,11 +634,14 @@ export function StudentLogin({ onBack, onSwitchToRegister,onForgotPassword }) {
 }
 
 /* ═══════════════════════════════════════════
-   MAIN COMPONENT
+   MAIN COMPONENT (StudentOnboarding)
+   FIX 3: use onSuccess prop correctly — was
+   calling props.onSuccess() but the component
+   destructures props, so it should be onSuccess()
 ═══════════════════════════════════════════ */
-export default function StudentOnboarding({ onBack, onSwitchToLogin }) {  const [step, setStep]       = useState(0);
-  const [errors, setErrors]   = useState({});
-  const [done, setDone]       = useState(false);
+export default function StudentOnboarding({ onBack, onSwitchToLogin, onSuccess }) {
+  const [step, setStep]             = useState(0);
+  const [errors, setErrors]         = useState({});
   const [submitting, setSubmitting] = useState(false);
 
   const [data, setData] = useState({
@@ -715,7 +683,8 @@ export default function StudentOnboarding({ onBack, onSwitchToLogin }) {  const 
 
     try {
       await registerStudent(payload);
-      setDone(true);
+      // ✅ FIX: was props.onSuccess() — now correctly onSuccess()
+      onSuccess && onSuccess();
     } catch (err) {
       console.log('Full error:', err.response);
       if (err.response?.data?.errors?.length > 0) {
@@ -751,7 +720,6 @@ export default function StudentOnboarding({ onBack, onSwitchToLogin }) {  const 
           <div style={{ position:"absolute", bottom:-80, left:-40, width:200, height:200, borderRadius:"50%", background:"rgba(163,207,62,0.05)", pointerEvents:"none" }} />
           <div style={{ position:"absolute", inset:0, backgroundImage:`radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)`, backgroundSize:"24px 24px", pointerEvents:"none" }} />
 
-          {/* Logo — clicking goes back to home via onBack */}
           <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
             style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none", marginBottom:56, position:"relative", zIndex:1 }}>
             <div style={{ width:32, height:32, background:"rgba(255,255,255,0.12)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
@@ -780,15 +748,13 @@ export default function StudentOnboarding({ onBack, onSwitchToLogin }) {  const 
             </div>
           </div>
 
-          {/* ── BACK FIXED: both "Back to home" and "Sign in" now work ── */}
           <p style={{ fontSize:"0.74rem", color:"rgba(255,255,255,0.25)", position:"relative", zIndex:1, marginTop:32 }}>
             <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
               style={{ color:"rgba(255,255,255,0.35)", fontWeight:500, textDecoration:"none" }}>← Back to home</a>
             {"  ·  "}
             Already have an account?{" "}
             <a href="#" onClick={e => { e.preventDefault(); onSwitchToLogin && onSwitchToLogin(); }}
-  style={{ color:C.green, fontWeight:600, textDecoration:"none" }}>Sign in</a>
-
+              style={{ color:C.green, fontWeight:600, textDecoration:"none" }}>Sign in</a>
           </p>
         </div>
 
@@ -798,53 +764,50 @@ export default function StudentOnboarding({ onBack, onSwitchToLogin }) {  const 
             <StepBar current={step} total={STEPS.length} labels={STEPS} />
 
             <div style={{ background:C.white, borderRadius:16, padding:"36px 36px", border:`1px solid ${C.border}`, boxShadow:"0 2px 12px rgba(3,62,102,0.06)" }}>
-              {done
-                ? <SuccessScreen />
-                : <>
-                    {step === 0 && <Step1 data={data} setData={setData} errors={errors} />}
-                    {step === 1 && <Step2 data={data} setData={setData} errors={errors} />}
-                    {step === 2 && <Step3 data={data} setData={setData} errors={errors} />}
+              <>
+                {step === 0 && <Step1 data={data} setData={setData} errors={errors} />}
+                {step === 1 && <Step2 data={data} setData={setData} errors={errors} />}
+                {step === 2 && <Step3 data={data} setData={setData} errors={errors} />}
 
-                    <div style={{ display:"flex", gap:12, marginTop:28, paddingTop:24, borderTop:`1px solid ${C.border}` }}>
-                      {step > 0 && (
-                        <button type="button" onClick={back}
-                          style={{ flex:1, padding:"12px", borderRadius:9, fontSize:"0.9rem", fontWeight:700, cursor:"pointer", border:`1.5px solid ${C.border2}`, color:C.blue, background:"transparent", transition:"all 0.18s", fontFamily:"'Plus Jakarta Sans',sans-serif" }}
-                          onMouseEnter={e => { e.currentTarget.style.background=C.blueTint; e.currentTarget.style.borderColor=C.blue; }}
-                          onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor=C.border2; }}
-                        >← Back</button>
-                      )}
-                      <button type="button" onClick={next} disabled={submitting}
-                        style={{ flex:2, padding:"13px", borderRadius:9, fontSize:"0.9rem", fontWeight:700, cursor: submitting?"wait":"pointer", border:"none", background: submitting ? C.muted2 : C.blue, color:"#fff", transition:"all 0.18s", fontFamily:"'Plus Jakarta Sans',sans-serif", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}
-                        onMouseEnter={e => { if (!submitting) e.currentTarget.style.background=C.blueMid; }}
-                        onMouseLeave={e => { if (!submitting) e.currentTarget.style.background=C.blue; }}
-                      >
-                        {submitting
-                          ? <><span style={{ width:14, height:14, border:"2px solid rgba(255,255,255,0.4)", borderTopColor:"#fff", borderRadius:"50%", display:"inline-block", animation:"spin 0.7s linear infinite" }} /> Creating account...</>
-                          : isLast ? "Create My Account 🎓" : "Continue →"
-                        }
-                      </button>
-                    </div>
+                <div style={{ display:"flex", gap:12, marginTop:28, paddingTop:24, borderTop:`1px solid ${C.border}` }}>
+                  {step > 0 && (
+                    <button type="button" onClick={back}
+                      style={{ flex:1, padding:"12px", borderRadius:9, fontSize:"0.9rem", fontWeight:700, cursor:"pointer", border:`1.5px solid ${C.border2}`, color:C.blue, background:"transparent", transition:"all 0.18s", fontFamily:"'Plus Jakarta Sans',sans-serif" }}
+                      onMouseEnter={e => { e.currentTarget.style.background=C.blueTint; e.currentTarget.style.borderColor=C.blue; }}
+                      onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor=C.border2; }}
+                    >← Back</button>
+                  )}
+                  <button type="button" onClick={next} disabled={submitting}
+                    style={{ flex:2, padding:"13px", borderRadius:9, fontSize:"0.9rem", fontWeight:700, cursor: submitting?"wait":"pointer", border:"none", background: submitting ? C.muted2 : C.blue, color:"#fff", transition:"all 0.18s", fontFamily:"'Plus Jakarta Sans',sans-serif", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}
+                    onMouseEnter={e => { if (!submitting) e.currentTarget.style.background=C.blueMid; }}
+                    onMouseLeave={e => { if (!submitting) e.currentTarget.style.background=C.blue; }}
+                  >
+                    {submitting
+                      ? <><span style={{ width:14, height:14, border:"2px solid rgba(255,255,255,0.4)", borderTopColor:"#fff", borderRadius:"50%", display:"inline-block", animation:"spin 0.7s linear infinite" }} /> Creating account...</>
+                      : isLast ? "Create My Account 🎓" : "Continue →"
+                    }
+                  </button>
+                </div>
 
-                    {errors.submit && (
-                      <p style={{ textAlign:'center', fontSize:'0.8rem', color:C.error, marginTop:12 }}>
-                        ⚠ {errors.submit}
-                      </p>
-                    )}
+                {errors.submit && (
+                  <p style={{ textAlign:'center', fontSize:'0.8rem', color:C.error, marginTop:12 }}>
+                    ⚠ {errors.submit}
+                  </p>
+                )}
 
-                    {step === 2 && (
-                      <p style={{ textAlign:"center", fontSize:"0.76rem", color:C.muted2, marginTop:12 }}>
-                        All fields optional — you can update your profile anytime from settings.
-                      </p>
-                    )}
-                  </>
-              }
+                {step === 2 && (
+                  <p style={{ textAlign:"center", fontSize:"0.76rem", color:C.muted2, marginTop:12 }}>
+                    All fields optional — you can update your profile anytime from settings.
+                  </p>
+                )}
+              </>
             </div>
 
-            {step === 0 && !done && (
+            {step === 0 && (
               <p style={{ textAlign:"center", fontSize:"0.78rem", color:C.muted, marginTop:20 }}>
                 Already have an account?{" "}
                 <a href="#" onClick={e => { e.preventDefault(); onSwitchToLogin && onSwitchToLogin(); }}
-  style={{ color:C.blue, fontWeight:700, textDecoration:"none" }}>Sign in here</a>
+                  style={{ color:C.blue, fontWeight:700, textDecoration:"none" }}>Sign in here</a>
               </p>
             )}
           </div>

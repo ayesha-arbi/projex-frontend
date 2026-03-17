@@ -1,9 +1,10 @@
 // Router.jsx
 import React, { useState, useEffect } from "react";
-import StudentOnboarding, { StudentLogin } from "./student-onboarding";
-import CompanyOnboarding from "./company-onboarding";
+import StudentOnboarding, { StudentLogin } from "./student/student-onboarding";
+import CompanyOnboarding from "./company/company-onboarding";
 import App from "./landing";
 import ForgotPassword from "./forgotpassword";
+import StudentDashboard from "./student/dashboard/StudentDashboard";
 
 function Router() {
   const [page, setPage] = useState("landing");
@@ -31,6 +32,7 @@ function Router() {
           onBack={() => navigate("landing")}
           onSwitchToRegister={() => navigate("student")}
           onForgotPassword={() => navigate("forgot-password")}
+          onSuccess={() => navigate("student-dashboard")}  // ← login success → dashboard
         />
       );
 
@@ -44,6 +46,13 @@ function Router() {
 
     case "company":
       return <CompanyOnboarding navigate={navigate} />;
+
+    case "student-dashboard":
+      return (
+        <StudentDashboard
+          onLogout={() => navigate("landing")}
+        />
+      );
 
     default:
       return <App navigate={navigate} />;

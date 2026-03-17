@@ -1,0 +1,21 @@
+/* ─── Projex.pk Brand Tokens ─── */
+export const C = {
+  blue:      "#033e66",
+  blueMid:   "#0a5a96",
+  blueLight: "#1a7cc4",
+  bluePale:  "#e8f3fb",
+  blueTint:  "#f0f7fd",
+  green:     "#a3cf3e",
+  greenDark: "#7aaa1c",
+  greenPale: "#f2f9e0",
+  white:     "#ffffff",
+  off:       "#f7f8fa",
+  border:    "#e4e9ef",
+  border2:   "#d0dce8",
+  text:      "#0d1b2a",
+  muted:     "#5a7491",
+  muted2:    "#8fa5bc",
+  ink:       "#071220",
+  error:     "#dc2626",
+  errorPale: "#fef2f2",
+};
