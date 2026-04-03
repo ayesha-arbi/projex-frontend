@@ -27,4 +27,18 @@ export const registerCompany = (formData) =>
 export const loginCompany = (formData) =>
   API.post('/auth/company/login', formData);
 
+// ─── PROJECTS ─────────────────────────────────────────────
+export const registerProject = (formData) =>
+  API.post('/projects/create', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+
+export const getMyProject    = ()           => API.get('/projects/my/project');
+export const getProjectPublic = (id)        => API.get(`/projects/${id}`);
+export const updateProject   = (id, formData) => API.put(`/projects/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+export const deleteProject   = (id)         => API.delete(`/projects/${id}`);
+export const browseProjects  = (filters)    => API.get('/projects', { params: filters });
+
 export default API;
