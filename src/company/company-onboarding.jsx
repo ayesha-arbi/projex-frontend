@@ -39,15 +39,15 @@ const C = {
 };
 
 /* ─── DATA LISTS ─── */
-const INDUSTRIES = ["Technology","Finance","Healthcare","Education","E-Commerce","Telecom","Manufacturing","Media","Consulting","Other"];
-const SIZES      = ["1–10 employees","11–50 employees","51–200 employees","201–500 employees","500+ employees"];
-const CITIES     = ["Karachi","Lahore","Islamabad","Peshawar","Quetta","Multan","Faisalabad","Other"];
-const LOOKING_FOR = ["Hiring Interns","Full-Time Hiring","Project Collaboration","Investing / Funding","Mentoring Students","Beta Testing / Research"];
-const TECH_CATS   = ["AI/ML","Web Development","Mobile Apps","IoT","Blockchain","Data Analytics","Cybersecurity","Cloud","AR/VR"];
-const PREF_INDUSTRIES = [...INDUSTRIES];
-const UNIVERSITIES    = ["FAST-NU","LUMS","NUST","IBA","NED","COMSATS","UET","GIKI","Habib University","Other"];
-const DOC_TYPES       = ["SECP Registration Certificate","NTN Certificate","Company Letterhead"];
-const BLOCKED_DOMAINS = ["gmail","yahoo","hotmail","outlook","live","icloud","protonmail"];
+const INDUSTRIES     = ["Technology","Finance","Healthcare","Education","E-Commerce","Telecom","Manufacturing","Media","Consulting","Other"];
+const SIZES          = ["1–10 employees","11–50 employees","51–200 employees","201–500 employees","500+ employees"];
+const CITIES         = ["Karachi","Lahore","Islamabad","Peshawar","Quetta","Multan","Faisalabad","Other"];
+const LOOKING_FOR    = ["Hiring Interns","Full-Time Hiring","Project Collaboration","Investing / Funding","Mentoring Students","Beta Testing / Research"];
+const TECH_CATS      = ["AI/ML","Web Development","Mobile Apps","IoT","Blockchain","Data Analytics","Cybersecurity","Cloud","AR/VR"];
+const PREF_INDUSTRIES    = [...INDUSTRIES];
+const UNIVERSITIES       = ["FAST-NU","LUMS","NUST","IBA","NED","COMSATS","UET","GIKI","Habib University","Other"];
+const DOC_TYPES          = ["SECP Registration Certificate","NTN Certificate","Company Letterhead"];
+const BLOCKED_DOMAINS    = ["gmail","yahoo","hotmail","outlook","live","icloud","protonmail"];
 
 /* ═══════════════════════════════════════════
    SHARED FIELD COMPONENTS
@@ -94,7 +94,8 @@ function Select({ label, required, error, children, value, onChange }) {
         style={{
           display:"block", width:"100%", padding:"11px 14px",
           fontSize:"0.9rem", fontFamily:"'Plus Jakarta Sans',sans-serif",
-          background:C.white, color: value?"":C.muted2, // grey placeholder
+          background:C.white,
+          color: value ? C.text : C.muted2,
           border:`1.5px solid ${error?C.error:focus?C.blue:C.border2}`,
           borderRadius:9, outline:"none", cursor:"pointer", appearance:"none",
           transition:"border-color 0.18s, box-shadow 0.18s",
@@ -158,8 +159,7 @@ function MultiSelect({ label, required, options, selected, onChange, hint }) {
   );
 }
 
-/* ─── Logo Upload ─── */
-function LogoUpload({onChange }) {
+function LogoUpload({ onChange }) {
   const inputRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const handle = (e) => {
@@ -179,7 +179,10 @@ function LogoUpload({onChange }) {
           onMouseEnter={e => e.currentTarget.style.borderColor=C.blue}
           onMouseLeave={e => e.currentTarget.style.borderColor=C.border2}
         >
-          {preview ? <img src={preview} alt="logo" style={{ width:"100%", height:"100%", objectFit:"contain" }} /> : <span style={{ fontSize:"1.4rem" }}>🏢</span>}
+          {preview
+            ? <img src="./logo.png" alt="logo" style={{ width:"100%", height:"100%", objectFit:"contain" }} />
+            : <span style={{ fontSize:"1.4rem" }}>🏢</span>
+          }
         </div>
         <div>
           <button type="button" onClick={() => inputRef.current.click()}
@@ -195,18 +198,15 @@ function LogoUpload({onChange }) {
   );
 }
 
-/* ─── Document Upload ─── */
-function DocUpload({  onChange, error }) {
+function DocUpload({ onChange, error }) {
   const inputRef = useRef(null);
   const [fileName, setFileName] = useState(null);
-
   const handle = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     onChange(file);
     setFileName(file.name);
   };
-
   return (
     <div style={{ marginBottom:18 }}>
       <Label required>Upload Document</Label>
@@ -230,7 +230,11 @@ function DocUpload({  onChange, error }) {
             </>
         }
       </div>
-      {fileName && <button type="button" onClick={() => { setFileName(null); onChange(null); }} style={{ fontSize:"0.74rem", color:C.error, background:"none", border:"none", cursor:"pointer", marginTop:6, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>✕ Remove file</button>}
+      {fileName && (
+        <button type="button" onClick={() => { setFileName(null); onChange(null); }}
+          style={{ fontSize:"0.74rem", color:C.error, background:"none", border:"none", cursor:"pointer", marginTop:6, fontFamily:"'Plus Jakarta Sans',sans-serif" }}
+        >✕ Remove file</button>
+      )}
       {error && <p style={{ fontSize:"0.75rem", color:C.error, marginTop:5 }}>⚠ {error}</p>}
       <input ref={inputRef} type="file" accept=".pdf,image/*" style={{ display:"none" }} onChange={handle} />
     </div>
@@ -277,17 +281,17 @@ function StepBar({ current, total, labels }) {
 /* ═══════════════════════════════════════════
    STEP PANELS
 ═══════════════════════════════════════════ */
-function Step1({ data, setData, errors }) {
-  const [showPass, setShowPass]    = useState(false);
+function Step1({ data, setData, errors, onSwitchToLogin }) {
+  const [showPass, setShowPass]       = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const strength = (pw) => {
     if (!pw) return 0;
     let s = 0;
-    if (pw.length >= 8)      s++;
-    if (/[A-Z]/.test(pw))    s++;
-    if (/[0-9]/.test(pw))    s++;
-    if (/[^A-Za-z0-9]/.test(pw)) s++;
+    if (pw.length >= 8)               s++;
+    if (/[A-Z]/.test(pw))             s++;
+    if (/[0-9]/.test(pw))             s++;
+    if (/[^A-Za-z0-9]/.test(pw))      s++;
     return s;
   };
   const pw = data.password;
@@ -300,7 +304,12 @@ function Step1({ data, setData, errors }) {
       <div style={{ marginBottom:26 }}>
         <div style={{ fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:C.green, marginBottom:6 }}>Step 1 of 4</div>
         <h2 style={{ fontSize:"1.5rem", fontWeight:800, color:C.ink, letterSpacing:"-0.025em", marginBottom:6 }}>Create your account</h2>
-        <p style={{ fontSize:"0.86rem", color:C.muted, lineHeight:1.6 }}>Start with your company name and a work email address. Personal email providers are not accepted.</p>
+        <p style={{ fontSize:"0.86rem", color:C.muted, lineHeight:1.6 }}>
+          Start with your company name and a work email address. Personal email providers are not accepted.{" "}
+          Already registered?{" "}
+          <a href="#" onClick={e => { e.preventDefault(); onSwitchToLogin && onSwitchToLogin(); }}
+            style={{ color:C.blue, fontWeight:700, textDecoration:"none" }}>Sign in →</a>
+        </p>
       </div>
 
       <Input label="Company Name" required
@@ -315,7 +324,6 @@ function Step1({ data, setData, errors }) {
         error={errors.email}
       />
 
-      {/* Password with strength */}
       <div style={{ marginBottom:18 }}>
         <Label required>Password</Label>
         <div style={{ position:"relative" }}>
@@ -400,12 +408,13 @@ function Step2({ data, setData, errors }) {
         {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
       </Select>
 
-      <Input label={<>Website <span style={{ fontWeight:400, color:C.muted }}>(optional)</span></>}
+      <Input
+        label={<>Website <span style={{ fontWeight:400, color:C.muted }}>(optional)</span></>}
         value={data.website} onChange={e => setData({...data, website:e.target.value})}
         placeholder="https://yourcompany.com"
       />
 
-      <LogoUpload value={data.logo} onChange={f => setData({...data, logo:f})} />
+      <LogoUpload onChange={f => setData({...data, logo:f})} />
 
       <Textarea
         label={<>Company Description <span style={{ fontWeight:400, color:C.muted }}>(optional)</span></>}
@@ -427,11 +436,7 @@ function Step3({ data, setData, errors }) {
         <p style={{ fontSize:"0.86rem", color:C.muted, lineHeight:1.6 }}>Help us surface the right projects for you. The more specific you are, the better your matches.</p>
       </div>
 
-      <MultiSelect
-        label="What are you looking for?"
-        required
-        options={LOOKING_FOR}
-        selected={data.lookingFor}
+      <MultiSelect label="What are you looking for?" required options={LOOKING_FOR} selected={data.lookingFor}
         onChange={s => setData({...data, lookingFor:s})}
         hint="Select all that apply. Students will see these when they review your interest request."
       />
@@ -441,8 +446,7 @@ function Step3({ data, setData, errors }) {
 
       <MultiSelect
         label={<>Preferred Tech Categories <span style={{ fontWeight:400, color:C.muted }}>(optional)</span></>}
-        options={TECH_CATS}
-        selected={data.techCats}
+        options={TECH_CATS} selected={data.techCats}
         onChange={s => setData({...data, techCats:s})}
         hint="Filter project recommendations by technology domain."
       />
@@ -451,8 +455,7 @@ function Step3({ data, setData, errors }) {
 
       <MultiSelect
         label={<>Preferred Project Industries <span style={{ fontWeight:400, color:C.muted }}>(optional)</span></>}
-        options={PREF_INDUSTRIES}
-        selected={data.prefIndustries}
+        options={PREF_INDUSTRIES} selected={data.prefIndustries}
         onChange={s => setData({...data, prefIndustries:s})}
         hint="Narrow your discovery feed to specific industry domains."
       />
@@ -461,8 +464,7 @@ function Step3({ data, setData, errors }) {
 
       <MultiSelect
         label={<>Preferred Universities <span style={{ fontWeight:400, color:C.muted }}>(optional)</span></>}
-        options={UNIVERSITIES}
-        selected={data.prefUniversities}
+        options={UNIVERSITIES} selected={data.prefUniversities}
         onChange={s => setData({...data, prefUniversities:s})}
         hint="Leave blank to browse projects from all universities."
       />
@@ -486,13 +488,7 @@ function Step4({ data, setData, errors }) {
 
       <DocUpload value={data.docFile} onChange={f => setData({...data, docFile:f})} error={errors.docFile} />
 
-      {/* Warning banner */}
-      <div style={{
-        display:"flex", gap:14, alignItems:"flex-start",
-        background:C.amberPale, border:`1.5px solid #fde68a`,
-        borderLeft:`4px solid ${C.amber}`,
-        borderRadius:10, padding:"14px 16px", marginTop:8,
-      }}>
+      <div style={{ display:"flex", gap:14, alignItems:"flex-start", background:C.amberPale, border:`1.5px solid #fde68a`, borderLeft:`4px solid ${C.amber}`, borderRadius:10, padding:"14px 16px", marginTop:8 }}>
         <span style={{ fontSize:"1.1rem", flexShrink:0, marginTop:1 }}>⚠️</span>
         <div>
           <p style={{ fontSize:"0.82rem", fontWeight:700, color:"#92400e", marginBottom:4 }}>Account Pending Review</p>
@@ -502,7 +498,6 @@ function Step4({ data, setData, errors }) {
         </div>
       </div>
 
-      {/* What happens next */}
       <div style={{ marginTop:20, background:C.blueTint, border:`1px solid ${C.bluePale}`, borderRadius:10, padding:"16px 18px" }}>
         <p style={{ fontSize:"0.78rem", fontWeight:700, color:C.blue, marginBottom:10 }}>What happens after you submit?</p>
         {[
@@ -520,32 +515,24 @@ function Step4({ data, setData, errors }) {
   );
 }
 
-/* ─── Success Screen ─── */
-function SuccessScreen({ companyName }) {
+function SuccessScreen({ companyName, onSwitchToLogin }) {
   return (
     <div style={{ textAlign:"center", padding:"20px 0 10px", animation:"fadeUp 0.5s ease both" }}>
-      <div style={{
-        width:72, height:72, borderRadius:"50%", background:C.amberPale,
-        border:`2px solid ${C.amber}`, display:"flex", alignItems:"center",
-        justifyContent:"center", fontSize:"2rem", margin:"0 auto 20px",
-        boxShadow:`0 0 0 8px ${C.amber}18`,
-      }}>⏳</div>
+      <div style={{ width:72, height:72, borderRadius:"50%", background:C.amberPale, border:`2px solid ${C.amber}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"2rem", margin:"0 auto 20px", boxShadow:`0 0 0 8px ${C.amber}18` }}>⏳</div>
       <h2 style={{ fontSize:"1.55rem", fontWeight:800, color:C.ink, marginBottom:10, letterSpacing:"-0.025em" }}>Application submitted!</h2>
-      <p style={{ fontSize:"0.88rem", color:C.muted, lineHeight:1.7, marginBottom:8, maxWidth:380, margin:"0 auto 16px" }}>
+      <p style={{ fontSize:"0.88rem", color:C.muted, lineHeight:1.7, maxWidth:380, margin:"0 auto 16px" }}>
         <strong style={{ color:C.text }}>{companyName}</strong> is now under review. You can already explore student projects while we verify your documents.
       </p>
-      <div style={{ display:"inline-block", background:C.amberPale, border:`1.5px solid #fde68a`, borderRadius:10, padding:"12px 20px", margin:"0 auto 24px" }}>
+      <div style={{ display:"inline-block", background:C.amberPale, border:`1.5px solid #fde68a`, borderRadius:10, padding:"12px 20px", marginBottom:24 }}>
         <p style={{ fontSize:"0.8rem", color:"#92400e", fontWeight:600 }}>🕐 Verification usually takes 1–2 business days</p>
       </div>
       <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap" }}>
-        <button style={{ background:C.blue, color:"#fff", border:"none", borderRadius:9, padding:"13px 28px", fontSize:"0.92rem", fontWeight:700, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all 0.18s" }}
+        <button
+          onClick={() => onSwitchToLogin && onSwitchToLogin()}
+          style={{ background:C.blue, color:"#fff", border:"none", borderRadius:9, padding:"13px 28px", fontSize:"0.92rem", fontWeight:700, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all 0.18s" }}
           onMouseEnter={e => e.currentTarget.style.background=C.blueMid}
           onMouseLeave={e => e.currentTarget.style.background=C.blue}
-        >Browse Projects →</button>
-        <button style={{ background:"transparent", color:C.blue, border:`1.5px solid ${C.border2}`, borderRadius:9, padding:"13px 28px", fontSize:"0.92rem", fontWeight:700, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all 0.18s" }}
-          onMouseEnter={e => { e.currentTarget.style.background=C.blueTint; e.currentTarget.style.borderColor=C.blue; }}
-          onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor=C.border2; }}
-        >Go to Dashboard</button>
+        >Sign In to Your Account →</button>
       </div>
     </div>
   );
@@ -566,7 +553,7 @@ function validateStep(step, data) {
     }
     if (!data.password)                              errs.password = "Password is required";
     else if (data.password.length < 8)               errs.password = "At least 8 characters required";
-    if (!data.confirmPassword)                        errs.confirmPassword = "Please confirm your password";
+    if (!data.confirmPassword)                       errs.confirmPassword = "Please confirm your password";
     else if (data.password !== data.confirmPassword)  errs.confirmPassword = "Passwords don't match";
     if (!data.terms) errs.terms = "You must agree to the Terms of Service";
   }
@@ -588,20 +575,16 @@ function validateStep(step, data) {
 /* ═══════════════════════════════════════════
    MAIN COMPONENT
 ═══════════════════════════════════════════ */
-export default function CompanyOnboarding({ onBack }) {
-  const [step, setStep]     = useState(0);
-  const [errors, setErrors] = useState({});
-  const [done, setDone]     = useState(false);
+export default function CompanyOnboarding({ onBack, onSwitchToLogin }) {
+  const [step, setStep]             = useState(0);
+  const [errors, setErrors]         = useState({});
+  const [done, setDone]             = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const [data, setData] = useState({
-    // Step 1
     companyName:"", email:"", password:"", confirmPassword:"", terms:false,
-    // Step 2
     industry:"", size:"", city:"", website:"", logo:null, description:"",
-    // Step 3
     lookingFor:[], techCats:[], prefIndustries:[], prefUniversities:[],
-    // Step 4
     docType:"", docFile:null,
   });
 
@@ -619,60 +602,52 @@ export default function CompanyOnboarding({ onBack }) {
   const back = () => { setErrors({}); setStep(s => s - 1); };
 
   const handleSubmit = async () => {
-  const errs = validateStep(3, data);
-  if (Object.keys(errs).length) { setErrors(errs); return; }
-  
-  setSubmitting(true);
-  try {
-    const formData = new FormData();
+    const errs = validateStep(3, data);
+    if (Object.keys(errs).length) { setErrors(errs); return; }
 
-    // Required
-    formData.append('company_name',          data.companyName);
-    formData.append('email',                 data.email);
-    formData.append('password',              data.password);
-    formData.append('industry',              data.industry);
-    formData.append('company_size',          data.size);
-    formData.append('city',                  data.city);
-    formData.append('looking_for',           data.lookingFor.join(', '));
-    formData.append('verification_doc_type', data.docType);
-    formData.append('docFile',               data.docFile);
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('company_name',          data.companyName);
+      formData.append('email',                 data.email);
+      formData.append('password',              data.password);
+      formData.append('industry',              data.industry);
+      formData.append('company_size',          data.size);
+      formData.append('city',                  data.city);
+      formData.append('looking_for',           data.lookingFor.join(', '));
+      formData.append('verification_doc_type', data.docType);
+      formData.append('docFile',               data.docFile);
+      if (data.website)                formData.append('website',                 data.website);
+      if (data.description)            formData.append('description',             data.description);
+      if (data.logo)                   formData.append('logo',                    data.logo);
+      if (data.techCats.length)        formData.append('preferred_tech',          data.techCats.join(', '));
+      if (data.prefIndustries.length)  formData.append('preferred_industry',      data.prefIndustries.join(', '));
+      if (data.prefUniversities.length)formData.append('preferred_universities',  data.prefUniversities.join(', '));
 
-    // Optional
-    if (data.website)               formData.append('website',                 data.website);
-    if (data.description)           formData.append('description',             data.description);
-    if (data.logo)                  formData.append('logo',                    data.logo);
-    if (data.techCats.length)       formData.append('preferred_tech',          data.techCats.join(', '));
-    if (data.prefIndustries.length) formData.append('preferred_industry',      data.prefIndustries.join(', '));
-    if (data.prefUniversities.length) formData.append('preferred_universities', data.prefUniversities.join(', '));
-
-    await registerCompany(formData);
-    setDone(true);
-
-  } catch (err) {
-    const msg = err.response?.data?.message || 'Something went wrong. Try again.';
-    if (msg.includes('already registered')) {
-      setStep(0);
-      setErrors({ email: 'This email is already registered.' });
-    } else if (msg.includes('work email')) {
-      setStep(0);
-      setErrors({ email: msg });
-    } else {
-      setErrors({ general: msg });
+      await registerCompany(formData);
+      setDone(true);
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Something went wrong. Try again.';
+      if (msg.includes('already registered')) {
+        setStep(0);
+        setErrors({ email: 'This email is already registered.' });
+      } else if (msg.includes('work email')) {
+        setStep(0);
+        setErrors({ email: msg });
+      } else {
+        setErrors({ general: msg });
+      }
+    } finally {
+      setSubmitting(false);
     }
-  } finally {
-    setSubmitting(false);
-  }
-};
+  };
 
-
-  /* ─── Left panel content per step ─── */
   const panels = [
     { icon:"🏢", title:"Built for serious companies", body:"Projex.pk is invitation-and-verification based. Only vetted companies can contact students — keeping your talent pipeline clean and trustworthy." },
     { icon:"🎯", title:"Get matched instantly", body:"A complete company profile gets 3× more project responses. Students choose who they talk to — make your profile count." },
     { icon:"🔍", title:"Precision discovery", body:"Set your interests once and let our matching engine surface relevant final-year projects from Pakistan's top universities — daily." },
     { icon:"🛡️", title:"Why we verify companies", body:"Student IP is protected on this platform. Verification ensures that only legitimate businesses gain full platform access. It keeps everyone safe." },
   ];
-
   const p = panels[Math.min(step, panels.length-1)];
 
   return (
@@ -686,18 +661,12 @@ export default function CompanyOnboarding({ onBack }) {
           <div style={{ position:"absolute", bottom:-60, left:-40, width:220, height:220, borderRadius:"50%", background:"rgba(163,207,62,0.06)", pointerEvents:"none" }} />
           <div style={{ position:"absolute", inset:0, backgroundImage:`radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)`, backgroundSize:"22px 22px", pointerEvents:"none" }} />
 
-          {/* Logo */}
-          <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }} style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none", marginBottom:56, position:"relative", zIndex:1 }}>
-            <div style={{ width:32, height:32, background:"rgba(255,255,255,0.08)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
-              <div style={{ position:"absolute", bottom:0, right:0, width:12, height:12, background:C.green, borderRadius:"4px 0 0 0" }} />
-              <span style={{ fontSize:"0.7rem", fontWeight:800, color:"#fff", zIndex:1 }}>Px</span>
-            </div>
-            <span style={{ fontSize:"1.1rem", fontWeight:800, color:"#fff", letterSpacing:"-0.4px" }}>
-              Projex<span style={{ color:C.green }}>.pk</span>
-            </span>
+          <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
+            style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none", marginBottom:56, position:"relative", zIndex:1 }}
+          >
+            <img src={logo} alt="Projex.pk" style={{ height:36, width:"auto", objectFit:"contain" }} />
           </a>
 
-          {/* Panel card */}
           <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center", position:"relative", zIndex:1 }}>
             <div key={step} style={{ animation:"fadeIn 0.4s ease both" }}>
               <div style={{ fontSize:"2.8rem", marginBottom:16 }}>{p.icon}</div>
@@ -705,14 +674,12 @@ export default function CompanyOnboarding({ onBack }) {
               <p style={{ fontSize:"0.86rem", color:"rgba(255,255,255,0.48)", lineHeight:1.75 }}>{p.body}</p>
             </div>
 
-            {/* step dots */}
             <div style={{ display:"flex", gap:6, marginTop:40 }}>
               {STEPS.map((_,i) => (
                 <div key={i} style={{ width: i===step?20:6, height:6, borderRadius:3, background: i===step?C.green:i<step?"rgba(163,207,62,0.35)":"rgba(255,255,255,0.15)", transition:"all 0.3s" }} />
               ))}
             </div>
 
-            {/* Trust badges */}
             <div style={{ marginTop:36, display:"flex", flexDirection:"column", gap:8 }}>
               {["🔒 All data encrypted in transit","✅ Verified companies only","🏛️ Trusted by 6 Karachi universities"].map(t => (
                 <div key={t} style={{ fontSize:"0.74rem", color:"rgba(255,255,255,0.3)", display:"flex", alignItems:"center", gap:8 }}>{t}</div>
@@ -721,10 +688,12 @@ export default function CompanyOnboarding({ onBack }) {
           </div>
 
           <p style={{ fontSize:"0.74rem", color:"rgba(255,255,255,0.2)", position:"relative", zIndex:1, marginTop:32 }}>
-            <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }} style={{ color:"rgba(255,255,255,0.3)", fontWeight:500, textDecoration:"none" }}>← Back to home</a>
+            <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
+              style={{ color:"rgba(255,255,255,0.3)", fontWeight:500, textDecoration:"none" }}>← Back to home</a>
             {"  ·  "}
             Already registered?{" "}
-            <a href="#" style={{ color:C.green, fontWeight:600, textDecoration:"none" }}>Sign in</a>
+            <a href="#" onClick={e => { e.preventDefault(); onSwitchToLogin && onSwitchToLogin(); }}
+              style={{ color:C.green, fontWeight:600, textDecoration:"none" }}>Sign in</a>
           </p>
         </div>
 
@@ -735,30 +704,19 @@ export default function CompanyOnboarding({ onBack }) {
 
             <div style={{ background:C.white, borderRadius:16, padding:"36px 36px", border:`1px solid ${C.border}`, boxShadow:"0 2px 12px rgba(3,62,102,0.06)" }}>
               {done
-                ? <SuccessScreen companyName={data.companyName} />
+                ? <SuccessScreen companyName={data.companyName} onSwitchToLogin={onSwitchToLogin} />
                 : <>
-                    {step === 0 && <Step1 data={data} setData={setData} errors={errors} />}
+                    {step === 0 && <Step1 data={data} setData={setData} errors={errors} onSwitchToLogin={onSwitchToLogin} />}
                     {step === 1 && <Step2 data={data} setData={setData} errors={errors} />}
                     {step === 2 && <Step3 data={data} setData={setData} errors={errors} />}
                     {step === 3 && <Step4 data={data} setData={setData} errors={errors} />}
 
-                    {/* General Error */}
                     {errors.general && (
-                      <div style={{
-                        background: '#fef2f2',
-                        border: '1px solid #fecaca',
-                        borderRadius: 8,
-                        padding: '10px 14px',
-                        marginBottom: 16,
-                        fontSize: '0.82rem',
-                        color: '#dc2626',
-                        fontWeight: 600
-                        }}>
-                          ⚠ {errors.general}
-                          </div>
-                        )}
+                      <div style={{ background:"#fef2f2", border:"1px solid #fecaca", borderRadius:8, padding:"10px 14px", marginBottom:16, fontSize:"0.82rem", color:"#dc2626", fontWeight:600 }}>
+                        ⚠ {errors.general}
+                      </div>
+                    )}
 
-                    {/* Navigation */}
                     <div style={{ display:"flex", gap:12, marginTop:28, paddingTop:24, borderTop:`1px solid ${C.border}` }}>
                       {step > 0 && (
                         <button type="button" onClick={back}
@@ -785,7 +743,8 @@ export default function CompanyOnboarding({ onBack }) {
             {step === 0 && !done && (
               <p style={{ textAlign:"center", fontSize:"0.78rem", color:C.muted, marginTop:20 }}>
                 Already have an account?{" "}
-                <a href="#" style={{ color:C.blue, fontWeight:700, textDecoration:"none" }}>Sign in here</a>
+                <a href="#" onClick={e => { e.preventDefault(); onSwitchToLogin && onSwitchToLogin(); }}
+                  style={{ color:C.blue, fontWeight:700, textDecoration:"none" }}>Sign in here</a>
               </p>
             )}
           </div>

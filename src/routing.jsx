@@ -32,7 +32,7 @@ function Router() {
           onBack={() => navigate("landing")}
           onSwitchToRegister={() => navigate("student")}
           onForgotPassword={() => navigate("forgot-password")}
-          onSuccess={() => navigate("student-dashboard")}  // ← login success → dashboard
+          onSuccess={() => navigate("student-dashboard")}
         />
       );
 
@@ -45,7 +45,11 @@ function Router() {
       );
 
     case "company":
-      return <CompanyOnboarding navigate={navigate} />;
+      return (
+        <CompanyOnboarding
+          onBack={() => navigate("landing")}   // ← was: navigate={navigate} (wrong prop name)
+        />
+      );
 
     case "student-dashboard":
       return (
