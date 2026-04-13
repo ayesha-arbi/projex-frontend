@@ -8,6 +8,7 @@ import { C } from "../../assets/tokens";
 const NAV_ITEMS = [
   { id:"upload",  Icon:UploadCloud, label:"Upload Project" },
   { id:"profile", Icon:User,        label:"Profile"        },
+   { id: "team",    Icon: User,       label: "Team"           },
 ];
 
 /* ══════════════════════════════════════════

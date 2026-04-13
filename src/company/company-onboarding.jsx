@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { registerCompany } from '../services/api';
+const logo = "./logo.png"
 
 /* ─── FONTS ─── */
 const FontLoader = () => (

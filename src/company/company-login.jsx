@@ -183,7 +183,7 @@ export default function CompanyLogin({ onBack, onSwitchToRegister, onForgotPassw
 
         {/* ── Right Form Panel ── */}
         <div style={{ flex:1, overflowY:"auto", display:"flex", alignItems:"center", justifyContent:"center", padding:"48px 40px" }}>
-          <div style={{ width:"100%", maxWidth:460, animation:"slideIn 0.35s ease both" }}>
+          <div style={{ width:"100%", minWidth:520, animation:"slideIn 0.35s ease both" }}>
 
             {/* Header */}
             <div style={{ marginBottom:32 }}>

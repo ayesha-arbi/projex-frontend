@@ -1,20 +1,28 @@
 import { useState, useEffect } from "react";
 import { Sidebar, TopBar }  from "./Layout";
 import UploadProjectTab     from "./UploadProjectTab";
+import MyProjectTab         from "./MyProjecttab.jsx";
 import ProfileTab           from "./ProfileTab";
+import TeamTab from "./TeamTab";
 import { C }                from "../../assets/tokens";
 
 const TAB_META = {
-  upload:  { title:"Upload Project", subtitle:"Share your work with the world" },
-  profile: { title:"Profile",        subtitle:"Your public student profile"    },
+  upload:     { title: "Upload Project",  subtitle: "Share your work with the world"   },
+  myproject:  { title: "My Project",      subtitle: "Manage your posted project"        },
+  profile:    { title: "Profile",         subtitle: "Your public student profile" },
+  team: { title: "Team", subtitle: "Manage your project team" },
+      
 };
 
 export default function StudentDashboard({ onLogout }) {
-  const [tab,       setTab]       = useState("upload");
+  const [tab,       setTab]       = useState(() => {
+    // Bug 1 Fix: if a project_id already exists in localStorage,
+    // land on "My Project" tab instead of "Upload"
+    return localStorage.getItem("project_id") ? "myproject" : "upload";
+  });
   const [collapsed, setCollapsed] = useState(false);
-  const [sideW,     setSideW]     = useState(220);  // sidebar width when expanded
+  const [sideW,     setSideW]     = useState(220);
 
-  // Listen for drag-resize events from the sidebar handle
   useEffect(() => {
     const handler = (e) => setSideW(e.detail);
     document.addEventListener("sidebar-resize", handler);
@@ -23,6 +31,11 @@ export default function StudentDashboard({ onLogout }) {
 
   const activeWidth = collapsed ? 64 : sideW;
   const meta = TAB_META[tab] || TAB_META.upload;
+
+  // Called by UploadProjectTab after a successful post
+  const handleProjectPosted = (project) => {
+    setTab("myproject");
+  };
 
   return (
     <>
@@ -37,7 +50,7 @@ export default function StudentDashboard({ onLogout }) {
         ::-webkit-scrollbar-thumb { background:${C.border2}; border-radius:3px; }
       `}</style>
 
-      <div style={{ display:"flex", fontFamily:"'Plus Jakarta Sans',sans-serif", minHeight:"100vh", background:C.off }}>
+      <div style={{ display: "flex", fontFamily: "'Plus Jakarta Sans',sans-serif", minHeight: "100vh", background: C.off }}>
 
         <Sidebar
           active={tab}
@@ -46,22 +59,27 @@ export default function StudentDashboard({ onLogout }) {
           collapsed={collapsed}
           onToggle={() => setCollapsed(c => !c)}
           width={sideW}
+          // Pass whether a project exists so Sidebar can show/hide the tab
+          hasProject={!!localStorage.getItem("project_id")}
         />
 
-        {/* Main area — shifts with sidebar width */}
         <div style={{
-          marginLeft:activeWidth,
-          flex:1,
-          display:"flex",
-          flexDirection:"column",
-          minHeight:"100vh",
-          transition:"margin-left 0.25s ease",
-          minWidth:0,
+          marginLeft: activeWidth,
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100vh",
+          transition: "margin-left 0.25s ease",
+          minWidth: 0,
         }}>
           <TopBar title={meta.title} subtitle={meta.subtitle} />
-          <main style={{ flex:1, width:"100%", minWidth:0, overflow:"hidden" }}>
-            {tab === "upload"  && <UploadProjectTab />}
-            {tab === "profile" && <ProfileTab />}
+          <main style={{ flex: 1, width: "100%", minWidth: 0, overflow: "hidden" }}>
+            {tab === "upload"    && (
+              <UploadProjectTab onProjectPosted={handleProjectPosted} />
+            )}
+            {tab === "myproject" && <MyProjectTab />}
+            {tab === "profile"   && <ProfileTab />}
+            {tab === "team" && <TeamTab />}
           </main>
         </div>
 
