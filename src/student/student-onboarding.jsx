@@ -682,7 +682,10 @@ export default function StudentOnboarding({ onBack, onSwitchToLogin, onSuccess }
     };
 
     try {
-      await registerStudent(payload);
+      const res = await registerStudent(payload);
+      // Save token and user data to localStorage after successful registration
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
       // ✅ FIX: was props.onSuccess() — now correctly onSuccess()
       onSuccess && onSuccess();
     } catch (err) {

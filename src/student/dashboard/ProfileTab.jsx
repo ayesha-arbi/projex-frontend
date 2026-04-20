@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Edit2, XCircle, CheckCircle,
   GraduationCap, MapPin, Mail, BookOpen,
@@ -85,6 +85,18 @@ function calcPct(form) {
 export default function ProfileTab() {
   const [editing, setEditing] = useState(false);
   const [saved,   setSaved]   = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Re-read localStorage when tab becomes visible again
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        setRefreshKey(k => k + 1);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, []);
 
   let raw = {};
   try { raw = JSON.parse(localStorage.getItem("user") || "{}"); } catch {}
@@ -101,6 +113,24 @@ export default function ProfileTab() {
     bio:                 raw.bio                 || "",
     skills:              raw.skills              || "",
   });
+
+  // Sync form with localStorage when refreshKey changes (tab switch back)
+  useEffect(() => {
+    let fresh = {};
+    try { fresh = JSON.parse(localStorage.getItem("user") || "{}"); } catch {}
+    setForm({
+      full_name:           fresh.full_name           || "",
+      university_name:     fresh.university_name     || "",
+      degree_program:      fresh.degree_program      || "",
+      major:               fresh.major               || "",
+      current_semester:    String(fresh.current_semester || ""),
+      graduation_semester: fresh.graduation_semester || "",
+      city:                fresh.city                || "",
+      linkedin_url:        fresh.linkedin_url        || "",
+      bio:                 fresh.bio                 || "",
+      skills:              fresh.skills              || "",
+    });
+  }, [refreshKey]);
 
   const set  = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const pct  = calcPct(form);
