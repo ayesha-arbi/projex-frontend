@@ -97,7 +97,10 @@ export default function CompanyLogin({ onBack, onSwitchToRegister, onForgotPassw
 
     setSubmitting(true);
     try {
-      await loginCompany({ email: form.email, password: form.password });
+      const res = await loginCompany({ email: form.email, password: form.password });
+      // Save token + user to localStorage
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
       onSuccess && onSuccess();
     } catch (err) {
       const msg = err.response?.data?.message || "Something went wrong. Try again.";

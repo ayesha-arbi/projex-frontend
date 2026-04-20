@@ -5,6 +5,7 @@ import MyProjectTab         from "./MyProjecttab.jsx";
 import ProfileTab           from "./ProfileTab";
 import TeamTab from "./TeamTab";
 import { C }                from "../../assets/tokens";
+import AccessRequestsManager from "./AccessRequestsManager";
 
 const TAB_META = {
   upload:     { title: "Upload Project",  subtitle: "Share your work with the world"   },

@@ -1,14 +1,17 @@
 import { useState } from "react";
 import {
   UploadCloud, User, Bell, GraduationCap, LogOut,
-  ChevronLeft, ChevronRight, Menu,
+  ChevronLeft, ChevronRight, Menu, Users, KeyRound,
 } from "lucide-react";
 import { C } from "../../assets/tokens";
 
 const NAV_ITEMS = [
   { id:"upload",  Icon:UploadCloud, label:"Upload Project" },
+  { id:"myproject", Icon: KeyRound,  label:"My Project"     },
+  { id:"team",    Icon:Users,       label:"Team"           },
+  { id:"access",  Icon:KeyRound,    label:"Requests"},
   { id:"profile", Icon:User,        label:"Profile"        },
-   { id: "team",    Icon: User,       label: "Team"           },
+  
 ];
 
 /* ══════════════════════════════════════════
