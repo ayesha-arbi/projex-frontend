@@ -48,7 +48,6 @@ const TECH_CATS      = ["AI/ML","Web Development","Mobile Apps","IoT","Blockchai
 const PREF_INDUSTRIES    = [...INDUSTRIES];
 const UNIVERSITIES       = ["FAST-NU","LUMS","NUST","IBA","NED","COMSATS","UET","GIKI","Habib University","Other"];
 const DOC_TYPES          = ["SECP Registration Certificate","NTN Certificate","Company Letterhead"];
-const BLOCKED_DOMAINS    = ["gmail","yahoo","hotmail","outlook","live","icloud","protonmail"];
 
 /* ═══════════════════════════════════════════
    SHARED FIELD COMPONENTS
@@ -306,7 +305,7 @@ function Step1({ data, setData, errors, onSwitchToLogin }) {
         <div style={{ fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:C.green, marginBottom:6 }}>Step 1 of 4</div>
         <h2 style={{ fontSize:"1.5rem", fontWeight:800, color:C.ink, letterSpacing:"-0.025em", marginBottom:6 }}>Create your account</h2>
         <p style={{ fontSize:"0.86rem", color:C.muted, lineHeight:1.6 }}>
-          Start with your company name and a work email address. Personal email providers are not accepted.{" "}
+          Start with your company name and email address.{" "}
           Already registered?{" "}
           <a href="#" onClick={e => { e.preventDefault(); onSwitchToLogin && onSwitchToLogin(); }}
             style={{ color:C.blue, fontWeight:700, textDecoration:"none" }}>Sign in →</a>
@@ -321,7 +320,6 @@ function Step1({ data, setData, errors, onSwitchToLogin }) {
       <Input label="Work Email" required type="email"
         value={data.email} onChange={e => setData({...data, email:e.target.value})}
         placeholder="yourname@company.com"
-        hint="Gmail, Yahoo and personal addresses are not accepted."
         error={errors.email}
       />
 
@@ -546,12 +544,8 @@ function validateStep(step, data) {
   const errs = {};
   if (step === 0) {
     if (!data.companyName.trim()) errs.companyName = "Company name is required";
-    if (!data.email.trim())       errs.email = "Work email is required";
-    else {
-      const domain = data.email.split("@")[1]?.split(".")[0]?.toLowerCase();
-      if (BLOCKED_DOMAINS.includes(domain)) errs.email = "Please use your company work email (no personal providers)";
-      else if (!data.email.includes("@") || !data.email.includes(".")) errs.email = "Enter a valid email address";
-    }
+    if (!data.email.trim()) errs.email = "Email is required";
+    else if (!data.email.includes("@") || !data.email.includes(".")) errs.email = "Enter a valid email address";
     if (!data.password)                              errs.password = "Password is required";
     else if (data.password.length < 8)               errs.password = "At least 8 characters required";
     if (!data.confirmPassword)                       errs.confirmPassword = "Please confirm your password";
