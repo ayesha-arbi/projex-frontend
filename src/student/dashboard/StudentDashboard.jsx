@@ -12,8 +12,10 @@ const TAB_META = {
   myproject:  { title: "My Project",      subtitle: "Manage your posted project"        },
   profile:    { title: "Profile",         subtitle: "Your public student profile" },
   team: { title: "Team", subtitle: "Manage your project team" },
-      
+
 };
+
+const API_BASE = import.meta.env?.VITE_API_URL || "/api";
 
 export default function StudentDashboard({ onLogout }) {
   const [tab,       setTab]       = useState(() => {
@@ -23,6 +25,36 @@ export default function StudentDashboard({ onLogout }) {
   });
   const [collapsed, setCollapsed] = useState(false);
   const [sideW,     setSideW]     = useState(220);
+
+  // Restore project_id from backend if user has a project
+  useEffect(() => {
+    const restoreProjectId = async () => {
+      const existingProjectId = localStorage.getItem("project_id");
+      if (existingProjectId) return; // Already have it, no need to fetch
+
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/projects/my/project`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const projectId = data.project?.project_id || data.project_id;
+          if (projectId) {
+            localStorage.setItem("project_id", projectId);
+            setTab("myproject");
+          }
+        }
+      } catch (err) {
+        // Silently fail - user can still upload a new project
+        console.warn("Could not restore project_id:", err);
+      }
+    };
+
+    restoreProjectId();
+  }, []);
 
   useEffect(() => {
     const handler = (e) => setSideW(e.detail);

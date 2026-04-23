@@ -143,10 +143,10 @@ export default function ProfileTab() {
   };
 
   return (
-    <div style={{ padding:"24px 28px", maxWidth:1100, width:"100%" }}>
+    <div style={{ padding:"32px 48px 48px", width:"100%", boxSizing:"border-box", animation:"fadeUp 0.3s ease both" }}>
 
       {/* ── Page header ── */}
-      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:22 }}>
+      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24 }}>
         <div>
           <h2 style={{ fontSize:"1.1rem", fontWeight:800, color:C.ink, margin:0, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Profile</h2>
           <p style={{ fontSize:"0.78rem", color:C.muted, margin:"3px 0 0" }}>Your public student profile visible to companies</p>

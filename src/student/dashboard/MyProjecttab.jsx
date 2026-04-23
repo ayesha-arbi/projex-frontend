@@ -157,10 +157,10 @@ export default function MyProjectTab() {
   const lookingFor   = project.looking_for   ? project.looking_for.split(",").map(t => t.trim()).filter(Boolean)   : [];
 
   return (
-    <div style={{ padding: "24px 32px", maxWidth: 860, boxSizing: "border-box" }}>
+    <div style={{ padding: "32px 48px 48px", width: "100%", boxSizing: "border-box", animation: "fadeUp 0.3s ease both" }}>
 
       {/* Header card */}
-      <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "22px 24px", marginBottom: 16, boxShadow: "0 2px 12px rgba(3,62,102,0.06)" }}>
+      <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "22px 24px", marginBottom: 20, boxShadow: "0 2px 12px rgba(3,62,102,0.06)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h2 style={{ fontSize: "1.2rem", fontWeight: 800, color: C.ink, margin: "0 0 8px", fontFamily: "'Plus Jakarta Sans',sans-serif", lineHeight: 1.3 }}>

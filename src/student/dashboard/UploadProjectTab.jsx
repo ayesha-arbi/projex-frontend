@@ -284,10 +284,10 @@ export default function UploadProjectTab({ onProjectPosted }) {
   }
 
   return (
-    <div style={{ padding: "24px 32px", width: "100%", boxSizing: "border-box", minWidth: 0 }}>
+    <div style={{ padding: "32px 48px 48px", width: "100%", boxSizing: "border-box", minWidth: 0, animation: "fadeUp 0.3s ease both" }}>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
         <div>
           <h2 style={{ fontSize: "1.1rem", fontWeight: 800, color: C.ink, margin: 0, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>Upload Project</h2>
           <p style={{ fontSize: "0.78rem", color: C.muted, margin: "3px 0 0" }}>Full details stay private — companies only see your teaser until you approve</p>
