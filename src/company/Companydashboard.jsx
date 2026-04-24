@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
+// NOTE: This file goes in src/company/CompanyDashboard.jsx
 import { CompanySidebar, CompanyTopBar } from "./CompanyLayout";
 import BrowseProjectsTab  from "./BrowseProjectsTab";
 import AccessRequestPanel from "./AccessRequestPanel";
 import CompanyProfileTab  from "./CompanyProfileTab";
-import { C } from "../../assets/tokens";
+import { C } from "../assets/tokens";
 
 const TAB_META = {
   browse:   { title: "Browse Projects",  subtitle: "Discover student projects from top universities" },
@@ -60,7 +61,7 @@ export default function CompanyDashboard({ onLogout }) {
         }}>
           <CompanyTopBar title={meta.title} subtitle={meta.subtitle} />
 
-          <main style={{ flex: 1, width: "100%", minWidth: 0, overflow: "hidden" }}>
+          <main style={{ flex: 1, width: "100%", minWidth: 0, overflow: "auto", display: "flex", flexDirection: "column" }}>
             {tab === "browse"   && <BrowseProjectsTab />}
             {tab === "requests" && <AccessRequestPanel />}
             {tab === "profile"  && <CompanyProfileTab />}

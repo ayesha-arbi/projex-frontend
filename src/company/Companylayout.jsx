@@ -4,7 +4,7 @@ import {
   ChevronLeft, ChevronRight,
   FolderOpen, Inbox, User, Building2,
 } from "lucide-react";
-import { C } from "../../assets/tokens";
+import { C } from "../assets/tokens";
 
 const NAV_ITEMS = [
   { id: "browse",   Icon: Search,     label: "Browse Projects" },

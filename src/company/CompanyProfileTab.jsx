@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Building2, MapPin, Globe, Mail, CheckCircle, Clock, Tag, Users, Target } from "lucide-react";
-import { C } from "../../assets/tokens";
+import { C } from "../assets/tokens";
 
 function Section({ icon: Icon, title, accent = C.blue, children }) {
   return (

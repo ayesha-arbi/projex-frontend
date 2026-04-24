@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Send, Clock, CheckCircle, Lock } from "lucide-react";
-import { C } from "../../assets/tokens";
+import { C } from "../assets/tokens";
 
 const API_BASE = import.meta.env?.VITE_API_URL || "/api";
 

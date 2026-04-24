@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Search, RefreshCw, AlertTriangle, GraduationCap, MapPin, Tag, ExternalLink } from "lucide-react";
-import { C } from "../../assets/tokens";
+import { C } from "../assets/tokens";
 import RequestAccessButton from "./RequestAccessButton";
 
 const API_BASE = import.meta.env?.VITE_API_URL || "/api";

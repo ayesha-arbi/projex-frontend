@@ -6,6 +6,7 @@ import Companylogin from "./company/company-login";
 import App from "./landing";
 import ForgotPassword from "./forgotpassword";
 import StudentDashboard from "./student/dashboard/StudentDashboard";
+import CompanyDashboard from "./company/CompanyDashboard";
 
 function Router() {
   // ── Bug 2 Fix: restore session from localStorage on first load ──
@@ -104,19 +105,9 @@ function Router() {
 
     // Placeholder until company dashboard is built
     case "company-dashboard":
-      return (
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", minHeight:"100vh", fontFamily:"'Plus Jakarta Sans',sans-serif", color:"#033e66", background:"#f7f8fa" }}>
-          <div style={{ textAlign:"center" }}>
-            <p style={{ fontSize:"2.5rem", marginBottom:8 }}>🏢</p>
-            <h2 style={{ fontWeight:800, marginBottom:8 }}>Company dashboard coming soon</h2>
-            <p style={{ color:"#5a7491", marginBottom:20 }}>You're logged in. Full dashboard is on its way.</p>
-            <button onClick={handleLogout}
-              style={{ padding:"10px 24px", background:"#033e66", color:"#fff", border:"none", borderRadius:8, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", fontWeight:700 }}>
-              Logout
-            </button>
-          </div>
-        </div>
-      );
+  return (
+    <CompanyDashboard onLogout={handleLogout} />
+  );
 
     default:
       return <App navigate={navigate} />;

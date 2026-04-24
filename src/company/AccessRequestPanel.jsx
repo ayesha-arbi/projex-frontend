@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Clock, CheckCircle, XCircle, RefreshCw, AlertTriangle, FolderOpen, Filter, University } from "lucide-react";
-import { C } from "../../assets/tokens";
+import { C } from "../assets/tokens";
 
 const API_BASE = import.meta.env?.VITE_API_URL || "/api";
 
