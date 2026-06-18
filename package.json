@@ -5,16 +5,13 @@
   "type": "module",
   "homepage": ":https://github.com/ayesha-arbi/projex-frontend.git",
   "scripts": {
-    "dev": "vite",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "start": "react-scripts start",
-  "build": "react-scripts build",
-  "test": "react-scripts test",
-  "eject": "react-scripts eject",
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview",
+  "lint": "eslint .",
   "predeploy": "npm run build",
-  "deploy": "gh-pages -d build"
-  },
+  "deploy": "gh-pages -d dist"
+},
   "dependencies": {
     "axios": "^1.13.6",
     "lucide-react": "^0.577.0",

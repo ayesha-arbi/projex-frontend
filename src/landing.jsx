@@ -1,665 +1,457 @@
-import { useState, useEffect, useRef } from "react";
-import StudentOnboarding from "./student/student-onboarding.jsx";
-import CompanyOnboarding from "./company/company-onboarding.jsx";
+"use client";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { C } from "./assets/tokens.js";
 
-/* ─── GOOGLE FONTS ─── */
+/* ─── FONTS & GLOBAL STYLES ─── */
 const FontLoader = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
-    @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: #fff; overflow-x: hidden; }
+    
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    
+    /* 3D Tilted Float Animation for Hero */
+    @keyframes floatTilted { 
+      0%, 100% { transform: perspective(1200px) rotateY(-16deg) rotateX(8deg) rotateZ(2deg) translateY(0px); } 
+      50% { transform: perspective(1200px) rotateY(-14deg) rotateX(10deg) rotateZ(1deg) translateY(-12px); } 
+    }
+
+    .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-left { opacity: 0; transform: translateX(-32px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+    .reveal-right { opacity: 0; transform: translateX(32px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .reveal-right.visible { opacity: 1; transform: translateX(0); }
   `}</style>
 );
-<style>{`
-  body {
-    margin: 0;
-    overflow-x: hidden;
-    background: #000;
-  }
-`}</style>
 
-/* ─── BRAND TOKENS ─── */
-const C = {
-  blue:      "#033e66",
-  blueMid:   "#0a5a96",
-  blueLight: "#1a7cc4",
-  bluePale:  "#e8f3fb",
-  blueTint:  "#f0f7fd",
-  green:     "#a3cf3e",
-  greenDark: "#7aaa1c",
-  greenPale: "#f2f9e0",
-  white:     "#ffffff",
-  off:       "#f7f8fa",
-  border:    "#e4e9ef",
-  border2:   "#d0dce8",
-  text:      "#0d1b2a",
-  muted:     "#5a7491",
-  muted2:    "#8fa5bc",
-  ink:       "#071220",
-};
-
-/* ══════════════════════════════════════════
-   CUSTOM CURSOR
-   FIX 1: Date.now in render → moved trail
-   aging into a canvas-based RAF loop so
-   nothing impure runs during React render.
-   Trails are drawn on a 2nd canvas overlay
-   instead of rendered as DOM elements.
-══════════════════════════════════════════ */
-function CustomCursor() {
-  const dotRef        = useRef(null);
-  const ringRef       = useRef(null);
-  const trailCanvasRef= useRef(null);
-  const posRef        = useRef({ x: -100, y: -100 });
-  const ringPos       = useRef({ x: -100, y: -100 });
-  const rafRef        = useRef(null);
-  const isHoverRef    = useRef(false);
-  const isClickRef    = useRef(false);
-  const trailsRef     = useRef([]); // [{x,y,born}] — never in React state
-
-  useEffect(() => {
-    const tc  = trailCanvasRef.current;
-    const tctx= tc.getContext("2d");
-
-    const resize = () => {
-      tc.width  = window.innerWidth;
-      tc.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    const onMove = (e) => {
-      posRef.current = { x: e.clientX, y: e.clientY };
-      trailsRef.current.push({ x: e.clientX, y: e.clientY, born: performance.now() });
-      if (trailsRef.current.length > 24) trailsRef.current.shift();
-    };
-    const onOver = (e) => {
-      if (e.target.closest("a,button,[data-hover]")) isHoverRef.current = true;
-    };
-    const onOut  = () => { isHoverRef.current = false; };
-    const onDown = () => { isClickRef.current = true; };
-    const onUp   = () => { isClickRef.current = false; };
-
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseover", onOver);
-    window.addEventListener("mouseout",  onOut);
-    window.addEventListener("mousedown", onDown);
-    window.addEventListener("mouseup",   onUp);
-
-    const LIFE = 600;
-    const COLORS = [C.green, C.blue, C.blueLight];
-
-    const loop = () => {
-      const now = performance.now();
-
-      /* dot — instant */
-      if (dotRef.current) {
-        dotRef.current.style.transform =
-          `translate(${posRef.current.x - 4}px,${posRef.current.y - 4}px)`;
-      }
-
-      /* ring — lagged */
-      if (ringRef.current) {
-        ringPos.current.x += (posRef.current.x - ringPos.current.x) * 0.12;
-        ringPos.current.y += (posRef.current.y - ringPos.current.y) * 0.12;
-        const s = isHoverRef.current ? 2.2 : isClickRef.current ? 0.8 : 1;
-        ringRef.current.style.transform =
-          `translate(${ringPos.current.x - 20}px,${ringPos.current.y - 20}px) scale(${s})`;
-        ringRef.current.style.borderColor = isHoverRef.current ? C.green : C.blue;
-        ringRef.current.style.background  = isHoverRef.current ? `${C.green}22` : "transparent";
-      }
-
-      /* trails — drawn on canvas, no React state */
-      tctx.clearRect(0, 0, tc.width, tc.height);
-      trailsRef.current = trailsRef.current.filter(p => now - p.born < LIFE);
-      trailsRef.current.forEach((p, i) => {
-        const age     = (now - p.born) / LIFE;          // performance.now() in RAF ✓
-        const opacity = Math.max(0, (1 - age) * 0.55);
-        const radius  = Math.max(0, (1 - age) * 4);
-        tctx.beginPath();
-        tctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-        tctx.fillStyle = COLORS[i % 3];
-        tctx.globalAlpha = opacity;
-        tctx.fill();
-        tctx.globalAlpha = 1;
-      });
-
-      rafRef.current = requestAnimationFrame(loop);
-    };
-    loop();
-
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseover", onOver);
-      window.removeEventListener("mouseout",  onOut);
-      window.removeEventListener("mousedown", onDown);
-      window.removeEventListener("mouseup",   onUp);
-    };
-  }, []);
-
-  return (
-    <>
-      <style>{`
-        * { cursor: none !important; }
-        .cur-dot {
-          position:fixed;top:0;left:0;width:8px;height:8px;
-          background:${C.green};border-radius:50%;
-          pointer-events:none;z-index:99999;
-          box-shadow:0 0 8px ${C.green},0 0 16px ${C.green}66;
-          will-change:transform;
-        }
-        .cur-ring {
-          position:fixed;top:0;left:0;width:40px;height:40px;
-          border:1.5px solid ${C.blue};border-radius:50%;
-          pointer-events:none;z-index:99998;
-          transition:border-color 0.25s,background 0.25s;
-          mix-blend-mode:multiply;will-change:transform;
-        }
-      `}</style>
-      {/* trail canvas — drawn in RAF, never causes re-render */}
-      <canvas ref={trailCanvasRef} style={{
-        position:"fixed",top:0,left:0,
-        width:"100vw",height:"100vh",
-        pointerEvents:"none",zIndex:99997,
-      }} />
-      <div ref={dotRef}  className="cur-dot" />
-      <div ref={ringRef} className="cur-ring" />
-    </>
-  );
-}
-
-/* ══════════════════════════════════════════
-   INTERACTIVE BG CANVAS
-   FIX 2: removed unused (_, i) → just (_)
-══════════════════════════════════════════ */
-function InteractiveBg() {
-  const canvasRef = useRef(null);
-  const mouseRef  = useRef({ x: -1000, y: -1000 });
-  const nodesRef  = useRef([]);
-  const rafRef    = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx    = canvas.getContext("2d");
-    let W = 0, H = 0;
-
-    const resize = () => {
-      W = canvas.width  = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    // FIX 2: (_, i) → (_) — i was unused
-    nodesRef.current = Array.from({ length: 55 }, () => ({
-      x:     Math.random() * window.innerWidth,
-      y:     Math.random() * window.innerHeight,
-      vx:    (Math.random() - 0.5) * 0.35,
-      vy:    (Math.random() - 0.5) * 0.35,
-      r:     Math.random() * 2.5 + 1,
-      alpha: Math.random() * 0.4 + 0.15,
-    }));
-
-    const onMove = (e) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
-    window.addEventListener("mousemove", onMove);
-
-    const draw = () => {
-      ctx.clearRect(0, 0, W, H);
-      const nodes = nodesRef.current;
-      const mouse = mouseRef.current;
-
-      nodes.forEach(n => {
-        const dx   = mouse.x - n.x;
-        const dy   = mouse.y - n.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 220 && dist > 0) {
-          n.vx += (dx / dist) * 0.018;
-          n.vy += (dy / dist) * 0.018;
-        }
-        n.vx *= 0.97; n.vy *= 0.97;
-        n.x  += n.vx;  n.y  += n.vy;
-        if (n.x < 0) n.x = W; if (n.x > W) n.x = 0;
-        if (n.y < 0) n.y = H; if (n.y > H) n.y = 0;
-      });
-
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const dx = nodes[i].x - nodes[j].x;
-          const dy = nodes[i].y - nodes[j].y;
-          const d  = Math.sqrt(dx * dx + dy * dy);
-          if (d < 130) {
-            ctx.beginPath();
-            ctx.moveTo(nodes[i].x, nodes[i].y);
-            ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.strokeStyle = `rgba(3,62,102,${(1 - d / 130) * 0.15})`;
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
-          }
-        }
-        const mdx = nodes[i].x - mouse.x;
-        const mdy = nodes[i].y - mouse.y;
-        const md  = Math.sqrt(mdx * mdx + mdy * mdy);
-        if (md < 180) {
-          ctx.beginPath();
-          ctx.moveTo(nodes[i].x, nodes[i].y);
-          ctx.lineTo(mouse.x, mouse.y);
-          ctx.strokeStyle = `rgba(163,207,62,${(1 - md / 180) * 0.35})`;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }
-      }
-
-      nodes.forEach(n => {
-        const mdx  = n.x - mouse.x;
-        const mdy  = n.y - mouse.y;
-        const md   = Math.sqrt(mdx * mdx + mdy * mdy);
-        const glow = md < 160 ? 1 + (1 - md / 160) * 2 : 1;
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, n.r * glow, 0, Math.PI * 2);
-        ctx.fillStyle = md < 160
-          ? `rgba(163,207,62,${n.alpha + 0.3})`
-          : `rgba(3,62,102,${n.alpha})`;
-        ctx.fill();
-      });
-
-      const grd = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 200);
-      grd.addColorStop(0, "rgba(163,207,62,0.06)");
-      grd.addColorStop(1, "rgba(163,207,62,0)");
-      ctx.fillStyle = grd;
-      ctx.beginPath();
-      ctx.arc(mouse.x, mouse.y, 200, 0, Math.PI * 2);
-      ctx.fill();
-
-      rafRef.current = requestAnimationFrame(draw);
-    };
-    draw();
-
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("mousemove", onMove);
-    };
-  }, []);
-
-  return (
-    <canvas ref={canvasRef} style={{
-      position:"fixed", top:0, left:0,
-      width:"100vw", height:"100vh",
-      pointerEvents:"none", zIndex:0,
-    }} />
-  );
-}
-
-/* ══════════════════════════════════════════
-   SCROLL REVEAL HOOK
-══════════════════════════════════════════ */
-function useReveal() {
+/* ─── SCROLL REVEAL HOOK ─── */
+function useReveal(threshold = 0.12) {
   const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
   useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
-    }, { threshold: 0.1 });
-    if (ref.current) obs.observe(ref.current);
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { el.classList.add("visible"); obs.disconnect(); } },
+      { threshold }
+    );
+    obs.observe(el);
     return () => obs.disconnect();
-  }, []);
-  return [ref, visible];
+  }, [threshold]);
+  return ref;
 }
 
-/* ── Shared tiny components ── */
-const Eyebrow = ({ children }) => (
-  <div style={{ display:"inline-flex", alignItems:"center", gap:8, fontSize:"0.73rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:C.blue, marginBottom:14 }}>
-    <span style={{ width:16, height:2, background:C.green, borderRadius:2, display:"inline-block" }} />
-    {children}
-  </div>
-);
-const SH = ({ children, style: s = {} }) => (
-  <h2 style={{ fontSize:"clamp(2rem,3.2vw,3rem)", fontWeight:800, letterSpacing:"-0.028em", color:C.ink, lineHeight:1.08, marginBottom:14, fontFamily:"'Plus Jakarta Sans',sans-serif", ...s }}>{children}</h2>
-);
-const SSub = ({ children, center = false, style: s = {} }) => (
-  <p style={{ fontSize:"1rem", color:C.muted, maxWidth:500, lineHeight:1.75, fontWeight:400, margin: center ? "0 auto" : undefined, ...s }}>{children}</p>
-);
-const Serif = ({ children }) => (
-  <em style={{ fontFamily:"'Instrument Serif',serif", fontStyle:"italic", fontWeight:400, color:C.blue }}>{children}</em>
-);
-const Divider = () => <div style={{ height:1, background:C.border }} />;
+/* ─── ORIGIN BUTTON ─── */
+function getCoverDiameter(w, h, x, y) {
+  return Math.ceil(2 * Math.max(Math.hypot(x, y), Math.hypot(w - x, y), Math.hypot(x, h - y), Math.hypot(w - x, h - y)));
+}
 
-/* ══════════════════════════════════════════
-   BUTTON
-   FIX 3: ghost variant had duplicate
-   'background' key — fixed by using a single
-   conditional expression for background.
-══════════════════════════════════════════ */
-function Btn({ children, variant = "primary", size = "sm", style: extraStyle = {}, onClick }) {
-  const [hov, setHov] = useState(false);
+function OriginBtn({ children, variant = "primary", size = "default", onClick, style: extra = {} }) {
+  const btnRef = useRef(null);
+  const [hovered, setHovered] = useState(false);
+  const [pressed, setPressed] = useState(false);
+  const [origin, setOrigin] = useState({ x: 0, y: 0 });
+  const [coverSize, setCoverSize] = useState(0);
+  const showFill = hovered || pressed;
 
-  const pad = size === "xl" ? "16px 36px" : size === "lg" ? "14px 28px" : "9px 20px";
-  const fs  = size === "xl" ? "1rem"      : size === "lg" ? "0.95rem"   : "0.875rem";
+  const updateOrigin = useCallback((x, y) => {
+    const node = btnRef.current;
+    if (!node) return;
+    const r = node.getBoundingClientRect();
+    setOrigin({ x, y });
+    setCoverSize(getCoverDiameter(r.width, r.height, x, y));
+  }, []);
+
+  useEffect(() => {
+    const node = btnRef.current;
+    if (!(node && showFill)) return;
+    const measure = () => {
+      const r = node.getBoundingClientRect();
+      setCoverSize(getCoverDiameter(r.width, r.height, origin.x, origin.y));
+    };
+    measure();
+    const obs = new ResizeObserver(measure);
+    obs.observe(node);
+    return () => obs.disconnect();
+  }, [showFill, origin.x, origin.y]);
+
+  const pad = size === "lg" ? "16px 36px" : size === "sm" ? "10px 22px" : "13px 30px";
+  const fs = size === "lg" ? "1rem" : size === "sm" ? "0.82rem" : "0.9rem";
 
   const base = {
-    display:"inline-flex", alignItems:"center", gap:7,
-    borderRadius:8, fontFamily:"'Plus Jakarta Sans',sans-serif",
-    fontWeight:700, cursor:"pointer", textDecoration:"none",
-    transition:"all 0.18s", border:"none", whiteSpace:"nowrap",
-    padding:pad, fontSize:fs,
+    position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center",
+    gap: 8, overflow: "hidden", borderRadius: "50px", cursor: "pointer", border: "none",
+    padding: pad, fontSize: fs, fontFamily: "'Inter', sans-serif", fontWeight: 600,
+    letterSpacing: "-0.01em", transition: "transform 0.15s ease, box-shadow 0.15s ease",
+    transform: pressed ? "scale(0.975)" : "none", userSelect: "none", ...extra,
   };
 
-  // FIX 3: each variant object has exactly one 'background' key
-  const vMap = {
-    primary: {
-      background: hov ? C.blueMid : C.blue,
-      color: "#fff",
-      boxShadow: hov ? "0 8px 20px rgba(3,62,102,0.25)" : "0 1px 3px rgba(3,62,102,0.2)",
-      transform: hov ? "translateY(-1px)" : "none",
-    },
-    ghost: {
-      background: hov ? C.blueTint : "transparent",   // ← single key
-      border: `1.5px solid ${hov ? C.blue : C.border2}`,
-      color: C.blue,
-    },
-    green: {
-      background: hov ? "#b8e047" : C.green,
-      color: C.blue,
-      boxShadow: hov ? "0 8px 20px rgba(163,207,62,0.3)" : "0 1px 3px rgba(163,207,62,0.2)",
-      transform: hov ? "translateY(-1px)" : "none",
-    },
-    outlineWhite: {
-      background: "transparent",
-      border: `1.5px solid rgba(255,255,255,${hov ? "0.4" : "0.2"})`,
-      color: "#fff",
-      transform: hov ? "translateY(-1px)" : "none",
-    },
+  const fillColor = variant === "gold" ? C.navy : variant === "outline" ? C.navy : C.gold;
+  const styles = {
+    primary: { background: C.navy, color: "#fff", boxShadow: showFill ? "0 8px 24px rgba(12,35,64,0.25)" : "0 1px 3px rgba(12,35,64,0.15)" },
+    gold: { background: C.gold, color: "#fff", boxShadow: showFill ? "0 8px 24px rgba(176,141,87,0.35)" : "0 1px 3px rgba(176,141,87,0.2)" },
+    outline: { background: "transparent", color: C.navy, border: `1.5px solid ${C.border}`, boxShadow: "none" },
+    ghost: { background: "transparent", color: C.gold, border: `1.5px solid ${C.gold}22`, boxShadow: "none" },
   };
 
   return (
     <button
-      style={{ ...base, ...vMap[variant], ...extraStyle }}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
+      ref={btnRef}
+      style={{ ...base, ...styles[variant], color: showFill && variant !== "outline" ? "#fff" : styles[variant].color }}
+      onPointerEnter={(e) => { const r = e.currentTarget.getBoundingClientRect(); updateOrigin(e.clientX - r.left, e.clientY - r.top); setHovered(true); }}
+      onPointerLeave={() => { setHovered(false); setPressed(false); }}
+      onPointerDown={(e) => { if (e.button !== 0) return; const r = e.currentTarget.getBoundingClientRect(); updateOrigin(e.clientX - r.left, e.clientY - r.top); setPressed(true); }}
+      onPointerUp={() => setPressed(false)}
       onClick={onClick}
-    >{children}</button>
+    >
+      <span
+        aria-hidden
+        style={{
+          position: "absolute", borderRadius: "50%", background: fillColor,
+          width: coverSize, height: coverSize, left: origin.x, top: origin.y,
+          transform: `translate(-50%, -50%) scale(${showFill && coverSize > 0 ? 1 : 0})`,
+          transition: "transform 0.5s cubic-bezier(0.16,1,0.3,1)",
+          opacity: variant === "outline" ? 0.08 : 0.15, pointerEvents: "none",
+        }}
+      />
+      <span style={{ position: "relative", zIndex: 1, display: "inline-flex", alignItems: "center", gap: 8 }}>
+        {children}
+      </span>
+    </button>
   );
 }
 
-/* ══════════════════════════════════════════
-   NAV
-══════════════════════════════════════════ */
-function Nav({navigate}) {
+/* ─── EYEBROW ─── */
+const Eyebrow = ({ children }) => (
+  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: "0.72rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: C.gold, marginBottom: 16 }}>
+    <span style={{ width: 20, height: 1.5, background: C.gold, display: "inline-block", borderRadius: 2 }} />
+    {children}
+    <span style={{ width: 20, height: 1.5, background: C.gold, display: "inline-block", borderRadius: 2 }} />
+  </div>
+);
+
+/* ─── NAV ─── */
+function Nav({ navigate }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    const h = () => setScrolled(window.scrollY > 10);
+    const h = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", h);
     return () => window.removeEventListener("scroll", h);
   }, []);
   return (
-    <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:900, height:64, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 48px", background:"rgba(255,255,255,0.93)", backdropFilter:"blur(18px)", borderBottom:`1px solid ${C.border}`, boxShadow: scrolled ? "0 2px 20px rgba(3,62,102,0.08)" : "none", transition:"box-shadow 0.3s", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
-      <a href="#" style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none" }}>
-        <div style={{ width:32, height:32, background:C.blue, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
-          <div style={{ position:"absolute", bottom:0, right:0, width:12, height:12, background:C.green, borderRadius:"4px 0 0 0" }} />
-          <span style={{ fontSize:"0.7rem", fontWeight:800, color:"#fff", zIndex:1, letterSpacing:"-0.5px" }}>Px</span>
+    <nav style={{
+      position: "fixed", top: 0, left: 0, right: 0, zIndex: 900, height: 68,
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      padding: "0 48px", fontFamily: "'Inter', sans-serif",
+      background: scrolled ? "rgba(255,255,255,0.96)" : "rgba(255,255,255,0.85)",
+      backdropFilter: "blur(20px)", borderBottom: `1px solid ${scrolled ? C.border : "transparent"}`,
+      transition: "all 0.35s ease",
+    }}>
+      <a href="#" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+        <div style={{ width: 34, height: 34, background: C.navy, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+          <div style={{ position: "absolute", bottom: 0, right: 0, width: 10, height: 10, background: C.gold, borderRadius: "4px 0 0 0" }} />
+          <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#fff", zIndex: 1, letterSpacing: "-0.5px" }}>Px</span>
         </div>
-        <span style={{ fontSize:"1.15rem", fontWeight:800, color:C.blue, letterSpacing:"-0.5px" }}>
-          Projex<span style={{ color:C.green }}>.pk</span>
+        <span style={{ fontSize: "1.15rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.03em", fontFamily: "'Sora', sans-serif" }}>
+          Projex<span style={{ color: C.gold }}>.pk</span>
         </span>
       </a>
-      <ul style={{ display:"flex", gap:32, listStyle:"none", position:"absolute", left:"50%", transform:"translateX(-50%)" }}>
-        {["How It Works","Features","Pricing","Stories"].map(l => (
+      <ul style={{ display: "flex", gap: 36, listStyle: "none", position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
+        {["How It Works", "Features", "Stories"].map(l => (
           <li key={l}>
-            <a href={`#${l.toLowerCase().replace(/\s/g,"")}`}
-              style={{ fontSize:"0.875rem", fontWeight:500, color:C.muted, textDecoration:"none", transition:"color 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.color = C.blue}
+            <a href={`#${l.toLowerCase().replace(/\s/g, "")}`}
+              style={{ fontSize: "0.875rem", fontWeight: 500, color: C.muted, textDecoration: "none", transition: "color 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.color = C.navy}
               onMouseLeave={e => e.currentTarget.style.color = C.muted}
             >{l}</a>
           </li>
         ))}
       </ul>
-      <div style={{ display:"flex", gap:10 }}>
-        <Btn variant="ghost" onClick={() => navigate("company")}>For Companies </Btn>
-        <Btn variant="primary"onClick={() => navigate("student")}>For Students</Btn>
+      <div style={{ display: "flex", gap: 10 }}>
+        <OriginBtn variant="outline" size="sm" onClick={() => navigate("company")}>For Companies</OriginBtn>
+        <OriginBtn variant="primary" size="sm" onClick={() => navigate("student")}>For Students</OriginBtn>
       </div>
     </nav>
   );
 }
 
-/* ══════════════════════════════════════════
-   HERO
-══════════════════════════════════════════ */
-function Hero({navigate}) {
+/* ─── HERO (Left-Aligned + Tilted Image) ─── */
+function Hero({ navigate }) {
   return (
-    <section style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", padding:"120px 48px 80px", position:"relative", overflow:"hidden", background:"#ffffff" }}>
-      <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:C.blueTint, border:`1px solid rgba(3,62,102,0.15)`, borderRadius:100, padding:"6px 16px 6px 8px", fontSize:"0.78rem", fontWeight:600, color:C.blue, marginBottom:28, animation:"fadeUp 0.5s ease both" }}>
-        <span style={{ background:C.green, color:C.blue, fontSize:"0.68rem", fontWeight:800, padding:"2px 8px", borderRadius:100, letterSpacing:"0.04em" }}>BETA</span>
-        Now live in Karachi & Sindh — early access open
-      </div>
-      <h1 style={{ fontSize:"clamp(2.9rem,5.5vw,5.2rem)", fontWeight:800, letterSpacing:"-0.035em", lineHeight:1.06, color:C.ink, marginBottom:24, maxWidth:860, fontFamily:"'Plus Jakarta Sans',sans-serif", animation:"fadeUp 0.55s 0.07s ease both", animationFillMode:"both" }}>
-        Pakistan's projects deserve a{" "}
-        <span style={{ position:"relative", display:"inline-block" }}>
-          <Serif>real</Serif>{" "}audience
-          <span style={{ position:"absolute", bottom:4, left:0, right:0, height:7, background:C.green, borderRadius:3, opacity:0.55, zIndex:-1 }} />
-        </span>
-      </h1>
-      <p style={{ fontSize:"1.1rem", fontWeight:400, color:C.muted, maxWidth:560, margin:"0 auto 44px", lineHeight:1.75, animation:"fadeUp 0.55s 0.14s ease both", animationFillMode:"both" }}>
-        Projex.pk connects final-year university projects with companies seeking fresh ideas, prototypes, and talent — with full intellectual property protection built in.
-      </p>
-      <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap", marginBottom:48, animation:"fadeUp 0.55s 0.21s ease both", animationFillMode:"both" }}>
-        <Btn variant="primary" size="xl" onClick={() => navigate("student")}>🎓 Post My Project — It's Free</Btn>
-        <Btn variant="green"   size="xl"onClick={() => navigate("company")}>🏢 Scout Student Talent</Btn>
-      </div>
-      <div style={{ display:"flex", alignItems:"center", gap:16, justifyContent:"center", animation:"fadeUp 0.55s 0.28s ease both", animationFillMode:"both", marginBottom:64 }}>
-        <div style={{ display:"flex" }}>
-          {[["AH",C.blue],["ZM",C.blueMid],["SF",C.greenDark],["RK",C.blueLight]].map(([init,bg],i) => (
-            <div key={i} style={{ width:32, height:32, borderRadius:"50%", background:bg, border:"2px solid #fff", marginLeft: i===0?0:-8, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.7rem", fontWeight:800, color:"#fff" }}>{init}</div>
-          ))}
+    <section style={{
+      minHeight: "100vh", display: "flex", alignItems: "center",
+      padding: "120px 48px", position: "relative", overflow: "hidden", background: C.white,
+    }}>
+      {/* Background Gradients */}
+      <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(${C.border} 1px, transparent 1px), linear-gradient(90deg, ${C.border} 1px, transparent 1px)`, backgroundSize: "48px 48px", opacity: 0.4, pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "10%", left: "40%", width: 500, height: 500, background: `radial-gradient(circle, ${C.goldPale} 0%, transparent 60%)`, pointerEvents: "none", opacity: 0.6 }} />
+
+      <div style={{ maxWidth: 1300, margin: "0 auto", display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: 64, alignItems: "center", position: "relative", zIndex: 2 }}>
+        
+        {/* Left Side: Copy & CTA */}
+        <div style={{ textAlign: "left" }}>
+          <div style={{ animation: "fadeUp 0.5s ease both", display: "inline-flex", marginBottom: 28 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.cream, border: `1px solid ${C.border}`, borderRadius: 100, padding: "6px 16px 6px 8px", fontSize: "0.78rem", fontWeight: 500, color: C.muted, fontFamily: "'Inter', sans-serif" }}>
+              <span style={{ background: C.gold, color: "#fff", fontSize: "0.66rem", fontWeight: 700, padding: "2px 8px", borderRadius: 100, letterSpacing: "0.06em", fontFamily: "'Inter', sans-serif" }}>BETA</span>
+              Now live in Karachi & Sindh
+            </div>
+          </div>
+
+          <h1 style={{
+            fontSize: "clamp(3rem,4.5vw,4.8rem)", fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1.08,
+            color: C.navy, marginBottom: 24, fontFamily: "'Sora', sans-serif",
+            animation: "fadeUp 0.55s 0.07s ease both",
+          }}>
+            Pakistan's best projects<br />
+            <span style={{ position: "relative", display: "inline-block", marginTop: 8 }}>
+              <span style={{ color: C.gold, fontStyle: "italic" }}>deserve</span> a real audience
+              <span style={{ position: "absolute", bottom: 6, left: 0, right: 0, height: 3, background: C.goldPale, borderRadius: 2, zIndex: -1 }} />
+            </span>
+          </h1>
+
+          <p style={{
+            fontSize: "1.08rem", color: C.muted, maxWidth: 500, margin: "0 0 44px", lineHeight: 1.78,
+            fontFamily: "'Inter', sans-serif", fontWeight: 400,
+            animation: "fadeUp 0.55s 0.14s ease both",
+          }}>
+            Projex.pk connects final-year university projects with companies seeking fresh ideas and talent — with intellectual property protection built in from day one.
+          </p>
+
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 48, animation: "fadeUp 0.55s 0.21s ease both" }}>
+            <OriginBtn variant="primary" size="lg" onClick={() => navigate("student")}>🎓 Post My Project</OriginBtn>
+            <OriginBtn variant="gold" size="lg" onClick={() => navigate("company")}>🏢 Scout Talent</OriginBtn>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 14, animation: "fadeUp 0.55s 0.28s ease both" }}>
+            <div style={{ display: "flex" }}>
+              {[["AH", C.navy], ["ZM", C.navyMid], ["SF", C.gold]].map(([init, bg], i) => (
+                <div key={i} style={{ width: 36, height: 36, borderRadius: "50%", background: bg, border: "2px solid #fff", marginLeft: i === 0 ? 0 : -12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 700, color: "#fff", zIndex: 3 - i }}>{init}</div>
+              ))}
+            </div>
+            <span style={{ fontSize: "0.85rem", color: C.muted, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}>
+              Trusted by <strong style={{ color: C.navy }}>120+ students</strong>
+            </span>
+          </div>
         </div>
-        <span style={{ fontSize:"0.83rem", color:C.muted, fontWeight:500 }}>
-          <strong style={{ color:C.text }}>120+ students</strong> already on the waitlist from NED, FAST & IBA
-        </span>
+
+        {/* Right Side: Tilted Application Image */}
+        <div style={{ perspective: "1200px", position: "relative", animation: "fadeUp 0.8s 0.3s ease both" }}>
+          {/* Tilted Container */}
+          <div style={{ 
+            animation: "floatTilted 7s ease-in-out infinite", 
+            transformStyle: "preserve-3d",
+            boxShadow: "-15px 25px 60px rgba(12,35,64,0.15)",
+            borderRadius: 20, background: C.white
+          }}>
+            <HeroCard />
+          </div>
+          {/* Decorative Elements around image */}
+          <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, background: `radial-gradient(circle, ${C.goldPale} 0%, transparent 70%)`, zIndex: -1 }} />
+        </div>
+
       </div>
-      <PreviewWindow />
     </section>
   );
 }
 
-function PreviewWindow() {
-  const [ref, vis] = useReveal();
+function HeroCard() {
   return (
-    <div ref={ref} style={{ maxWidth:800, width:"100%", opacity: vis?1:0, transform: vis?"translateY(0)":"translateY(28px)", transition:"all 0.7s 0.1s ease", position:"relative", zIndex:2 }}>
-      <div style={{ background:C.white, border:`1px solid ${C.border2}`, borderRadius:16, boxShadow:"0 4px 6px rgba(3,62,102,0.04),0 24px 64px rgba(3,62,102,0.13)", overflow:"hidden" }}>
-        <div style={{ background:C.off, borderBottom:`1px solid ${C.border}`, padding:"12px 18px", display:"flex", alignItems:"center", gap:12 }}>
-          <div style={{ display:"flex", gap:6 }}>
-            {["#ff5f57","#febc2e","#28c840"].map(c => <div key={c} style={{ width:10, height:10, borderRadius:"50%", background:c }} />)}
-          </div>
-          <div style={{ flex:1, background:C.white, border:`1px solid ${C.border}`, borderRadius:6, padding:"5px 12px", fontSize:"0.76rem", color:C.muted, display:"flex", alignItems:"center", gap:6 }}>
-            <span style={{ color:C.green }}>🔒</span> projex.pk/discover
-          </div>
+    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 20, overflow: "hidden" }}>
+      <div style={{ background: C.cream, borderBottom: `1px solid ${C.border}`, padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", gap: 6 }}>
+          {["#ff5f57", "#febc2e", "#28c840"].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />)}
         </div>
-        <div style={{ padding:24, display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
-          <ProjCard title="AI-Powered Crop Disease Detection" status="New" statusColor={C.greenPale} statusTextColor={C.greenDark} tags={["AI/ML","AgriTech","IoT"]} meta="📍 NED University · Final Year 2025 · Team of 3" blurText="Custom YOLOv8 model on 12,000 labeled images from Punjab farms. Edge inference on Raspberry Pi 4 with LoRaWAN integration for real-time district..." actionLabel="TechFarm PK sent a request" />
-          <ProjCard title="Smart Water Quality Monitor — LoRaWAN" status="3 Requests" statusColor="#fff3e0" statusTextColor="#c05600" tags={["IoT","CleanTech","Embedded"]} meta="📍 FAST-NU KHI · Electrical Engg · Team of 4" blurText="STM32L476 microcontrollers with custom PCBs. FreeRTOS firmware, 18-month battery life on 3× AA cells. Chirpstack v4 with 12-bit ADC sensor..." actionLabel="AquaTech Solutions is interested" actionColor={C.greenPale} actionTextColor="#15803d" />
+        <div style={{ flex: 1, background: C.white, border: `1px solid ${C.border}`, borderRadius: 6, padding: "6px 12px", fontSize: "0.75rem", color: C.muted, display: "flex", alignItems: "center", gap: 6, fontFamily: "'Inter', sans-serif" }}>
+          <span style={{ color: C.gold }}>🔒</span> projex.pk/discover
         </div>
+      </div>
+      <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
+        <MiniProjCard
+          title="AI-Powered Crop Disease Detection"
+          status="New" statusBg="#EAF3DE" statusColor="#3B6D11"
+          tags={["AI/ML", "AgriTech", "IoT"]}
+          meta="📍 NED University · FYP 2025 · Team of 3"
+          action="TechFarm PK sent a request"
+        />
+        <MiniProjCard
+          title="Smart Water Quality Monitor via LoRaWAN"
+          status="3 Requests" statusBg={C.goldPale} statusColor="#7A5C25"
+          tags={["IoT", "CleanTech", "Embedded"]}
+          meta="📍 FAST-NU KHI · Electrical Engg · Team of 4"
+          action="AquaTech Solutions is interested"
+          actionGold
+        />
       </div>
     </div>
   );
 }
 
-function ProjCard({ title, status, statusColor, statusTextColor, tags, meta, blurText, actionLabel, actionColor, actionTextColor }) {
-  const [hov, setHov] = useState(false);
+function MiniProjCard({ title, status, statusBg, statusColor, tags, meta, action, actionGold }) {
   return (
-    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ background:C.off, border:`1px solid ${hov?C.blueLight:C.border}`, borderRadius:12, padding:18, textAlign:"left", transition:"all 0.2s", boxShadow: hov?"0 4px 16px rgba(3,62,102,0.09)":"none" }}>
-      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:10, gap:8 }}>
-        <div style={{ fontSize:"0.87rem", fontWeight:700, color:C.text, lineHeight:1.3 }}>{title}</div>
-        <div style={{ fontSize:"0.65rem", fontWeight:700, padding:"3px 8px", borderRadius:5, background:statusColor, color:statusTextColor, border:`1px solid ${statusTextColor}33`, whiteSpace:"nowrap", flexShrink:0, letterSpacing:"0.03em" }}>{status}</div>
+    <div style={{ background: C.cream, border: `1px solid ${C.border}`, borderRadius: 12, padding: 18, textAlign: "left", fontFamily: "'Inter', sans-serif" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, gap: 8 }}>
+        <div style={{ fontSize: "0.86rem", fontWeight: 600, color: C.navy, lineHeight: 1.3 }}>{title}</div>
+        <div style={{ fontSize: "0.64rem", fontWeight: 700, padding: "3px 8px", borderRadius: 5, background: statusBg, color: statusColor, whiteSpace: "nowrap", flexShrink: 0 }}>{status}</div>
       </div>
-      <div style={{ display:"flex", gap:5, flexWrap:"wrap", marginBottom:10 }}>
-        {tags.map(t => <span key={t} style={{ fontSize:"0.67rem", fontWeight:600, padding:"2px 8px", borderRadius:4, background:C.blueTint, color:C.blueMid, border:`1px solid rgba(3,62,102,0.12)` }}>{t}</span>)}
+      <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 10 }}>
+        {tags.map(t => <span key={t} style={{ fontSize: "0.66rem", fontWeight: 600, padding: "2px 8px", borderRadius: 4, background: C.white, color: C.navyMid, border: `1px solid ${C.border}` }}>{t}</span>)}
       </div>
-      <div style={{ fontSize:"0.74rem", color:C.muted, marginBottom:12 }}>{meta}</div>
-      <div style={{ background:C.white, border:`1px dashed ${C.border2}`, borderRadius:7, padding:10, position:"relative", overflow:"hidden", marginBottom:10 }}>
-        <div style={{ fontSize:"0.72rem", lineHeight:1.5, color:"transparent", textShadow:"0 0 5px rgba(90,116,145,0.5)", filter:"blur(3px)", userSelect:"none" }}>{blurText}</div>
-        <div style={{ position:"absolute", inset:0, background:"rgba(255,255,255,0.7)", backdropFilter:"blur(1px)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-          <div style={{ background:C.blue, color:"#fff", fontSize:"0.68rem", fontWeight:700, padding:"4px 12px", borderRadius:5, display:"flex", alignItems:"center", gap:5, letterSpacing:"0.04em" }}>🔒 Approve to unlock</div>
+      <div style={{ fontSize: "0.73rem", color: C.muted, marginBottom: 12 }}>{meta}</div>
+      <div style={{ background: C.white, border: `1px dashed ${C.border}`, borderRadius: 7, padding: 10, position: "relative", overflow: "hidden", marginBottom: 10 }}>
+        <div style={{ fontSize: "0.71rem", lineHeight: 1.5, color: "transparent", textShadow: "0 0 5px rgba(95,94,90,0.5)", filter: "blur(3px)", userSelect: "none" }}>Custom YOLOv8 model trained on 12,000 labeled images from Punjab farms. Edge inference on Raspberry Pi 4...</div>
+        <div style={{ position: "absolute", inset: 0, background: "rgba(244,241,236,0.8)", backdropFilter: "blur(1px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ background: C.navy, color: "#fff", fontSize: "0.67rem", fontWeight: 700, padding: "4px 12px", borderRadius: 5 }}>🔒 Approve to unlock</div>
         </div>
       </div>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background: actionColor||C.blueTint, borderRadius:6, padding:"7px 10px", fontSize:"0.72rem", color: actionTextColor||C.blue, fontWeight:500 }}>
-        <span>{actionLabel}</span>
-        <button style={{ background: actionTextColor?"#22c55e":C.blue, color:"#fff", border:"none", borderRadius:4, padding:"4px 10px", fontSize:"0.68rem", fontWeight:700, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
-          {actionColor ? "●" : "Review →"}
-        </button>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: actionGold ? C.goldPale : "#EBF0F8", borderRadius: 6, padding: "7px 10px", fontSize: "0.71rem", color: actionGold ? "#7A5C25" : C.navyMid, fontWeight: 500 }}>
+        <span>{action}</span>
+        <button style={{ background: actionGold ? C.gold : C.navy, color: "#fff", border: "none", borderRadius: 4, padding: "4px 10px", fontSize: "0.67rem", fontWeight: 700, cursor: "pointer" }}>Review →</button>
       </div>
     </div>
   );
 }
 
-/* ──────────────────── LOGOS ──────────────────── */
-function LogosBar() {
-  const logos = [
-    "/logos/ned.png",
-    "/logos/fast.png",
-    "/logos/iba.png",
-    "/logos/ku.png",
-    "/logos/habib.png",
-    "/logos/dawood.png"
+/* ─── UNIVERSITY LOGOS MARQUEE ─── */
+function LogoMarquee() {
+  const universities = [
+    { id: "ned", name: "NED University" },
+    { id: "fast", name: "FAST-NU" },
+    { id: "iba", name: "IBA Karachi" },
+    { id: "ku", name: "Karachi University" },
+    { id: "habib", name: "Habib University" },
+    { id: "dawood", name: "Dawood University" },
+    { id: "paf", name: "PAF-KIET" },
+    { id: "ssuet", name: "Sir Syed University" }
   ];
 
   return (
-    <div style={{
-      borderTop:`1px solid ${C.border}`,
-      borderBottom:`1px solid ${C.border}`,
-      background:C.white,
-      overflow:"hidden",
-      padding:"14px 0",
-      position:"relative"
-    }}>
-      
-      <style>{`
-        @keyframes ticker {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-      `}</style>
-
-      <div style={{
-        display:"flex",
-        height: "15vh",
-        width: "100vw",
-        animation:"ticker 10s linear infinite",
-        gap:60,
-        alignItems:"center"
-      }}>
-        {[...logos, ...logos].map((logo, i) => (
-          <img
-            key={i}
-            src={logo}
-            style={{
-              height:48,
-              transition:"all 0.3s"
-            }}
-            onMouseEnter={e=>{
-              e.currentTarget.style.opacity=1
-              e.currentTarget.style.filter="grayscale(0%)"
-            }}
-            onMouseLeave={e=>{
-              e.currentTarget.style.opacity=0.7
-              e.currentTarget.style.filter="grayscale(100%)"
-            }}
-          />
+    <section style={{ padding: "40px 0", background: C.white, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, overflow: "hidden" }}>
+      <p style={{ textAlign: "center", fontSize: "0.75rem", color: C.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 30, fontFamily: "'Inter', sans-serif" }}>
+        Scout talent from top institutions
+      </p>
+      <div style={{ display: "flex", gap: 80, padding: "0 40px", animation: "ticker 35s linear infinite", width: "max-content", alignItems: "center" }}>
+        {[...universities, ...universities, ...universities].map((uni, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 140 }}>
+            <img 
+              src={`/logos/${uni.id}.png`} 
+              alt={uni.name} 
+              style={{ maxHeight: 50, maxWidth: "100%", objectFit: "contain", filter: "grayscale(100%) opacity(0.5)", transition: "all 0.3s ease", cursor: "pointer" }}
+              onMouseEnter={e => e.currentTarget.style.filter = "grayscale(0%) opacity(1)"}
+              onMouseLeave={e => e.currentTarget.style.filter = "grayscale(100%) opacity(0.5)"}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextSibling.style.display = 'block';
+              }} 
+            />
+            <span style={{ display: 'none', fontSize: "0.85rem", fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'Inter', sans-serif" }}>
+              {uni.name}
+            </span>
+          </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 
-/* ══════════════════════════════════════════
-   STATS
-   FIX 4: removed unused 'delay' prop from
-   StatCell — transitionDelay kept via inline
-   style passed directly from parent.
-══════════════════════════════════════════ */
+/* ─── STATS ─── */
 function Stats() {
-  const [ref, vis] = useReveal();
+  const ref = useReveal();
   const data = [
-    { n:"500K+", l:"Annual university graduates across Pakistan" },
-    { n:"262+",  l:"HEC-recognized universities in the country" },
-    { n:"$3.8B", l:"Pakistan IT exports in FY25 — and growing" },
-    { n:"31%",   l:"Graduate unemployment — driven by skill mismatches" },
+    { n: "500K+", l: "Annual university graduates across Pakistan" },
+    { n: "262+", l: "HEC-recognized universities nationwide" },
+    { n: "$3.8B", l: "Pakistan IT exports in FY25 and growing" },
+    { n: "31%", l: "Graduate unemployment — a solvable problem" },
   ];
   return (
-    <div ref={ref} style={{ padding:"96px 48px", textAlign:"center", background:"transparent" }}>
-      <div style={{ maxWidth:1160, margin:"0 auto" }}>
+    <section style={{ padding: "100px 48px", textAlign: "center", background: C.cream }}>
+      <div ref={ref} className="reveal" style={{ maxWidth: 1160, margin: "0 auto" }}>
         <Eyebrow>The Opportunity</Eyebrow>
-        <SH>Pakistan's innovation gap is <Serif>real</Serif></SH>
-        <SSub center>Half a million graduates every year. A booming IT sector. And virtually no bridge between them.</SSub>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:1, background:C.border, border:`1px solid ${C.border}`, borderRadius:16, overflow:"hidden", marginTop:56 }}>
-          {data.map(({ n, l }, i) => (
-            // FIX 4: pass delay via style directly instead of as a prop
-            <StatCell key={i} num={n} label={l} vis={vis} delayMs={i * 80} />
-          ))}
+        <h2 style={{ fontSize: "clamp(2rem,3.2vw,2.8rem)", fontWeight: 700, letterSpacing: "-0.03em", color: C.navy, marginBottom: 16, fontFamily: "'Sora', sans-serif", lineHeight: 1.1 }}>
+          Pakistan's innovation gap is{" "}
+          <em style={{ fontStyle: "italic", color: C.gold, fontFamily: "'Sora', sans-serif" }}>real</em>
+        </h2>
+        <p style={{ fontSize: "1rem", color: C.muted, maxWidth: 480, margin: "0 auto 56px", lineHeight: 1.75, fontFamily: "'Inter', sans-serif" }}>
+          Half a million graduates every year. A booming IT sector. And virtually no bridge between them.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1, background: C.border, borderRadius: 16, overflow: "hidden", border: `1px solid ${C.border}` }}>
+          {data.map(({ n, l }, i) => <StatCell key={i} num={n} label={l} />)}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-// FIX 4: 'delay' param removed → replaced with 'delayMs' used in transitionDelay
-function StatCell({ num, label, vis, delayMs }) {
+function StatCell({ num, label }) {
   const [hov, setHov] = useState(false);
   return (
     <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ background: hov?C.blueTint:C.white, padding:"36px 32px", transition:"all 0.2s", opacity: vis?1:0, transform: vis?"translateY(0)":"translateY(20px)", transitionDelay:`${delayMs}ms` }}>
-      <div style={{ fontSize:"2.6rem", fontWeight:800, letterSpacing:"-0.04em", lineHeight:1, color:C.blue, marginBottom:8 }}>{num}</div>
-      <div style={{ fontSize:"0.82rem", color:C.muted, lineHeight:1.5, fontWeight:500 }}>{label}</div>
+      style={{ background: hov ? C.cream : C.white, padding: "40px 32px", transition: "all 0.25s ease", cursor: "default" }}>
+      <div style={{ fontSize: "2.8rem", fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1, color: hov ? C.gold : C.navy, marginBottom: 10, fontFamily: "'Sora', sans-serif", transition: "color 0.25s" }}>{num}</div>
+      <div style={{ fontSize: "0.82rem", color: C.muted, lineHeight: 1.55, fontFamily: "'Inter', sans-serif" }}>{label}</div>
     </div>
   );
 }
 
-/* ──────────────────── HOW IT WORKS ──────────────────── */
+/* ─── HOW IT WORKS ─── */
 function HowItWorks() {
-  const [ref, vis] = useReveal();
+  const titleRef = useReveal();
+  const leftRef = useReveal();
+  const rightRef = useReveal();
   const steps = {
     student: [
-      ["Verify & Register","Sign up with your .edu.pk university email. Your institution is verified instantly for credibility on the platform."],
-      ["Form Your Team","Invite teammates by username. Build cross-disciplinary teams of up to 5 members and co-own the submission together."],
-      ["Post a Protected Teaser","Only your title, one-line summary, tech tags, and university appear publicly. Full implementation stays hidden until you choose."],
-      ["Review Interest Requests","Companies send formal requests with their verified profile. You choose to Approve, Decline, or request an NDA first."],
-      ["Connect & Collaborate","Chat directly with approved companies. Land collaborations, internships, funding, or full project adoption deals."],
+      ["Verify & Register", "Sign up with your .edu.pk university email. Your institution is verified instantly."],
+      ["Form Your Team", "Invite teammates by username. Build cross-disciplinary teams of up to 5 members."],
+      ["Post a Protected Teaser", "Only title, one-liner, and tech tags appear publicly. Technical details stay locked."],
+      ["Review Interest Requests", "Companies send formal requests with their verified profile. You decide who gets access."],
     ],
     company: [
-      ["Create a Business Profile","Register with your NTN or business email. Specify your sector, size, and the types of innovation or talent you need."],
-      ["Browse with a Daily Limit","Free-tier accounts browse up to 20–30 project teasers per day. Paid plans unlock higher limits and advanced filters."],
-      ["Send an Interest Request","Found something promising? Send a formal Interest Request — your full company profile is shared with the student's team."],
-      ["Access Full Project Details","If the student approves your request, you unlock the complete submission — reports, demo videos, code repos, prototypes."],
-      ["Engage, Fund, or Hire","Use built-in NDA templates and in-platform messaging to formalize — R&D adoption, equity deals, or direct hiring."],
+      ["Create a Business Profile", "Register with NTN or business email. Specify sector, size, and innovation needs."],
+      ["Browse Project Teasers", "Scan high-level overviews of final year projects tailored to your industry filters."],
+      ["Send an Interest Request", "Found something promising? Send a formal request — your profile is shared with the team."],
+      ["Access Full Details", "Once approved, unlock the complete submission, reports, demos, and code repositories."],
     ],
   };
   return (
-    <div id="howitworks" style={{ background:C.off, borderTop:`1px solid ${C.border}`, borderBottom:`1px solid ${C.border}` }}>
-      <div ref={ref} style={{ maxWidth:1160, margin:"0 auto", padding:"96px 48px", opacity: vis?1:0, transform: vis?"translateY(0)":"translateY(28px)", transition:"all 0.65s ease" }}>
-        <Eyebrow>Platform Workflow</Eyebrow>
-        <SH>Two sides. One <Serif>trusted</Serif> exchange.</SH>
-        <SSub>Students keep control. Companies get access. Everyone wins through consent.</SSub>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:64, marginTop:56 }}>
-          <StepsCol role="Student" color={C.blue}      steps={steps.student} />
-          <StepsCol role="Company" color={C.greenDark} steps={steps.company} />
+    <section id="howitworks" style={{ background: C.white, borderTop: `1px solid ${C.border}` }}>
+      <div style={{ maxWidth: 1160, margin: "0 auto", padding: "100px 48px" }}>
+        <div ref={titleRef} className="reveal" style={{ marginBottom: 56 }}>
+          <Eyebrow>Platform Workflow</Eyebrow>
+          <h2 style={{ fontSize: "clamp(2rem,3vw,2.7rem)", fontWeight: 700, letterSpacing: "-0.03em", color: C.navy, fontFamily: "'Sora', sans-serif", lineHeight: 1.1 }}>
+            Two sides. One <em style={{ fontStyle: "italic", color: C.gold }}>trusted</em> exchange.
+          </h2>
+          <p style={{ fontSize: "1rem", color: C.muted, maxWidth: 460, marginTop: 12, lineHeight: 1.75, fontFamily: "'Inter', sans-serif" }}>Students keep control. Companies get access. Everyone wins through consent.</p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64 }}>
+          <div ref={leftRef} className="reveal-left">
+            <StepsCol role="Student" color={C.navy} steps={steps.student} />
+          </div>
+          <div ref={rightRef} className="reveal-right">
+            <StepsCol role="Company" color={C.gold} steps={steps.company} />
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
+
 function StepsCol({ role, color, steps }) {
   return (
     <div>
-      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:28, paddingBottom:18, borderBottom:`2px solid ${C.border}` }}>
-        <span style={{ background:color, color: color===C.greenDark?C.blue:"#fff", fontSize:"0.7rem", fontWeight:800, textTransform:"uppercase", letterSpacing:"0.1em", padding:"4px 12px", borderRadius:5 }}>{role}</span>
-        <span style={{ fontSize:"1rem", fontWeight:700, color:C.text }}>For {role}s</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28, paddingBottom: 20, borderBottom: `1.5px solid ${C.border}` }}>
+        <span style={{ background: color, color: "#fff", fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 12px", borderRadius: 5, fontFamily: "'Inter', sans-serif" }}>{role}</span>
+        <span style={{ fontSize: "1rem", fontWeight: 600, color: C.navy, fontFamily: "'Inter', sans-serif" }}>For {role}s</span>
       </div>
-      {steps.map(([h,p],i) => (
-        <div key={i} style={{ display:"flex", gap:16, marginBottom:24 }}>
-          <div style={{ width:32, height:32, borderRadius:8, flexShrink:0, background: color===C.greenDark?C.greenPale:C.blueTint, border:`1.5px solid ${color===C.greenDark?"rgba(163,207,62,0.35)":"rgba(3,62,102,0.2)"}`, color:color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.8rem", fontWeight:800, marginTop:2 }}>{i+1}</div>
+      {steps.map(([h, p], i) => (
+        <div key={i} style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+          <div style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, background: C.cream, border: `1.5px solid ${C.border}`, color: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.78rem", fontWeight: 700, marginTop: 2, fontFamily: "'Sora', sans-serif" }}>{i + 1}</div>
           <div>
-            <h4 style={{ fontSize:"0.92rem", fontWeight:700, color:C.text, marginBottom:4 }}>{h}</h4>
-            <p style={{ fontSize:"0.84rem", color:C.muted, lineHeight:1.65 }}>{p}</p>
+            <h4 style={{ fontSize: "0.9rem", fontWeight: 600, color: C.navy, marginBottom: 4, fontFamily: "'Inter', sans-serif" }}>{h}</h4>
+            <p style={{ fontSize: "0.83rem", color: C.muted, lineHeight: 1.65, fontFamily: "'Inter', sans-serif" }}>{p}</p>
           </div>
         </div>
       ))}
@@ -667,324 +459,348 @@ function StepsCol({ role, color, steps }) {
   );
 }
 
-/* ──────────────────── IP SECTION ──────────────────── */
+/* ─── IP SECTION ─── */
 function IPSection() {
-  const [ref, vis] = useReveal();
+  const leftRef = useReveal();
+  const rightRef = useReveal();
   return (
-    <div style={{ padding:"96px 48px", background:"transparent" }}>
-      <div ref={ref} style={{ maxWidth:1160, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:72, alignItems:"center", opacity: vis?1:0, transform: vis?"translateY(0)":"translateY(28px)", transition:"all 0.65s ease" }}>
-        <div>
-          <Eyebrow>Intellectual Property Protection</Eyebrow>
-          <SH style={{ fontSize:"clamp(1.9rem,2.8vw,2.6rem)" }}>Your idea stays yours — until you say <Serif>otherwise.</Serif></SH>
-          <SSub style={{ marginTop:14 }}>Unlike open project portals, Projex.pk runs on a consent-first model. Companies never see technical details without your explicit approval.</SSub>
-          <div style={{ display:"flex", flexDirection:"column", gap:14, marginTop:32 }}>
+    <section style={{ padding: "100px 48px", background: C.cream, borderTop: `1px solid ${C.border}` }}>
+      <div style={{ maxWidth: 1160, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }}>
+        <div ref={leftRef} className="reveal-left">
+          <Eyebrow>Intellectual Property</Eyebrow>
+          <h2 style={{ fontSize: "clamp(1.9rem,2.7vw,2.5rem)", fontWeight: 700, letterSpacing: "-0.03em", color: C.navy, fontFamily: "'Sora', sans-serif", lineHeight: 1.12, marginBottom: 16 }}>
+            Your idea stays yours —<br />until you say <em style={{ color: C.gold, fontStyle: "italic" }}>otherwise.</em>
+          </h2>
+          <p style={{ fontSize: "0.97rem", color: C.muted, lineHeight: 1.75, marginBottom: 32, fontFamily: "'Inter', sans-serif" }}>
+            Unlike open project portals, Projex.pk runs on a consent-first model. Companies never see technical details without your explicit approval.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {[
-              ["🔒","Teaser-Only Public View","Companies only see your pitch hook — title, one-liner, tags. Full implementation stays locked until you choose to share it."],
-              ["📋","NDA Templates Built In","Download Pakistan-compliant NDA agreements before any disclosure. Legal scaffolding, included at no extra cost."],
-              ["📊","Access Logs & Watermarking","Every view of your approved project is tracked. Documents carry watermarks tied to the specific company that accessed them."],
-            ].map(([icon,h,p]) => <IPFeat key={h} icon={icon} title={h} desc={p} />)}
+              ["🔒", "Teaser-Only Public View", "Companies only see your pitch hook — title, one-liner, tags. Full implementation stays locked."],
+              ["📋", "NDA Templates Built In", "Download Pakistan-compliant NDA agreements before any disclosure. Legal scaffolding included."],
+              ["📊", "Access Logs & Triggers", "Every view of your approved project is tracked directly to a verified company profile."],
+            ].map(([icon, h, p]) => <IPFeat key={h} icon={icon} title={h} desc={p} />)}
           </div>
         </div>
-        <IPCard />
+        <div ref={rightRef} className="reveal-right">
+          <IPCard />
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
+
 function IPFeat({ icon, title, desc }) {
   const [hov, setHov] = useState(false);
   return (
     <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ display:"flex", alignItems:"flex-start", gap:14, padding:18, borderRadius:10, border:`1px solid ${hov?C.blueLight:C.border}`, background: hov?C.blueTint:C.white, transition:"all 0.2s", boxShadow: hov?"0 4px 16px rgba(3,62,102,0.08)":"none" }}>
-      <div style={{ width:38, height:38, borderRadius:9, background:C.blue, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1rem", flexShrink:0 }}>{icon}</div>
+      style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: 18, borderRadius: 12, border: `1px solid ${hov ? C.gold : C.border}`, background: hov ? C.white : "transparent", transition: "all 0.2s", cursor: "default" }}>
+      <div style={{ width: 38, height: 38, borderRadius: 10, background: C.navy, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem", flexShrink: 0 }}>{icon}</div>
       <div>
-        <h4 style={{ fontSize:"0.88rem", fontWeight:700, color:C.text, marginBottom:3 }}>{title}</h4>
-        <p style={{ fontSize:"0.81rem", color:C.muted, lineHeight:1.6 }}>{desc}</p>
+        <h4 style={{ fontSize: "0.88rem", fontWeight: 600, color: C.navy, marginBottom: 3, fontFamily: "'Inter', sans-serif" }}>{title}</h4>
+        <p style={{ fontSize: "0.81rem", color: C.muted, lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>{desc}</p>
       </div>
     </div>
   );
 }
+
 function IPCard() {
   return (
-    <div style={{ background:C.white, border:`1px solid ${C.border2}`, borderRadius:16, overflow:"hidden", boxShadow:"0 4px 6px rgba(3,62,102,0.04),0 16px 40px rgba(3,62,102,0.09)" }}>
-      <div style={{ background:C.blue, padding:"16px 22px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <span style={{ fontSize:"0.78rem", color:"rgba(255,255,255,0.55)", fontWeight:500 }}>Company View — Before Approval</span>
-        <strong style={{ fontSize:"0.82rem", color:"#fff" }}>projex.pk/discover</strong>
+    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 18, overflow: "hidden", boxShadow: "0 10px 40px rgba(12,35,64,0.06)" }}>
+      <div style={{ background: C.navy, padding: "16px 22px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontSize: "0.76rem", color: "rgba(255,255,255,0.5)", fontWeight: 500, fontFamily: "'Inter', sans-serif" }}>Company View — Before Approval</span>
+        <strong style={{ fontSize: "0.8rem", color: "#fff", fontFamily: "'Inter', sans-serif" }}>projex.pk/discover</strong>
       </div>
-      <div style={{ padding:22 }}>
-        <div style={{ fontSize:"0.97rem", fontWeight:800, color:C.text, marginBottom:8 }}>Smart Water Quality Monitoring System</div>
-        <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:10 }}>
-          {["IoT","Embedded Systems","CleanTech"].map(t => <span key={t} style={{ background:C.blueTint, color:C.blueMid, fontSize:"0.69rem", fontWeight:700, padding:"3px 9px", borderRadius:4, border:`1px solid rgba(3,62,102,0.12)` }}>{t}</span>)}
+      <div style={{ padding: 22, fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ fontSize: "0.97rem", fontWeight: 600, color: C.navy, marginBottom: 10 }}>Smart Water Quality Monitoring System</div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+          {["IoT", "Embedded Systems", "CleanTech"].map(t => <span key={t} style={{ background: C.cream, color: C.navyMid, fontSize: "0.68rem", fontWeight: 600, padding: "3px 9px", borderRadius: 4, border: `1px solid ${C.border}` }}>{t}</span>)}
         </div>
-        <div style={{ fontSize:"0.77rem", color:C.muted, marginBottom:12 }}>📍 NED University · Electrical Engineering · Class of 2025 · Team of 4</div>
-        <div style={{ fontSize:"0.83rem", color:C.muted, lineHeight:1.65, marginBottom:14 }}>A low-cost IoT sensor array monitoring pH, turbidity, and dissolved oxygen in real time via LoRaWAN.</div>
-        <div style={{ background:C.off, border:`1px dashed ${C.border2}`, borderRadius:8, padding:14, position:"relative", overflow:"hidden", marginBottom:14 }}>
-          <div style={{ fontSize:"0.78rem", lineHeight:1.55, color:"transparent", textShadow:"0 0 6px rgba(90,116,145,0.45)", filter:"blur(3.5px)", userSelect:"none" }}>
-            STM32L476 microcontrollers, custom 4-layer PCBs. FreeRTOS 10.5 with power-optimised sleep achieving 18-month battery. Chirpstack v4 LoRaWAN with custom payload decoders...
-          </div>
-          <div style={{ position:"absolute", inset:0, background:"rgba(247,248,250,0.72)", backdropFilter:"blur(1.5px)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <div style={{ background:C.blue, color:"#fff", fontSize:"0.7rem", fontWeight:700, padding:"6px 14px", borderRadius:6, display:"flex", alignItems:"center", gap:6 }}>🔒 Send Interest Request to Proceed</div>
+        <div style={{ fontSize: "0.77rem", color: C.muted, marginBottom: 14 }}>📍 NED University · Electrical Engg · Class of 2025</div>
+        <div style={{ background: C.cream, border: `1px dashed ${C.border}`, borderRadius: 8, padding: 14, position: "relative", overflow: "hidden", marginBottom: 14 }}>
+          <div style={{ fontSize: "0.77rem", lineHeight: 1.55, color: "transparent", textShadow: "0 0 6px rgba(95,94,90,0.5)", filter: "blur(3.5px)", userSelect: "none" }}>STM32L476 microcontrollers, custom 4-layer PCBs. FreeRTOS 10.5 with power-optimised sleep achieving 18-month battery...</div>
+          <div style={{ position: "absolute", inset: 0, background: "rgba(244,241,236,0.8)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ background: C.navy, color: "#fff", fontSize: "0.69rem", fontWeight: 700, padding: "6px 14px", borderRadius: 6 }}>🔒 Send Interest Request to Proceed</div>
           </div>
         </div>
-        <div style={{ background:C.greenPale, border:`1px solid rgba(163,207,62,0.4)`, borderRadius:8, padding:"11px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:"0.78rem", color:C.greenDark, fontWeight:600 }}>
+        <div style={{ background: C.goldPale, border: `1px solid ${C.gold}44`, borderRadius: 8, padding: "11px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "0.77rem", color: "#7A5C25", fontWeight: 500 }}>
           <span>AquaTech Solutions has expressed interest</span>
-          <button style={{ background:C.green, color:C.blue, border:"none", borderRadius:5, padding:"5px 12px", fontSize:"0.72rem", fontWeight:800, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Send →</button>
+          <button style={{ background: C.gold, color: "#fff", border: "none", borderRadius: 5, padding: "5px 12px", fontSize: "0.71rem", fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>Send →</button>
         </div>
       </div>
     </div>
   );
 }
 
-/* ──────────────────── FEATURES BENTO ──────────────────── */
+/* ─── FEATURES CAROUSEL ─── */
 function Features() {
-  const [ref, vis] = useReveal();
-  const cards = [
-    { n:"01", h:"Protected Teaser Listings",       p:"Only the pitch — never the plan. Companies see just enough to get genuinely interested, never enough to replicate the work.", span:2 },
-    { n:"02", h:"Student Team Formation",           p:"Invite peers by username, build cross-disciplinary teams of up to 5, and co-own submissions together.", span:2 },
-    { n:"03", h:"Daily Browsing Quotas",            p:"Companies have a capped number of teasers per day — ensuring deliberate, quality interest over bulk data harvesting.", span:2 },
-    { n:"04", h:"Formal Interest Requests",         p:"No cold messages. Companies submit structured Interest Requests with their verified profile — students always know who wants access before deciding.", span:3, dark:true },
-    { n:"05", h:"NDA Templates & Secure Messaging", p:"Pakistan-specific NDA templates built in. All communication on-platform post-approval — no personal details exchanged early.", span:3 },
-  ];
-  return (
-    <div id="features" style={{ background:C.off, borderTop:`1px solid ${C.border}`, borderBottom:`1px solid ${C.border}` }}>
-      <div ref={ref} style={{ maxWidth:1160, margin:"0 auto", padding:"96px 48px", opacity: vis?1:0, transform: vis?"translateY(0)":"translateY(28px)", transition:"all 0.65s ease" }}>
-        <Eyebrow>Core Features</Eyebrow>
-        <SH>Everything the platform <Serif>needs to work.</Serif></SH>
-        <SSub>Built for Pakistan's mobile-first, trust-deficit market. Simple, fast, focused on matching quality to quality.</SSub>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:16, marginTop:56 }}>
-          {/* FIX 4 (secondary): delay was passed but unused in BentoCard — removed from call site */}
-          {cards.map((c, i) => <BentoCard key={i} {...c} />)}
-        </div>
-      </div>
-    </div>
-  );
-}
+  const ref = useReveal();
+  const [index, setIndex] = useState(0);
 
-// FIX 4 (secondary): 'delay' removed from destructuring — it was declared but never read
-function BentoCard({ n, h, p, span, dark }) {
-  const [hov, setHov] = useState(false);
-  return (
-    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ gridColumn:`span ${span}`, background: dark?C.blue:C.white, border:`1px solid ${hov&&!dark?C.blueLight:dark?C.blue:C.border}`, borderRadius:14, padding:"28px 26px", position:"relative", overflow:"hidden", transition:"all 0.22s", boxShadow: hov&&!dark?"0 8px 24px rgba(3,62,102,0.09)":"none", transform: hov?"translateY(-2px)":"none" }}>
-      <div style={{ position:"absolute", bottom:0, left:0, width: hov?64:36, height:3, background: dark?"rgba(163,207,62,0.6)":C.green, borderRadius:"0 3px 0 0", transition:"width 0.3s" }} />
-      <span style={{ fontFamily:"'Instrument Serif',serif", fontStyle:"italic", fontSize:"3rem", color: dark?"rgba(255,255,255,0.1)":C.border, lineHeight:1, marginBottom:12, display:"block" }}>{n}</span>
-      <h3 style={{ fontSize:"0.95rem", fontWeight:700, color: dark?"#fff":C.text, marginBottom:8, letterSpacing:"-0.01em", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>{h}</h3>
-      <p style={{ fontSize:"0.83rem", color: dark?"rgba(255,255,255,0.6)":C.muted, lineHeight:1.65 }}>{p}</p>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════
-   PRICING
-   FIX 5: 'btnVariant' was declared in plan
-   objects and destructured in PriceCard but
-   never actually used — removed entirely.
-══════════════════════════════════════════ */
-function Pricing() {
-  const [ref, vis] = useReveal();
-  // FIX 5: removed btnVariant from all plan objects
-  const plans = [
-    {
-      tier:"Student", price:"0", per:"Forever free for students", featured:false,
-      features:[[true,"Post up to 3 projects"],[true,"Form teams up to 5 members"],[true,"Review & approve interest requests"],[true,"In-app messaging post-approval"],[true,"NDA template downloads"],[false,"Featured project placement"]],
-      btnLabel:"Create Free Profile",
-    },
-    {
-      tier:"Company — Growth", price:"15,000", per:"per month", featured:true,
-      features:[[true,"Browse 50 project teasers per day"],[true,"20 interest requests per month"],[true,"Advanced filters — tech, city, university"],[true,"Verified company badge"],[true,"In-app messaging & NDA tools"],[true,"Analytics dashboard"]],
-      btnLabel:"Start Free Trial →",
-    },
-    {
-      tier:"Company — Enterprise", price:"45,000", per:"per month, billed annually", featured:false,
-      features:[[true,"Unlimited daily browsing"],[true,"Unlimited interest requests"],[true,"Priority request badge"],[true,"Dedicated account manager"],[true,"University partnership integrations"],[true,"Full analytics + export reports"]],
-      btnLabel:"Contact Sales",
-    },
-  ];
-  return (
-    <div id="pricing" style={{ padding:"96px 48px", textAlign:"center", background:"transparent" }}>
-      <div ref={ref} style={{ maxWidth:1160, margin:"0 auto", opacity: vis?1:0, transform: vis?"translateY(0)":"translateY(28px)", transition:"all 0.65s ease" }}>
-        <Eyebrow>Pricing</Eyebrow>
-        <SH>Free for students. <Serif>Priced for business.</Serif></SH>
-        <SSub center>Students always post for free. Companies choose a plan that matches how seriously they invest in talent scouting.</SSub>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, marginTop:56 }}>
-          {plans.map((plan, i) => <PriceCard key={i} {...plan} stagger={i*80} vis={vis} />)}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// FIX 5: 'btnVariant' removed from destructuring
-function PriceCard({ tier, price, per, features, btnLabel, featured, stagger, vis }) {
-  const [hov, setHov] = useState(false);
-  return (
-    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ border:`1.5px solid ${featured?C.blue:hov?C.blueLight:C.border}`, borderRadius:16, padding:"36px 28px", background: featured?C.blue:C.white, boxShadow: featured?"0 8px 24px rgba(3,62,102,0.25)":hov?"0 12px 32px rgba(3,62,102,0.1)":"none", transform: hov?"translateY(-4px)":"none", transition:"all 0.22s", position:"relative", opacity: vis?1:0, transitionDelay:`${stagger}ms`, textAlign:"left" }}>
-      {featured && (
-        <div style={{ position:"absolute", top:-12, left:"50%", transform:"translateX(-50%)", background:C.green, color:C.blue, fontSize:"0.68rem", fontWeight:800, padding:"4px 14px", borderRadius:100, letterSpacing:"0.07em", textTransform:"uppercase", whiteSpace:"nowrap", boxShadow:"0 2px 8px rgba(163,207,62,0.4)" }}>Most Popular</div>
-      )}
-      <div style={{ fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color: featured?"rgba(255,255,255,0.5)":C.muted, marginBottom:10 }}>{tier}</div>
-      <div style={{ fontSize:"2.8rem", fontWeight:800, letterSpacing:"-0.04em", lineHeight:1, color: featured?"#fff":C.ink, marginBottom:4 }}>
-        <span style={{ fontSize:"1rem", fontWeight:500, opacity:0.5, verticalAlign:"super", marginRight:2 }}>PKR</span>{price}
-      </div>
-      <div style={{ fontSize:"0.8rem", color: featured?"rgba(255,255,255,0.45)":C.muted, marginBottom:24 }}>{per}</div>
-      <div style={{ height:1, background: featured?"rgba(255,255,255,0.12)":C.border, margin:"20px 0" }} />
-      {features.map(([yes, label], i) => (
-        <div key={i} style={{ display:"flex", gap:10, fontSize:"0.84rem", color: featured?"rgba(255,255,255,0.65)":C.muted, marginBottom:10, alignItems:"flex-start" }}>
-          <span style={{ color: yes?(featured?C.green:C.greenDark):"#d1d5db", fontWeight:700, flexShrink:0, marginTop:1 }}>{yes?"✓":"✗"}</span>
-          {label}
-        </div>
-      ))}
-      <div style={{ marginTop:24 }}>
-        {featured
-          ? <Btn variant="green" style={{ width:"100%", justifyContent:"center" }}>{btnLabel}</Btn>
-          : <button style={{ display:"block", width:"100%", textAlign:"center", padding:"12px", borderRadius:8, fontFamily:"'Plus Jakarta Sans',sans-serif", fontWeight:700, fontSize:"0.88rem", cursor:"pointer", border:`1.5px solid ${C.border2}`, color:C.blue, background:"transparent", transition:"all 0.18s" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor=C.blue; e.currentTarget.style.background=C.blueTint; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor=C.border2; e.currentTarget.style.background="transparent"; }}
-            >{btnLabel}</button>
-        }
-      </div>
-    </div>
-  );
-}
-
-/* ──────────────────── TESTIMONIALS ──────────────────── */
-function Testimonials() {
-  const [ref, vis] = useReveal();
-  const cards = [
-    { init:"AH", bg:C.blue,     name:"Ali Hassan",   role:"CS Final Year · NED University",       text:"We built an AI traffic management prototype for our FYP. Before Projex, it sat in a folder. Within three weeks of posting, two Karachi startups reached out. We're now in active talks." },
-    { init:"SF", bg:C.greenDark,textC:C.blue, name:"Sara Farooqi",  role:"CTO · Karachi-based Fintech Startup",  text:"As a fintech startup, hiring fresh developers is expensive. Projex lets us scout final-year talent and co-develop prototypes before committing to full hires. The gated model means quality over noise." },
-    { init:"ZM", bg:C.blueMid,  name:"Zainab Mirza", role:"Electrical Engg · FAST-NU KHI",         text:"The IP protection model is what won me over. I've always been hesitant to share my work publicly. The fact companies can't see technical details without my approval changes everything." },
-  ];
-  return (
-    <div id="stories" style={{ background:C.off, borderTop:`1px solid ${C.border}`, borderBottom:`1px solid ${C.border}` }}>
-      <div ref={ref} style={{ maxWidth:1160, margin:"0 auto", padding:"96px 48px", opacity: vis?1:0, transform: vis?"translateY(0)":"translateY(28px)", transition:"all 0.65s ease" }}>
-        <Eyebrow>Early Voices</Eyebrow>
-        <SH>Trusted by students and <Serif>companies</Serif> already.</SH>
-        <SSub>What our beta users from Karachi's universities and startups are saying.</SSub>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, marginTop:56 }}>
-          {cards.map((c,i) => <TestiCard key={i} {...c} />)}
-        </div>
-      </div>
-    </div>
-  );
-}
-function TestiCard({ init, bg, textC, name, role, text }) {
-  const [hov, setHov] = useState(false);
-  return (
-    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ border:`1.5px solid ${hov?C.blueLight:C.border}`, borderRadius:14, padding:28, background:C.white, boxShadow: hov?"0 8px 24px rgba(3,62,102,0.08)":"none", transition:"all 0.2s" }}>
-      <div style={{ display:"flex", gap:2, marginBottom:16 }}>
-        {[...Array(5)].map((_,i) => <span key={i} style={{ color:C.green, fontSize:"0.9rem" }}>★</span>)}
-      </div>
-      <p style={{ fontSize:"0.88rem", color:C.muted, lineHeight:1.75, marginBottom:22, fontStyle:"italic" }}>"{text}"</p>
-      <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-        <div style={{ width:38, height:38, borderRadius:"50%", background:bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.8rem", fontWeight:800, color: textC||"#fff", flexShrink:0 }}>{init}</div>
-        <div>
-          <div style={{ fontSize:"0.86rem", fontWeight:700, color:C.text }}>{name}</div>
-          <div style={{ fontSize:"0.76rem", color:C.muted }}>{role}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ──────────────────── FINAL CTA ──────────────────── */
-function FinalCTA({navigate}) {
-  const [ref, vis] = useReveal();
-  return (
-    <div style={{ background:C.blue, position:"relative", overflow:"hidden" }}>
-      <div style={{ position:"absolute", inset:0, backgroundImage:`radial-gradient(circle,rgba(255,255,255,0.06) 1px,transparent 1px)`, backgroundSize:"28px 28px", pointerEvents:"none" }} />
-      <div style={{ position:"absolute", top:-80, right:-80, width:450, height:450, background:"radial-gradient(circle,rgba(163,207,62,0.12),transparent 65%)", pointerEvents:"none" }} />
-      <div ref={ref} style={{ maxWidth:1160, margin:"0 auto", padding:"100px 48px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"center", position:"relative", zIndex:2, opacity: vis?1:0, transform: vis?"translateY(0)":"translateY(28px)", transition:"all 0.65s ease" }}>
-        <div>
-          <h2 style={{ fontSize:"clamp(2.2rem,3.5vw,3.2rem)", fontWeight:800, letterSpacing:"-0.03em", color:"#fff", lineHeight:1.1, marginBottom:18, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
-            Pakistan's talent pipeline starts <Serif>right here.</Serif>
-          </h2>
-          <p style={{ fontSize:"1rem", color:"rgba(255,255,255,0.55)", lineHeight:1.7, marginBottom:32 }}>
-            Join the beta. Be among the first universities and companies to shape how Pakistan bridges the gap between academia and industry — for good.
-          </p>
-          <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
-            <Btn variant="green"        size="lg" onClick={() => navigate("student")}>🎓 Sign Up as Student</Btn>
-            <Btn variant="outlineWhite" size="lg" onClick={() => navigate("company")}>🏢 Sign Up as Company</Btn>
+  const featuresList = [
+    { 
+      title: "Protected Teaser Listings", 
+      desc: "Companies see just enough to get genuinely interested—never enough to replicate the work. Keep your technical advantage completely intact.",
+      visual: (
+        <div style={{ padding: "40px 20px", textAlign: "center" }}>
+          <div style={{ width: 64, height: 64, background: C.goldPale, borderRadius: "50%", margin: "0 auto 20px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.6rem" }}>🔒</div>
+          <div style={{ height: 12, width: "70%", background: C.border, borderRadius: 10, margin: "0 auto 12px" }} />
+          <div style={{ height: 12, width: "50%", background: C.border, borderRadius: 10, margin: "0 auto 30px" }} />
+          <div style={{ background: C.white, border: `1px dashed ${C.gold}`, padding: "16px 20px", borderRadius: 12 }}>
+            <div style={{ fontSize: "0.85rem", color: C.gold, fontWeight: 700 }}>Technical Details Locked</div>
+            <div style={{ fontSize: "0.75rem", color: C.muted, marginTop: 6 }}>Requires explicit student approval</div>
           </div>
         </div>
-        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-          {[
-            ["🎓","I'm a Student","Post your final-year project safely. Get discovered by real companies. Always free."],
-            ["🏢","I'm a Company","Scout innovations from 262+ Pakistani universities. Start your free trial today."],
-            ["🏛️","I Represent a University","Partner with Projex to improve graduate outcomes and industry placement rates."],
-          ].map(([icon,h,p]) => <CTABox key={h} icon={icon} title={h} desc={p} />)}
+      )
+    },
+    { 
+      title: "Student Team Formation", 
+      desc: "Invite peers securely by their verified university username. Build cross-disciplinary teams up to 5 members and co-own submissions.",
+      visual: (
+        <div style={{ padding: "50px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+          <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ width: 50, height: 50, borderRadius: "50%", background: C.navy, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.9rem", border: "3px solid #fff", boxShadow: "0 4px 10px rgba(0,0,0,0.1)", zIndex: 3 }}>AH</div>
+            <div style={{ width: 50, height: 50, borderRadius: "50%", background: C.navyMid, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.9rem", border: "3px solid #fff", boxShadow: "0 4px 10px rgba(0,0,0,0.1)", marginLeft: -20, zIndex: 2 }}>SF</div>
+            <div style={{ width: 50, height: 50, borderRadius: "50%", background: C.gold, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.9rem", border: "3px solid #fff", boxShadow: "0 4px 10px rgba(0,0,0,0.1)", marginLeft: -20, zIndex: 1 }}>+2</div>
+          </div>
+          <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 20px", fontSize: "0.8rem", color: C.navy, fontWeight: 600 }}>Team 'AeroTech NED' Formed</div>
+        </div>
+      )
+    },
+    { 
+      title: "Formal Interest Requests", 
+      desc: "No cold spam. Companies submit structured requests with their verified profile. You always know exactly who is asking before opening your doors.",
+      visual: (
+        <div style={{ padding: "30px 20px" }}>
+          <div style={{ background: C.white, border: `1px solid ${C.gold}`, borderRadius: 12, padding: 20, boxShadow: "0 8px 24px rgba(176,141,87,0.15)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 36, height: 36, background: C.navy, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "0.8rem" }}>🏢</div>
+              <div>
+                <div style={{ fontSize: "0.85rem", fontWeight: 700, color: C.navy }}>Systems Ltd.</div>
+                <div style={{ fontSize: "0.7rem", color: C.muted }}>Verified IT Firm</div>
+              </div>
+            </div>
+            <p style={{ fontSize: "0.8rem", color: C.muted, lineHeight: 1.5, marginBottom: 16 }}>"We are highly interested in your AI model. We would like to review the technicals for a potential internship."</p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button style={{ flex: 1, padding: "8px", background: C.navy, color: "#fff", border: "none", borderRadius: 6, fontSize: "0.75rem", fontWeight: 600 }}>Approve</button>
+              <button style={{ flex: 1, padding: "8px", background: C.cream, color: C.navy, border: "none", borderRadius: 6, fontSize: "0.75rem", fontWeight: 600 }}>Decline</button>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    { 
+      title: "In-App Secure Messaging", 
+      desc: "Once a request is approved, chat directly on Projex.pk. No need to share personal numbers or emails until a formal agreement is reached.",
+      visual: (
+        <div style={{ padding: "40px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ alignSelf: "flex-start", background: C.white, border: `1px solid ${C.border}`, padding: "12px 16px", borderRadius: "14px 14px 14px 0", fontSize: "0.8rem", color: C.navy, maxWidth: "85%", lineHeight: 1.4 }}>
+            Thanks for approving our request! Is the prototype deployed yet?
+          </div>
+          <div style={{ alignSelf: "flex-end", background: C.gold, padding: "12px 16px", borderRadius: "14px 14px 0 14px", fontSize: "0.8rem", color: "#fff", maxWidth: "85%", lineHeight: 1.4 }}>
+            Yes, we have a working demo on AWS. I'll share the link.
+          </div>
+        </div>
+      )
+    }
+  ];
+
+  const handlePrev = () => setIndex(prev => (prev === 0 ? featuresList.length - 1 : prev - 1));
+  const handleNext = () => setIndex(prev => (prev === featuresList.length - 1 ? 0 : prev + 1));
+
+  return (
+    <section id="features" style={{ background: C.white, borderTop: `1px solid ${C.border}`, padding: "100px 0" }}>
+      <div ref={ref} className="reveal" style={{ maxWidth: 1160, margin: "0 auto", padding: "0 48px" }}>
+        
+        <div style={{ textAlign: "center", marginBottom: 64 }}>
+          <Eyebrow>Core Infrastructure</Eyebrow>
+          <h2 style={{ fontSize: "clamp(2rem,3vw,2.7rem)", fontWeight: 700, letterSpacing: "-0.03em", color: C.navy, fontFamily: "'Sora', sans-serif", lineHeight: 1.1, marginBottom: 12 }}>
+            Built for trust. <em style={{ fontStyle: "italic", color: C.gold }}>Engineered for scale.</em>
+          </h2>
+          <p style={{ fontSize: "1rem", color: C.muted, maxWidth: 520, margin: "0 auto", lineHeight: 1.75, fontFamily: "'Inter', sans-serif" }}>
+            Everything the platform needs to work. Simple, fast, and focused on quality over noise.
+          </p>
+        </div>
+
+        {/* Carousel Container */}
+        <div style={{ position: "relative", background: C.cream, border: `1px solid ${C.border}`, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(12,35,64,0.05)" }}>
+          
+          <div style={{ display: "flex", transition: "transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)", transform: `translateX(-${index * 100}%)` }}>
+            {featuresList.map((feat, i) => (
+              <div key={i} style={{ minWidth: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center" }}>
+                
+                {/* Text Side */}
+                <div style={{ padding: "60px" }}>
+                  <h3 style={{ fontSize: "1.5rem", fontWeight: 700, color: C.navy, marginBottom: 16, fontFamily: "'Sora', sans-serif" }}>{feat.title}</h3>
+                  <p style={{ fontSize: "1rem", color: C.muted, lineHeight: 1.75, fontFamily: "'Inter', sans-serif" }}>{feat.desc}</p>
+                </div>
+                
+                {/* Visual Side */}
+                <div style={{ padding: "40px", background: "rgba(255,255,255,0.4)", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", borderLeft: `1px solid ${C.border}`, position: "relative" }}>
+                   <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at center, ${C.goldPale} 0%, transparent 60%)`, opacity: 0.4 }} />
+                   <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 360 }}>
+                     {feat.visual}
+                   </div>
+                </div>
+
+              </div>
+            ))}
+          </div>
+
+          {/* Carousel Controls */}
+          <div style={{ position: "absolute", bottom: 24, left: 60, display: "flex", alignItems: "center", gap: 20 }}>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={handlePrev} style={{ width: 36, height: 36, borderRadius: "50%", background: C.white, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: C.navy, transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.borderColor = C.gold} onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>←</button>
+              <button onClick={handleNext} style={{ width: 36, height: 36, borderRadius: "50%", background: C.white, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: C.navy, transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.borderColor = C.gold} onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>→</button>
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {featuresList.map((_, i) => (
+                <div key={i} style={{ width: i === index ? 24 : 8, height: 8, borderRadius: 4, background: i === index ? C.gold : C.border, transition: "all 0.3s ease" }} />
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── TESTIMONIALS ─── */
+function Testimonials() {
+  const ref = useReveal();
+  const cards = [
+    { init: "AH", name: "Ali Hassan", role: "CS Final Year · NED University", text: "We built an AI traffic management prototype for our FYP. Before Projex, it sat in a folder. Within three weeks of posting, two Karachi startups reached out. We're now in active talks." },
+    { init: "SF", name: "Sara Farooqi", role: "CTO · Karachi-based Fintech Startup", text: "As a fintech startup, hiring fresh developers is expensive. Projex lets us scout final-year talent and co-develop prototypes before committing to full hires. The gated model means quality over noise." },
+    { init: "ZM", name: "Zainab Mirza", role: "Electrical Engg · FAST-NU KHI", text: "The IP protection model is what won me over. I've always been hesitant to share my work publicly. The fact companies can't see technical details without my approval changes everything." },
+  ];
+  return (
+    <section id="stories" style={{ background: C.cream, borderTop: `1px solid ${C.border}` }}>
+      <div ref={ref} className="reveal" style={{ maxWidth: 1160, margin: "0 auto", padding: "100px 48px" }}>
+        <Eyebrow>Early Voices</Eyebrow>
+        <h2 style={{ fontSize: "clamp(2rem,3vw,2.7rem)", fontWeight: 700, letterSpacing: "-0.03em", color: C.navy, fontFamily: "'Sora', sans-serif", lineHeight: 1.1, marginBottom: 12 }}>
+          Trusted by students and <em style={{ fontStyle: "italic", color: C.gold }}>companies</em> already.
+        </h2>
+        <p style={{ fontSize: "1rem", color: C.muted, maxWidth: 440, lineHeight: 1.75, marginBottom: 56, fontFamily: "'Inter', sans-serif" }}>
+          What our beta users from Karachi's universities and startups are saying.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+          {cards.map((c, i) => <TestiCard key={i} {...c} stagger={i} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TestiCard({ init, name, role, text, stagger }) {
+  const ref = useReveal();
+  const [hov, setHov] = useState(false);
+  return (
+    <div ref={ref} className={`reveal stagger-${stagger + 1}`} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{ border: `1.5px solid ${hov ? C.gold : C.border}`, borderRadius: 16, padding: 32, background: C.white, transition: "all 0.3s ease", transform: hov ? "translateY(-4px)" : "none", boxShadow: hov ? "0 12px 30px rgba(12,35,64,0.06)" : "none", cursor: "default" }}>
+      <div style={{ display: "flex", gap: 2, marginBottom: 20 }}>
+        {[...Array(5)].map((_, i) => <span key={i} style={{ color: C.gold, fontSize: "1rem" }}>★</span>)}
+      </div>
+      <p style={{ fontSize: "0.9rem", color: C.muted, lineHeight: 1.78, marginBottom: 26, fontStyle: "italic", fontFamily: "'Inter', sans-serif" }}>"{text}"</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{ width: 42, height: 42, borderRadius: "50%", background: C.navy, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.85rem", fontWeight: 700, color: "#fff", flexShrink: 0, fontFamily: "'Inter', sans-serif" }}>{init}</div>
+        <div>
+          <div style={{ fontSize: "0.88rem", fontWeight: 700, color: C.navy, fontFamily: "'Inter', sans-serif" }}>{name}</div>
+          <div style={{ fontSize: "0.75rem", color: C.muted, fontFamily: "'Inter', sans-serif", marginTop: 2 }}>{role}</div>
         </div>
       </div>
     </div>
   );
 }
+
+/* ─── FINAL CTA ─── */
+function FinalCTA({ navigate }) {
+  const ref = useReveal();
+  return (
+    <section style={{ background: C.navy, position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", inset: 0, backgroundImage: `radial-gradient(circle, rgba(176,141,87,0.08) 1px, transparent 1px)`, backgroundSize: "28px 28px", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: -100, right: -80, width: 500, height: 500, background: `radial-gradient(circle, ${C.gold}18, transparent 65%)`, pointerEvents: "none" }} />
+
+      <div ref={ref} className="reveal" style={{ maxWidth: 1160, margin: "0 auto", padding: "100px 48px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center", position: "relative", zIndex: 2 }}>
+        <div>
+          <h2 style={{ fontSize: "clamp(2.2rem,3.4vw,3rem)", fontWeight: 700, letterSpacing: "-0.03em", color: "#fff", lineHeight: 1.1, marginBottom: 18, fontFamily: "'Sora', sans-serif" }}>
+            Pakistan's talent pipeline starts <em style={{ color: C.gold, fontStyle: "italic" }}>right here.</em>
+          </h2>
+          <p style={{ fontSize: "1rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.75, marginBottom: 36, fontFamily: "'Inter', sans-serif" }}>
+            Join the beta. Be among the first universities and companies to shape how Pakistan bridges the gap between academia and industry.
+          </p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <OriginBtn variant="gold" size="lg" onClick={() => navigate("student")}>🎓 Sign Up as Student</OriginBtn>
+            <OriginBtn variant="ghost" size="lg" onClick={() => navigate("company")}>🏢 Sign Up as Company</OriginBtn>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {[
+            ["🎓", "I'm a Student", "Post your final-year project safely. Get discovered by real companies. Always free."],
+            ["🏢", "I'm a Company", "Scout innovations from 262+ Pakistani universities. Start finding talent today."],
+            ["🏛️", "I Represent a University", "Partner with Projex to improve graduate outcomes and industry placement rates."],
+          ].map(([icon, h, p]) => <CTABox key={h} icon={icon} title={h} desc={p} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function CTABox({ icon, title, desc }) {
   const [hov, setHov] = useState(false);
   return (
     <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ background:`rgba(255,255,255,${hov?"0.1":"0.06"})`, border:`1px solid rgba(255,255,255,${hov?"0.2":"0.1"})`, borderLeft: hov?`3px solid ${C.green}`:"3px solid transparent", borderRadius:12, padding:"20px 22px", display:"flex", alignItems:"center", gap:18, cursor:"pointer", transform: hov?"translateX(4px)":"none", transition:"all 0.22s" }}>
-      <div style={{ width:44, height:44, borderRadius:10, background:"rgba(255,255,255,0.08)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"1.3rem", flexShrink:0 }}>{icon}</div>
-      <div style={{ flex:1 }}>
-        <h3 style={{ fontSize:"0.95rem", fontWeight:700, color:"#fff", marginBottom:3, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>{title}</h3>
-        <p style={{ fontSize:"0.8rem", color:"rgba(255,255,255,0.45)" }}>{desc}</p>
+      style={{ background: `rgba(255,255,255,${hov ? "0.08" : "0.04"})`, border: `1px solid rgba(255,255,255,${hov ? "0.15" : "0.07"})`, borderLeft: `3px solid ${hov ? C.gold : "transparent"}`, borderRadius: 12, padding: "20px 22px", display: "flex", alignItems: "center", gap: 18, cursor: "pointer", transform: hov ? "translateX(4px)" : "none", transition: "all 0.22s" }}>
+      <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(176,141,87,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", flexShrink: 0 }}>{icon}</div>
+      <div style={{ flex: 1 }}>
+        <h3 style={{ fontSize: "0.93rem", fontWeight: 600, color: "#fff", marginBottom: 3, fontFamily: "'Inter', sans-serif" }}>{title}</h3>
+        <p style={{ fontSize: "0.79rem", color: "rgba(255,255,255,0.4)", fontFamily: "'Inter', sans-serif" }}>{desc}</p>
       </div>
-      <span style={{ color: hov?C.green:"rgba(255,255,255,0.25)", fontSize:"1rem", transition:"all 0.2s", flexShrink:0 }}>→</span>
+      <span style={{ color: hov ? C.gold : "rgba(255,255,255,0.2)", fontSize: "1rem", transition: "all 0.2s", flexShrink: 0 }}>→</span>
     </div>
   );
 }
 
-/* ──────────────────── FOOTER ──────────────────── */
+/* ─── FOOTER ─── */
 function Footer() {
   return (
-    <footer style={{ background:C.ink, padding:"40px 48px", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:20 }}>
-      <div style={{ fontSize:"1.1rem", fontWeight:800, color:"#fff", letterSpacing:"-0.4px", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
-        Projex<span style={{ color:C.green }}>.pk</span>
+    <footer style={{ background: "#071220", padding: "40px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
+      <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff", letterSpacing: "-0.03em", fontFamily: "'Sora', sans-serif" }}>
+        Projex<span style={{ color: C.gold }}>.pk</span>
       </div>
-      <ul style={{ display:"flex", gap:28, listStyle:"none", flexWrap:"wrap" }}>
-        {["How It Works","Features","Pricing","Privacy Policy","Terms of Use","Contact Us"].map(l => (
+      <ul style={{ display: "flex", gap: 28, listStyle: "none", flexWrap: "wrap" }}>
+        {["How It Works", "Features", "Privacy Policy", "Terms of Use", "Contact Us"].map(l => (
           <li key={l}>
-            <a href="#" style={{ fontSize:"0.82rem", color:"rgba(255,255,255,0.35)", textDecoration:"none", transition:"color 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.color="rgba(255,255,255,0.75)"}
-              onMouseLeave={e => e.currentTarget.style.color="rgba(255,255,255,0.35)"}
+            <a href="#" style={{ fontSize: "0.81rem", color: "rgba(255,255,255,0.3)", textDecoration: "none", transition: "color 0.2s", fontFamily: "'Inter', sans-serif" }}
+              onMouseEnter={e => e.currentTarget.style.color = C.gold}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.3)"}
             >{l}</a>
           </li>
         ))}
       </ul>
-      <div style={{ fontSize:"0.78rem", color:"rgba(255,255,255,0.25)" }}>© 2026 Projex.pk · Made in Pakistan 🇵🇰</div>
+      <div style={{ fontSize: "0.77rem", color: "rgba(255,255,255,0.2)", fontFamily: "'Inter', sans-serif" }}>© 2026 Projex.pk · Made in Pakistan 🇵🇰</div>
     </footer>
   );
 }
 
-/* ══════════════════════════════════════════
-   APP ROOT
-══════════════════════════════════════════ */
-export default function App({navigate}) {
+/* ─── APP ROOT ─── */
+export default function App({ navigate }) {
   return (
-    <div style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", position:"relative" }}>
+    <div style={{ fontFamily: "'Inter', sans-serif", position: "relative" }}>
       <FontLoader />
-      <CustomCursor />
-      <InteractiveBg />
-      <div style={{ position:"relative", zIndex:1 }}>
-        <Nav navigate={navigate} />
+      <Nav navigate={navigate} />
+      <main>
         <Hero navigate={navigate} />
-        <div style={{ background:"white" }}>
-          <LogosBar />
-          <Stats />
-          <Divider />
-          <HowItWorks />
-          <Divider />
-          <IPSection />
-          <Divider />
-          <Features />
-          <Divider />
-          <Pricing />
-          <Divider />
-          <Testimonials />
-          <FinalCTA />
-          <Footer />
-        </div>
-      </div>
+        <LogoMarquee />
+        <Stats />
+        <HowItWorks />
+        <IPSection />
+        <Features />
+        <Testimonials />
+        <FinalCTA navigate={navigate} />
+      </main>
+      <Footer />
     </div>
   );
 }
