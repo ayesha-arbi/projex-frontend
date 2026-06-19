@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { loginCompany } from '../services/api';
+import { C, fonts } from '../assets/tokens.js';
+import {
+  Search, Mail, MessageSquare, BarChart3, Lock, Check, Landmark,
+  Eye, EyeOff, AlertTriangle, Clock, Building2, Loader2, ArrowRight,
+} from "lucide-react";
 
 /* ─── FONTS ─── */
 const FontLoader = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #f0f7fd; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: ${C.cream}; font-family: 'Inter', sans-serif; }
     @keyframes fadeUp  { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
     @keyframes fadeIn  { from { opacity:0 } to { opacity:1 } }
     @keyframes slideIn { from { opacity:0; transform:translateX(24px) } to { opacity:1; transform:translateX(0) } }
@@ -14,40 +19,21 @@ const FontLoader = () => (
   `}</style>
 );
 
-/* ─── BRAND ─── */
-const C = {
-  blue:      "#033e66",
-  blueMid:   "#0a5a96",
-  blueLight: "#1a7cc4",
-  blueTint:  "#f0f7fd",
-  bluePale:  "#e8f3fb",
-  green:     "#a3cf3e",
-  greenDark: "#7aaa1c",
-  greenPale: "#f2f9e0",
-  white:     "#ffffff",
-  off:       "#f7f8fa",
-  border:    "#e4e9ef",
-  border2:   "#d0dce8",
-  text:      "#0d1b2a",
-  muted:     "#5a7491",
-  muted2:    "#8fa5bc",
-  ink:       "#071220",
-  error:     "#dc2626",
-  errorPale: "#fef2f2",
-  amber:     "#d97706",
-  amberPale: "#fffbeb",
-};
+const error = "#dc2626";
+const errorPale = "#fef2f2";
+const amber = "#d97706";
+const amberPale = "#fffbeb";
 
 /* ─── SHARED FIELD COMPONENTS ─── */
 function Label({ children, required }) {
   return (
-    <label style={{ display:"block", fontSize:"0.8rem", fontWeight:700, color:C.text, marginBottom:6, letterSpacing:"0.01em" }}>
-      {children}{required && <span style={{ color:C.green, marginLeft:3 }}>*</span>}
+    <label style={{ display:"block", fontSize:"0.8rem", fontWeight:600, color:C.text, marginBottom:6, letterSpacing:"0.01em", fontFamily:fonts.body }}>
+      {children}{required && <span style={{ color:C.gold, marginLeft:3 }}>*</span>}
     </label>
   );
 }
 
-function Input({ label, required, error, hint, type="text", ...props }) {
+function Input({ label, required, error: err, hint, type="text", ...props }) {
   const [focus, setFocus] = useState(false);
   return (
     <div style={{ marginBottom:18 }}>
@@ -58,17 +44,17 @@ function Input({ label, required, error, hint, type="text", ...props }) {
         onBlur={() => setFocus(false)}
         style={{
           display:"block", width:"100%", padding:"11px 14px",
-          fontSize:"0.9rem", fontFamily:"'Plus Jakarta Sans',sans-serif",
+          fontSize:"0.9rem", fontFamily:fonts.body,
           background:C.white, color:C.text,
-          border:`1.5px solid ${error ? C.error : focus ? C.blue : C.border2}`,
+          border:`1.5px solid ${err ? error : focus ? C.gold : C.border}`,
           borderRadius:9, outline:"none",
           transition:"border-color 0.18s, box-shadow 0.18s",
-          boxShadow: focus ? `0 0 0 3px ${C.blue}18` : error ? `0 0 0 3px ${C.error}12` : "none",
+          boxShadow: focus ? `0 0 0 3px ${C.gold}18` : err ? `0 0 0 3px ${error}12` : "none",
         }}
         {...props}
       />
-      {hint && !error && <p style={{ fontSize:"0.75rem", color:C.muted, marginTop:5 }}>{hint}</p>}
-      {error && <p style={{ fontSize:"0.75rem", color:C.error, marginTop:5 }}>⚠ {error}</p>}
+      {hint && !err && <p style={{ fontSize:"0.75rem", color:C.muted, marginTop:5, fontFamily:fonts.body }}>{hint}</p>}
+      {err && <p style={{ fontSize:"0.75rem", color:error, marginTop:5, fontFamily:fonts.body }}>⚠ {err}</p>}
     </div>
   );
 }
@@ -81,6 +67,8 @@ export default function CompanyLogin({ onBack, onSwitchToRegister, onForgotPassw
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors]     = useState({});
   const [form, setForm]         = useState({ email:"", password:"", remember:false });
+  const [submitHov, setSubmitHov] = useState(false);
+  const [regHov, setRegHov] = useState(false);
 
   const validate = () => {
     const errs = {};
@@ -98,7 +86,6 @@ export default function CompanyLogin({ onBack, onSwitchToRegister, onForgotPassw
     setSubmitting(true);
     try {
       const res = await loginCompany({ email: form.email, password: form.password });
-      // Save token + user to localStorage
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user || res.data.company));
       onSuccess && onSuccess();
@@ -123,64 +110,78 @@ export default function CompanyLogin({ onBack, onSwitchToRegister, onForgotPassw
   return (
     <>
       <FontLoader />
-      <div style={{ minHeight:"100vh", display:"flex", background:C.off }}>
+      <div style={{ minHeight:"100vh", display:"flex", background:C.cream }}>
 
         {/* ── Left Panel ── */}
-        <div style={{ width:380, flexShrink:0, background:C.ink, display:"flex", flexDirection:"column", padding:"48px 40px", position:"relative", overflow:"hidden" }}>
+        <div style={{ width:380, flexShrink:0, background:C.navy, display:"flex", flexDirection:"column", padding:"48px 40px", position:"relative", overflow:"hidden" }}>
           {/* decorative blobs */}
-          <div style={{ position:"absolute", top:-80, right:-60, width:320, height:320, borderRadius:"50%", background:"rgba(3,62,102,0.6)", pointerEvents:"none" }} />
-          <div style={{ position:"absolute", bottom:-60, left:-40, width:220, height:220, borderRadius:"50%", background:"rgba(163,207,62,0.06)", pointerEvents:"none" }} />
+          <div style={{ position:"absolute", top:-80, right:-60, width:320, height:320, borderRadius:"50%", background:`${C.gold}14`, pointerEvents:"none" }} />
+          <div style={{ position:"absolute", bottom:-60, left:-40, width:220, height:220, borderRadius:"50%", background:`${C.gold}0d`, pointerEvents:"none" }} />
           <div style={{ position:"absolute", inset:0, backgroundImage:`radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)`, backgroundSize:"22px 22px", pointerEvents:"none" }} />
 
           {/* Logo */}
           <a
             href="#"
             onClick={e => { e.preventDefault(); onBack && onBack(); }}
-            style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none", marginBottom:56, position:"relative", zIndex:1 }}
+            style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none", marginBottom:56, position:"relative", zIndex:1 }}
           >
-            <img src="./logo.png" alt="Projex.pk" style={{ height:36, width:"auto", objectFit:"contain" }} />
+            <div style={{ width:32, height:32, background:"rgba(255,255,255,0.12)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
+              <div style={{ position:"absolute", bottom:0, right:0, width:12, height:12, background:C.gold, borderRadius:"4px 0 0 0" }} />
+              <span style={{ fontSize:"0.7rem", fontWeight:800, color:"#fff", zIndex:1, fontFamily:fonts.display }}>Px</span>
+            </div>
+            <span style={{ fontSize:"1.1rem", fontWeight:700, color:"#fff", letterSpacing:"-0.03em", fontFamily:fonts.display }}>
+              Projex<span style={{ color:C.gold }}>.pk</span>
+            </span>
           </a>
 
           {/* Panel body */}
           <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center", position:"relative", zIndex:1, animation:"fadeIn 0.4s ease both" }}>
-            <div style={{ fontSize:"2.8rem", marginBottom:16 }}>👋</div>
-            <h3 style={{ fontSize:"1.35rem", fontWeight:800, color:"#fff", letterSpacing:"-0.025em", marginBottom:10, lineHeight:1.2 }}>
+            <div style={{ width:56, height:56, borderRadius:14, background:"rgba(255,255,255,0.08)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20 }}>
+              <Building2 size={28} color={C.gold} strokeWidth={1.6} />
+            </div>
+            <h3 style={{ fontSize:"1.35rem", fontWeight:700, color:"#fff", letterSpacing:"-0.025em", marginBottom:10, lineHeight:1.2, fontFamily:fonts.display }}>
               Welcome back
             </h3>
-            <p style={{ fontSize:"0.86rem", color:"rgba(255,255,255,0.48)", lineHeight:1.75, marginBottom:40 }}>
+            <p style={{ fontSize:"0.86rem", color:"rgba(255,255,255,0.48)", lineHeight:1.75, marginBottom:40, fontFamily:fonts.body }}>
               Sign in to your verified company account and pick up right where you left off — browsing projects, managing requests, and connecting with student teams.
             </p>
 
             {/* What you can do */}
             <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
               {[
-                ["🔍", "Browse student projects from 6+ universities"],
-                ["📬", "Manage your Interest Requests"],
-                ["💬", "Message approved student teams"],
-                ["📊", "View your analytics dashboard"],
-              ].map(([icon, text]) => (
+                [Search, "Browse student projects from 6+ universities"],
+                [Mail, "Manage your Interest Requests"],
+                [MessageSquare, "Message approved student teams"],
+                [BarChart3, "View your analytics dashboard"],
+              ].map(([Icon, text]) => (
                 <div key={text} style={{ display:"flex", alignItems:"center", gap:10 }}>
-                  <span style={{ fontSize:"0.9rem", flexShrink:0 }}>{icon}</span>
-                  <p style={{ fontSize:"0.78rem", color:"rgba(255,255,255,0.35)", lineHeight:1.5 }}>{text}</p>
+                  <Icon size={15} color={C.gold} strokeWidth={1.7} style={{ flexShrink:0 }} />
+                  <p style={{ fontSize:"0.78rem", color:"rgba(255,255,255,0.35)", lineHeight:1.5, fontFamily:fonts.body }}>{text}</p>
                 </div>
               ))}
             </div>
 
             {/* Trust badges */}
             <div style={{ marginTop:40, display:"flex", flexDirection:"column", gap:8 }}>
-              {["🔒 All data encrypted in transit","✅ Verified companies only","🏛️ Trusted by 6 Karachi universities"].map(t => (
-                <div key={t} style={{ fontSize:"0.74rem", color:"rgba(255,255,255,0.3)", display:"flex", alignItems:"center", gap:8 }}>{t}</div>
+              {[
+                [Lock, "All data encrypted in transit"],
+                [Check, "Verified companies only"],
+                [Landmark, "Trusted by 6 Karachi universities"],
+              ].map(([Icon, t]) => (
+                <div key={t} style={{ fontSize:"0.74rem", color:"rgba(255,255,255,0.3)", display:"flex", alignItems:"center", gap:8, fontFamily:fonts.body }}>
+                  <Icon size={13} strokeWidth={1.8} /> {t}
+                </div>
               ))}
             </div>
           </div>
 
-          <p style={{ fontSize:"0.74rem", color:"rgba(255,255,255,0.2)", position:"relative", zIndex:1, marginTop:32 }}>
+          <p style={{ fontSize:"0.74rem", color:"rgba(255,255,255,0.2)", position:"relative", zIndex:1, marginTop:32, fontFamily:fonts.body }}>
             <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
               style={{ color:"rgba(255,255,255,0.3)", fontWeight:500, textDecoration:"none" }}>← Back to home</a>
             {"  ·  "}
             New company?{" "}
             <a href="#" onClick={e => { e.preventDefault(); onSwitchToRegister && onSwitchToRegister(); }}
-              style={{ color:C.green, fontWeight:600, textDecoration:"none" }}>Register here</a>
+              style={{ color:C.gold, fontWeight:600, textDecoration:"none" }}>Register here</a>
           </p>
         </div>
 
@@ -190,39 +191,39 @@ export default function CompanyLogin({ onBack, onSwitchToRegister, onForgotPassw
 
             {/* Header */}
             <div style={{ marginBottom:32 }}>
-              <div style={{ fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:C.green, marginBottom:6 }}>
+              <div style={{ fontSize:"0.72rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:C.gold, marginBottom:6, fontFamily:fonts.body }}>
                 Company Portal
               </div>
-              <h2 style={{ fontSize:"1.75rem", fontWeight:800, color:C.ink, letterSpacing:"-0.03em", marginBottom:8 }}>
+              <h2 style={{ fontSize:"1.75rem", fontWeight:700, color:C.navy, letterSpacing:"-0.03em", marginBottom:8, fontFamily:fonts.display }}>
                 Sign in to your account
               </h2>
-              <p style={{ fontSize:"0.86rem", color:C.muted, lineHeight:1.6 }}>
+              <p style={{ fontSize:"0.86rem", color:C.muted, lineHeight:1.6, fontFamily:fonts.body }}>
                 Don't have an account?{" "}
                 <a href="#"
                   onClick={e => { e.preventDefault(); onSwitchToRegister && onSwitchToRegister(); }}
-                  style={{ color:C.blue, fontWeight:700, textDecoration:"none" }}
+                  style={{ color:C.navy, fontWeight:700, textDecoration:"none" }}
                 >Register your company →</a>
               </p>
             </div>
 
             {/* Card */}
-            <div style={{ background:C.white, borderRadius:16, padding:"36px", border:`1px solid ${C.border}`, boxShadow:"0 2px 12px rgba(3,62,102,0.06)" }}>
+            <div style={{ background:C.white, borderRadius:16, padding:"36px", border:`1px solid ${C.border}`, boxShadow:"0 2px 12px rgba(12,35,64,0.06)" }}>
 
               {/* General error */}
               {errors.general && (
-                <div style={{ background:C.errorPale, border:`1px solid #fecaca`, borderLeft:`4px solid ${C.error}`, borderRadius:9, padding:"12px 16px", marginBottom:20, display:"flex", gap:10, alignItems:"flex-start" }}>
-                  <span style={{ flexShrink:0, marginTop:1 }}>⚠️</span>
-                  <p style={{ fontSize:"0.82rem", color:C.error, fontWeight:600, lineHeight:1.5 }}>{errors.general}</p>
+                <div style={{ background:errorPale, border:`1px solid #fecaca`, borderLeft:`4px solid ${error}`, borderRadius:9, padding:"12px 16px", marginBottom:20, display:"flex", gap:10, alignItems:"flex-start" }}>
+                  <AlertTriangle size={16} color={error} strokeWidth={1.8} style={{ flexShrink:0, marginTop:1 }} />
+                  <p style={{ fontSize:"0.82rem", color:error, fontWeight:600, lineHeight:1.5, fontFamily:fonts.body }}>{errors.general}</p>
                 </div>
               )}
 
               {/* Pending notice — shown if account not yet verified */}
               {errors.pending && (
-                <div style={{ background:C.amberPale, border:`1.5px solid #fde68a`, borderLeft:`4px solid ${C.amber}`, borderRadius:9, padding:"12px 16px", marginBottom:20, display:"flex", gap:10, alignItems:"flex-start" }}>
-                  <span style={{ flexShrink:0, marginTop:1 }}>⏳</span>
+                <div style={{ background:amberPale, border:`1.5px solid #fde68a`, borderLeft:`4px solid ${amber}`, borderRadius:9, padding:"12px 16px", marginBottom:20, display:"flex", gap:10, alignItems:"flex-start" }}>
+                  <Clock size={16} color={amber} strokeWidth={1.8} style={{ flexShrink:0, marginTop:1 }} />
                   <div>
-                    <p style={{ fontSize:"0.82rem", fontWeight:700, color:"#92400e", marginBottom:3 }}>Account under review</p>
-                    <p style={{ fontSize:"0.79rem", color:"#b45309", lineHeight:1.55 }}>Your verification document is still being reviewed. You'll receive an email once approved (1–2 business days).</p>
+                    <p style={{ fontSize:"0.82rem", fontWeight:700, color:"#92400e", marginBottom:3, fontFamily:fonts.body }}>Account under review</p>
+                    <p style={{ fontSize:"0.79rem", color:"#b45309", lineHeight:1.55, fontFamily:fonts.body }}>Your verification document is still being reviewed. You'll receive an email once approved (1–2 business days).</p>
                   </div>
                 </div>
               )}
@@ -245,7 +246,7 @@ export default function CompanyLogin({ onBack, onSwitchToRegister, onForgotPassw
                   <Label required>Password</Label>
                   <a href="#"
                     onClick={e => { e.preventDefault(); onForgotPassword && onForgotPassword(); }}
-                    style={{ fontSize:"0.75rem", color:C.blue, fontWeight:600, textDecoration:"none" }}
+                    style={{ fontSize:"0.75rem", color:C.navy, fontWeight:600, textDecoration:"none" }}
                     onMouseEnter={e => e.currentTarget.style.textDecoration="underline"}
                     onMouseLeave={e => e.currentTarget.style.textDecoration="none"}
                   >Forgot password?</a>
@@ -260,20 +261,20 @@ export default function CompanyLogin({ onBack, onSwitchToRegister, onForgotPassw
                     autoComplete="current-password"
                     style={{
                       display:"block", width:"100%", padding:"11px 42px 11px 14px",
-                      fontSize:"0.9rem", fontFamily:"'Plus Jakarta Sans',sans-serif",
+                      fontSize:"0.9rem", fontFamily:fonts.body,
                       background:C.white, color:C.text,
-                      border:`1.5px solid ${errors.password ? C.error : C.border2}`,
+                      border:`1.5px solid ${errors.password ? error : C.border}`,
                       borderRadius:9, outline:"none",
                       transition:"border-color 0.18s, box-shadow 0.18s",
                     }}
-                    onFocus={e => e.target.style.borderColor = C.blue}
-                    onBlur={e => e.target.style.borderColor = errors.password ? C.error : C.border2}
+                    onFocus={e => e.target.style.borderColor = C.gold}
+                    onBlur={e => e.target.style.borderColor = errors.password ? error : C.border}
                   />
                   <button type="button" onClick={() => setShowPass(v => !v)}
-                    style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", fontSize:"1rem", color:C.muted }}
-                  >{showPass ? "🙈" : "👁"}</button>
+                    style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:C.muted, display:"flex" }}
+                  >{showPass ? <EyeOff size={16} strokeWidth={1.7} /> : <Eye size={16} strokeWidth={1.7} />}</button>
                 </div>
-                {errors.password && <p style={{ fontSize:"0.75rem", color:C.error, marginTop:5 }}>⚠ {errors.password}</p>}
+                {errors.password && <p style={{ fontSize:"0.75rem", color:error, marginTop:5, fontFamily:fonts.body }}>⚠ {errors.password}</p>}
               </div>
 
               {/* Remember me */}
@@ -282,9 +283,9 @@ export default function CompanyLogin({ onBack, onSwitchToRegister, onForgotPassw
                   type="checkbox"
                   checked={form.remember}
                   onChange={e => setForm({...form, remember:e.target.checked})}
-                  style={{ accentColor:C.blue, width:16, height:16, flexShrink:0 }}
+                  style={{ accentColor:C.navy, width:16, height:16, flexShrink:0 }}
                 />
-                <span style={{ fontSize:"0.8rem", color:C.muted }}>Keep me signed in for 30 days</span>
+                <span style={{ fontSize:"0.8rem", color:C.muted, fontFamily:fonts.body }}>Keep me signed in for 30 days</span>
               </label>
 
               {/* Submit */}
@@ -292,31 +293,32 @@ export default function CompanyLogin({ onBack, onSwitchToRegister, onForgotPassw
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
+                onMouseEnter={() => setSubmitHov(true)}
+                onMouseLeave={() => setSubmitHov(false)}
                 style={{
                   display:"flex", alignItems:"center", justifyContent:"center", gap:8,
                   width:"100%", padding:"13px",
-                  borderRadius:9, fontSize:"0.95rem", fontWeight:700,
+                  borderRadius:50, fontSize:"0.95rem", fontWeight:600,
                   cursor: submitting ? "wait" : "pointer",
                   border:"none",
-                  background: submitting ? C.muted2 : C.blue,
+                  background: submitting ? C.disabledText : submitHov ? C.gold : C.navy,
                   color:"#fff",
-                  fontFamily:"'Plus Jakarta Sans',sans-serif",
+                  fontFamily:fonts.body,
                   transition:"background 0.18s, box-shadow 0.18s, transform 0.18s",
-                  boxShadow: submitting ? "none" : "0 4px 14px rgba(3,62,102,0.25)",
+                  boxShadow: submitting ? "none" : submitHov ? "0 8px 20px rgba(176,141,87,0.3)" : "0 4px 14px rgba(12,35,64,0.2)",
+                  transform: submitHov && !submitting ? "translateY(-1px)" : "none",
                 }}
-                onMouseEnter={e => { if (!submitting) { e.currentTarget.style.background=C.blueMid; e.currentTarget.style.transform="translateY(-1px)"; } }}
-                onMouseLeave={e => { if (!submitting) { e.currentTarget.style.background=C.blue; e.currentTarget.style.transform="none"; } }}
               >
                 {submitting
-                  ? <><span style={{ width:14, height:14, border:"2px solid rgba(255,255,255,0.4)", borderTopColor:"#fff", borderRadius:"50%", display:"inline-block", animation:"spin 0.7s linear infinite" }} /> Signing in...</>
-                  : "Sign In →"
+                  ? <><Loader2 size={15} style={{ animation:"spin 0.7s linear infinite" }} /> Signing in...</>
+                  : <>Sign In <ArrowRight size={15} strokeWidth={2} /></>
                 }
               </button>
 
               {/* Divider */}
               <div style={{ display:"flex", alignItems:"center", gap:12, margin:"24px 0" }}>
                 <div style={{ flex:1, height:1, background:C.border }} />
-                <span style={{ fontSize:"0.74rem", color:C.muted2, fontWeight:500 }}>or</span>
+                <span style={{ fontSize:"0.74rem", color:C.muted2, fontWeight:500, fontFamily:fonts.body }}>or</span>
                 <div style={{ flex:1, height:1, background:C.border }} />
               </div>
 
@@ -324,25 +326,25 @@ export default function CompanyLogin({ onBack, onSwitchToRegister, onForgotPassw
               <button
                 type="button"
                 onClick={() => onSwitchToRegister && onSwitchToRegister()}
+                onMouseEnter={() => setRegHov(true)}
+                onMouseLeave={() => setRegHov(false)}
                 style={{
-                  display:"block", width:"100%", padding:"12px",
-                  borderRadius:9, fontSize:"0.9rem", fontWeight:700,
-                  cursor:"pointer", border:`1.5px solid ${C.border2}`,
-                  color:C.blue, background:"transparent",
-                  fontFamily:"'Plus Jakarta Sans',sans-serif",
+                  display:"flex", alignItems:"center", justifyContent:"center", gap:8, width:"100%", padding:"12px",
+                  borderRadius:50, fontSize:"0.9rem", fontWeight:600,
+                  cursor:"pointer", border:`1.5px solid ${regHov ? C.gold : C.border}`,
+                  color:C.navy, background: regHov ? C.cream : "transparent",
+                  fontFamily:fonts.body,
                   transition:"all 0.18s",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor=C.blue; e.currentTarget.style.background=C.blueTint; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor=C.border2; e.currentTarget.style.background="transparent"; }}
               >
-                🏢 Register a new company
+                <Building2 size={15} strokeWidth={2} /> Register a new company
               </button>
             </div>
 
             {/* Footer note */}
-            <p style={{ textAlign:"center", fontSize:"0.75rem", color:C.muted2, marginTop:20, lineHeight:1.6 }}>
+            <p style={{ textAlign:"center", fontSize:"0.75rem", color:C.muted2, marginTop:20, lineHeight:1.6, fontFamily:fonts.body }}>
               Having trouble?{" "}
-              <a href="mailto:support@projex.pk" style={{ color:C.blue, fontWeight:600, textDecoration:"none" }}>Contact support</a>
+              <a href="mailto:support@projex.pk" style={{ color:C.navy, fontWeight:600, textDecoration:"none" }}>Contact support</a>
             </p>
           </div>
         </div>

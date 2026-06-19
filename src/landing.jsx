@@ -325,8 +325,6 @@ function LogoMarquee() {
     { id: "ku", name: "Karachi University" },
     { id: "habib", name: "Habib University" },
     { id: "dawood", name: "Dawood University" },
-    { id: "paf", name: "PAF-KIET" },
-    { id: "ssuet", name: "Sir Syed University" }
   ];
 
   return (
@@ -338,11 +336,9 @@ function LogoMarquee() {
         {[...universities, ...universities, ...universities].map((uni, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 140 }}>
             <img 
-              src={`/logos/${uni.id}.png`} 
+              src={`./logos/${uni.id}.png`} 
               alt={uni.name} 
-              style={{ maxHeight: 50, maxWidth: "100%", objectFit: "contain", filter: "grayscale(100%) opacity(0.5)", transition: "all 0.3s ease", cursor: "pointer" }}
-              onMouseEnter={e => e.currentTarget.style.filter = "grayscale(0%) opacity(1)"}
-              onMouseLeave={e => e.currentTarget.style.filter = "grayscale(100%) opacity(0.5)"}
+              style={{ maxHeight: 100, maxWidth: "100%", objectFit: "contain", transition: "all 0.3s ease", cursor: "pointer" }}
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
                 e.currentTarget.nextSibling.style.display = 'block';

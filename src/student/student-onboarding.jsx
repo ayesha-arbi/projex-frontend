@@ -1,42 +1,29 @@
 import { useState, useRef } from "react";
 import { registerStudent, loginStudent } from '../services/api';
+import { C, fonts } from '../assets/tokens.js';
+import {
+  GraduationCap, Building2, Sparkles, Eye, EyeOff, Camera,
+  Check, Loader2, Lock, Mail, Landmark, ArrowLeft, ArrowRight,
+} from "lucide-react";
 
 /* ─── FONTS ─── */
 const FontLoader = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #f0f7fd; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: ${C.cream}; font-family: 'Inter', sans-serif; }
     @keyframes fadeUp   { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
     @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
     @keyframes pulse    { 0%,100% { opacity:1 } 50% { opacity:0.5 } }
     @keyframes slideIn  { from { opacity:0; transform:translateX(24px) } to { opacity:1; transform:translateX(0) } }
     @keyframes slideOut { from { opacity:1; transform:translateX(0) } to { opacity:0; transform:translateX(-24px) } }
-    input:-webkit-autofill { -webkit-box-shadow: 0 0 0 100px #f0f7fd inset !important; }
+    @keyframes spin     { to { transform: rotate(360deg) } }
+    input:-webkit-autofill { -webkit-box-shadow: 0 0 0 100px ${C.cream} inset !important; }
   `}</style>
 );
 
-/* ─── BRAND ─── */
-const C = {
-  blue: "#033e66",
-  blueMid: "#0a5a96",
-  blueLight: "#1a7cc4",
-  blueTint: "#f0f7fd",
-  bluePale: "#e8f3fb",
-  green: "#a3cf3e",
-  greenDark: "#7aaa1c",
-  greenPale: "#f2f9e0",
-  white: "#ffffff",
-  off: "#f7f8fa",
-  border: "#e4e9ef",
-  border2: "#d0dce8",
-  text: "#0d1b2a",
-  muted: "#5a7491",
-  muted2: "#8fa5bc",
-  ink: "#071220",
-  error: "#dc2626",
-  errorPale: "#fef2f2",
-};
+const error = "#dc2626";
+const errorPale = "#fef2f2";
 
 /* ─── SKILLS for multi-select ─── */
 const SKILLS_LIST = [
@@ -68,14 +55,14 @@ const DEGREES = [
 ═══════════════════════════════════════════ */
 function Label({ children, required }) {
   return (
-    <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: C.text, marginBottom: 6, letterSpacing: "0.01em" }}>
+    <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, color: C.text, marginBottom: 6, letterSpacing: "0.01em", fontFamily: fonts.body }}>
       {children}
-      {required && <span style={{ color: C.green, marginLeft: 3 }}>*</span>}
+      {required && <span style={{ color: C.gold, marginLeft: 3 }}>*</span>}
     </label>
   );
 }
 
-function Input({ label, required, error, hint, type = "text", ...props }) {
+function Input({ label, required, error: err, hint, type = "text", ...props }) {
   const [focus, setFocus] = useState(false);
   return (
     <div style={{ marginBottom: 20 }}>
@@ -87,22 +74,22 @@ function Input({ label, required, error, hint, type = "text", ...props }) {
         style={{
           display: "block", width: "100%",
           padding: "11px 14px", fontSize: "0.9rem",
-          fontFamily: "'Plus Jakarta Sans',sans-serif",
+          fontFamily: fonts.body,
           background: C.white, color: C.text,
-          border: `1.5px solid ${error ? C.error : focus ? C.blue : C.border2}`,
+          border: `1.5px solid ${err ? error : focus ? C.gold : C.border}`,
           borderRadius: 9, outline: "none",
           transition: "border-color 0.18s, box-shadow 0.18s",
-          boxShadow: focus ? `0 0 0 3px ${C.blue}18` : error ? `0 0 0 3px ${C.error}12` : "none",
+          boxShadow: focus ? `0 0 0 3px ${C.gold}18` : err ? `0 0 0 3px ${error}12` : "none",
         }}
         {...props}
       />
-      {hint && !error && <p style={{ fontSize: "0.75rem", color: C.muted, marginTop: 5 }}>{hint}</p>}
-      {error && <p style={{ fontSize: "0.75rem", color: C.error, marginTop: 5, display: "flex", alignItems: "center", gap: 4 }}>⚠ {error}</p>}
+      {hint && !err && <p style={{ fontSize: "0.75rem", color: C.muted, marginTop: 5, fontFamily: fonts.body }}>{hint}</p>}
+      {err && <p style={{ fontSize: "0.75rem", color: error, marginTop: 5, display: "flex", alignItems: "center", gap: 4, fontFamily: fonts.body }}>⚠ {err}</p>}
     </div>
   );
 }
 
-function Select({ label, required, error, children, ...props }) {
+function Select({ label, required, error: err, children, ...props }) {
   const [focus, setFocus] = useState(false);
   return (
     <div style={{ marginBottom: 20 }}>
@@ -113,26 +100,26 @@ function Select({ label, required, error, children, ...props }) {
         style={{
           display: "block", width: "100%",
           padding: "11px 14px", fontSize: "0.9rem",
-          fontFamily: "'Plus Jakarta Sans',sans-serif",
+          fontFamily: fonts.body,
           background: C.white, color: C.text,
-          border: `1.5px solid ${error ? C.error : focus ? C.blue : C.border2}`,
+          border: `1.5px solid ${err ? error : focus ? C.gold : C.border}`,
           borderRadius: 9, outline: "none", cursor: "pointer",
           transition: "border-color 0.18s, box-shadow 0.18s",
-          boxShadow: focus ? `0 0 0 3px ${C.blue}18` : "none",
+          boxShadow: focus ? `0 0 0 3px ${C.gold}18` : "none",
           appearance: "none",
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7491' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235F5E5A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
           backgroundRepeat: "no-repeat", backgroundPosition: "right 14px center",
         }}
         {...props}
       >
         {children}
       </select>
-      {error && <p style={{ fontSize: "0.75rem", color: C.error, marginTop: 5 }}>⚠ {error}</p>}
+      {err && <p style={{ fontSize: "0.75rem", color: error, marginTop: 5, fontFamily: fonts.body }}>⚠ {err}</p>}
     </div>
   );
 }
 
-function Textarea({ label, required, error, maxChars, value, onChange, ...props }) {
+function Textarea({ label, required, error: err, maxChars, value, onChange, ...props }) {
   return (
     <div style={{ marginBottom: 20 }}>
       {label && <Label required={required}>{label}</Label>}
@@ -143,24 +130,24 @@ function Textarea({ label, required, error, maxChars, value, onChange, ...props 
           style={{
             display: "block", width: "100%",
             padding: "11px 14px", fontSize: "0.9rem",
-            fontFamily: "'Plus Jakarta Sans',sans-serif",
+            fontFamily: fonts.body,
             background: C.white, color: C.text,
-            border: `1.5px solid ${error ? C.error : C.border2}`,
+            border: `1.5px solid ${err ? error : C.border}`,
             borderRadius: 9, outline: "none", resize: "vertical",
             minHeight: 100, lineHeight: 1.6,
             transition: "border-color 0.18s",
           }}
-          onFocus={e => e.target.style.borderColor = C.blue}
-          onBlur={e => e.target.style.borderColor = error ? C.error : C.border2}
+          onFocus={e => e.target.style.borderColor = C.gold}
+          onBlur={e => e.target.style.borderColor = err ? error : C.border}
           {...props}
         />
         {maxChars && (
-          <span style={{ position: "absolute", bottom: 10, right: 12, fontSize: "0.72rem", color: value.length > maxChars * 0.9 ? C.error : C.muted2 }}>
+          <span style={{ position: "absolute", bottom: 10, right: 12, fontSize: "0.72rem", color: value.length > maxChars * 0.9 ? error : C.muted2, fontFamily: fonts.body }}>
             {value.length}/{maxChars}
           </span>
         )}
       </div>
-      {error && <p style={{ fontSize: "0.75rem", color: C.error, marginTop: 5 }}>⚠ {error}</p>}
+      {err && <p style={{ fontSize: "0.75rem", color: error, marginTop: 5, fontFamily: fonts.body }}>⚠ {err}</p>}
     </div>
   );
 }
@@ -169,7 +156,7 @@ function MultiSelect({ label, required, options, selected, onChange, hint }) {
   return (
     <div style={{ marginBottom: 20 }}>
       {label && <Label required={required}>{label}</Label>}
-      {hint && <p style={{ fontSize: "0.75rem", color: C.muted, marginBottom: 8 }}>{hint}</p>}
+      {hint && <p style={{ fontSize: "0.75rem", color: C.muted, marginBottom: 8, fontFamily: fonts.body }}>{hint}</p>}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
         {options.map(opt => {
           const on = selected.includes(opt);
@@ -179,13 +166,14 @@ function MultiSelect({ label, required, options, selected, onChange, hint }) {
               style={{
                 padding: "6px 13px", borderRadius: 20,
                 fontSize: "0.78rem", fontWeight: 600,
-                border: `1.5px solid ${on ? C.blue : C.border2}`,
-                background: on ? C.blue : C.white,
+                border: `1.5px solid ${on ? C.navy : C.border}`,
+                background: on ? C.navy : C.white,
                 color: on ? "#fff" : C.muted,
                 cursor: "pointer", transition: "all 0.15s",
-                fontFamily: "'Plus Jakarta Sans',sans-serif",
+                fontFamily: fonts.body,
+                display: "inline-flex", alignItems: "center", gap: 5,
               }}
-            >{on && <span style={{ marginRight: 4 }}>✓</span>}{opt}</button>
+            >{on && <Check size={12} strokeWidth={3} />}{opt}</button>
           );
         })}
       </div>
@@ -197,6 +185,7 @@ function MultiSelect({ label, required, options, selected, onChange, hint }) {
 function AvatarUpload({ onChange }) {
   const inputRef = useRef(null);
   const [preview, setPreview] = useState(null);
+  const [hov, setHov] = useState(false);
 
   const handle = (e) => {
     const file = e.target.files[0];
@@ -213,31 +202,31 @@ function AvatarUpload({ onChange }) {
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
         <div
           onClick={() => inputRef.current.click()}
+          onMouseEnter={() => setHov(true)}
+          onMouseLeave={() => setHov(false)}
           style={{
             width: 72, height: 72, borderRadius: "50%",
-            background: preview ? "transparent" : C.blueTint,
-            border: `2px dashed ${C.border2}`,
+            background: preview ? "transparent" : C.cream,
+            border: `2px dashed ${hov ? C.gold : C.border}`,
             display: "flex", alignItems: "center", justifyContent: "center",
             cursor: "pointer", overflow: "hidden", flexShrink: 0,
             transition: "border-color 0.2s",
           }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = C.blue}
-          onMouseLeave={e => e.currentTarget.style.borderColor = C.border2}
         >
           {preview
             ? <img src={preview} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : <span style={{ fontSize: "1.5rem" }}>📷</span>
+            : <Camera size={24} color={C.muted2} strokeWidth={1.6} />
           }
         </div>
         <div>
           <button type="button" onClick={() => inputRef.current.click()}
-            style={{ fontSize: "0.82rem", fontWeight: 700, color: C.blue, background: "transparent", border: `1.5px solid ${C.border2}`, borderRadius: 7, padding: "7px 14px", cursor: "pointer", fontFamily: "'Plus Jakarta Sans',sans-serif", transition: "all 0.15s" }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = C.blue; e.currentTarget.style.background = C.blueTint; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border2; e.currentTarget.style.background = "transparent"; }}
+            style={{ fontSize: "0.82rem", fontWeight: 600, color: C.navy, background: "transparent", border: `1.5px solid ${C.border}`, borderRadius: 7, padding: "7px 14px", cursor: "pointer", fontFamily: fonts.body, transition: "all 0.15s" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.gold; e.currentTarget.style.background = C.cream; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = "transparent"; }}
           >
             {preview ? "Change Photo" : "Upload Photo"}
           </button>
-          <p style={{ fontSize: "0.72rem", color: C.muted, marginTop: 5 }}>JPG or PNG · Max 2MB</p>
+          <p style={{ fontSize: "0.72rem", color: C.muted, marginTop: 5, fontFamily: fonts.body }}>JPG or PNG · Max 2MB</p>
         </div>
         <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handle} />
       </div>
@@ -260,18 +249,19 @@ function StepBar({ current, total, labels }) {
             <div key={i} style={{ display: "flex", alignItems: "center", flex: isLast ? "0 0 auto" : 1 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
-                background: done ? C.green : active ? C.blue : C.white,
-                border: `2px solid ${done ? C.green : active ? C.blue : C.border2}`,
+                background: done ? C.gold : active ? C.navy : C.white,
+                border: `2px solid ${done ? C.gold : active ? C.navy : C.border}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "0.78rem", fontWeight: 800,
-                color: done ? C.blue : active ? "#fff" : C.muted2,
+                fontSize: "0.78rem", fontWeight: 700,
+                color: done ? "#fff" : active ? "#fff" : C.muted2,
                 transition: "all 0.3s", zIndex: 1,
-                boxShadow: active ? `0 0 0 4px ${C.blue}20` : "none",
+                boxShadow: active ? `0 0 0 4px ${C.navy}1a` : "none",
+                fontFamily: fonts.body,
               }}>
-                {done ? "✓" : i + 1}
+                {done ? <Check size={15} strokeWidth={3} /> : i + 1}
               </div>
               {!isLast && (
-                <div style={{ flex: 1, height: 2, background: done ? C.green : C.border, transition: "background 0.4s", margin: "0 2px" }} />
+                <div style={{ flex: 1, height: 2, background: done ? C.gold : C.border, transition: "background 0.4s", margin: "0 2px" }} />
               )}
             </div>
           );
@@ -282,7 +272,7 @@ function StepBar({ current, total, labels }) {
           const done = i < current;
           const active = i === current;
           return (
-            <div key={i} style={{ flex: 1, textAlign: i === 0 ? "left" : i === total - 1 ? "right" : "center", fontSize: "0.7rem", fontWeight: active ? 700 : 500, color: active ? C.blue : done ? C.greenDark : C.muted2 }}>
+            <div key={i} style={{ flex: 1, textAlign: i === 0 ? "left" : i === total - 1 ? "right" : "center", fontSize: "0.7rem", fontWeight: active ? 700 : 500, color: active ? C.navy : done ? C.gold : C.muted2, fontFamily: fonts.body }}>
               {l}
             </div>
           );
@@ -299,9 +289,9 @@ function Step1({ data, setData, errors }) {
   return (
     <div style={{ animation: "slideIn 0.35s ease both" }}>
       <div style={{ marginBottom: 28 }}>
-        <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: C.green, marginBottom: 6 }}>Step 1 of 3</div>
-        <h2 style={{ fontSize: "1.55rem", fontWeight: 800, color: C.ink, letterSpacing: "-0.025em", marginBottom: 6 }}>Let's get you set up</h2>
-        <p style={{ fontSize: "0.88rem", color: C.muted, lineHeight: 1.6 }}>Create your student account. Use your university email to unlock platform access.</p>
+        <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: C.gold, marginBottom: 6, fontFamily: fonts.body }}>Step 1 of 3</div>
+        <h2 style={{ fontSize: "1.55rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.025em", marginBottom: 6, fontFamily: fonts.display }}>Let's get you set up</h2>
+        <p style={{ fontSize: "0.88rem", color: C.muted, lineHeight: 1.6, fontFamily: fonts.body }}>Create your student account. Use your university email to unlock platform access.</p>
       </div>
       <Input label="Full Name" required
         value={data.name} onChange={e => setData({ ...data, name: e.target.value })}
@@ -326,13 +316,13 @@ function Step1({ data, setData, errors }) {
       />
       <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", marginTop: 4 }}>
         <input type="checkbox" checked={data.terms} onChange={e => setData({ ...data, terms: e.target.checked })}
-          style={{ marginTop: 2, accentColor: C.blue, width: 16, height: 16, flexShrink: 0 }} />
-        <span style={{ fontSize: "0.8rem", color: C.muted, lineHeight: 1.6 }}>
-          I agree to the <a href="#" style={{ color: C.blue, fontWeight: 600 }}>Terms of Service</a> and{" "}
-          <a href="#" style={{ color: C.blue, fontWeight: 600 }}>Privacy Policy</a>
+          style={{ marginTop: 2, accentColor: C.navy, width: 16, height: 16, flexShrink: 0 }} />
+        <span style={{ fontSize: "0.8rem", color: C.muted, lineHeight: 1.6, fontFamily: fonts.body }}>
+          I agree to the <a href="#" style={{ color: C.navy, fontWeight: 600 }}>Terms of Service</a> and{" "}
+          <a href="#" style={{ color: C.navy, fontWeight: 600 }}>Privacy Policy</a>
         </span>
       </label>
-      {errors.terms && <p style={{ fontSize: "0.75rem", color: C.error, marginTop: 4 }}>⚠ {errors.terms}</p>}
+      {errors.terms && <p style={{ fontSize: "0.75rem", color: error, marginTop: 4, fontFamily: fonts.body }}>⚠ {errors.terms}</p>}
     </div>
   );
 }
@@ -341,9 +331,9 @@ function Step2({ data, setData, errors }) {
   return (
     <div style={{ animation: "slideIn 0.35s ease both" }}>
       <div style={{ marginBottom: 28 }}>
-        <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: C.green, marginBottom: 6 }}>Step 2 of 3</div>
-        <h2 style={{ fontSize: "1.55rem", fontWeight: 800, color: C.ink, letterSpacing: "-0.025em", marginBottom: 6 }}>Academic Info</h2>
-        <p style={{ fontSize: "0.88rem", color: C.muted, lineHeight: 1.6 }}>Help companies understand your academic background and timeline.</p>
+        <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: C.gold, marginBottom: 6, fontFamily: fonts.body }}>Step 2 of 3</div>
+        <h2 style={{ fontSize: "1.55rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.025em", marginBottom: 6, fontFamily: fonts.display }}>Academic Info</h2>
+        <p style={{ fontSize: "0.88rem", color: C.muted, lineHeight: 1.6, fontFamily: fonts.body }}>Help companies understand your academic background and timeline.</p>
       </div>
       <Select label="University" required value={data.university} onChange={e => setData({ ...data, university: e.target.value })} error={errors.university}>
         <option value="">Select your university</option>
@@ -367,17 +357,17 @@ function Step2({ data, setData, errors }) {
           <Label required>Expected Graduation</Label>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <select value={data.gradSemester} onChange={e => setData({ ...data, gradSemester: e.target.value })}
-              style={{ padding: "11px 10px", fontSize: "0.88rem", fontFamily: "'Plus Jakarta Sans',sans-serif", background: C.white, color: C.text, border: `1.5px solid ${errors.gradSemester ? C.error : C.border2}`, borderRadius: 9, outline: "none", cursor: "pointer", appearance: "none" }}>
+              style={{ padding: "11px 10px", fontSize: "0.88rem", fontFamily: fonts.body, background: C.white, color: C.text, border: `1.5px solid ${errors.gradSemester ? error : C.border}`, borderRadius: 9, outline: "none", cursor: "pointer", appearance: "none" }}>
               <option value="">Sem</option>
               {["Spring", "Fall"].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <select value={data.gradYear} onChange={e => setData({ ...data, gradYear: e.target.value })}
-              style={{ padding: "11px 10px", fontSize: "0.88rem", fontFamily: "'Plus Jakarta Sans',sans-serif", background: C.white, color: C.text, border: `1.5px solid ${errors.gradYear ? C.error : C.border2}`, borderRadius: 9, outline: "none", cursor: "pointer", appearance: "none" }}>
+              style={{ padding: "11px 10px", fontSize: "0.88rem", fontFamily: fonts.body, background: C.white, color: C.text, border: `1.5px solid ${errors.gradYear ? error : C.border}`, borderRadius: 9, outline: "none", cursor: "pointer", appearance: "none" }}>
               <option value="">Year</option>
               {[2025, 2026, 2027, 2028, 2029].map(y => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>
-          {(errors.gradSemester || errors.gradYear) && <p style={{ fontSize: "0.75rem", color: C.error, marginTop: 4 }}>⚠ Select graduation semester & year</p>}
+          {(errors.gradSemester || errors.gradYear) && <p style={{ fontSize: "0.75rem", color: error, marginTop: 4, fontFamily: fonts.body }}>⚠ Select graduation semester & year</p>}
         </div>
       </div>
     </div>
@@ -388,9 +378,9 @@ function Step3({ data, setData }) {
   return (
     <div style={{ animation: "slideIn 0.35s ease both" }}>
       <div style={{ marginBottom: 28 }}>
-        <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: C.green, marginBottom: 6 }}>Step 3 of 3</div>
-        <h2 style={{ fontSize: "1.55rem", fontWeight: 800, color: C.ink, letterSpacing: "-0.025em", marginBottom: 6 }}>Your Profile</h2>
-        <p style={{ fontSize: "0.88rem", color: C.muted, lineHeight: 1.6 }}>Make a great first impression. All fields on this step are optional.</p>
+        <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: C.gold, marginBottom: 6, fontFamily: fonts.body }}>Step 3 of 3</div>
+        <h2 style={{ fontSize: "1.55rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.025em", marginBottom: 6, fontFamily: fonts.display }}>Your Profile</h2>
+        <p style={{ fontSize: "0.88rem", color: C.muted, lineHeight: 1.6, fontFamily: fonts.body }}>Make a great first impression. All fields on this step are optional.</p>
       </div>
       <AvatarUpload value={data.avatar} onChange={f => setData({ ...data, avatar: f })} />
       <Input label={<>LinkedIn URL <span style={{ fontWeight: 400, color: C.muted }}>(optional)</span></>}
@@ -444,15 +434,42 @@ function validateStep(step, data) {
 }
 
 /* ═══════════════════════════════════════════
+   SHARED LEFT PANEL DECORATION
+═══════════════════════════════════════════ */
+function PanelBg() {
+  return (
+    <>
+      <div style={{ position: "absolute", top: -60, right: -60, width: 280, height: 280, borderRadius: "50%", background: `${C.gold}14`, pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: -80, left: -40, width: 200, height: 200, borderRadius: "50%", background: `${C.gold}0d`, pointerEvents: "none" }} />
+      <div style={{ position: "absolute", inset: 0, backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)`, backgroundSize: "24px 24px", pointerEvents: "none" }} />
+    </>
+  );
+}
+
+function PanelLogo({ onBack }) {
+  return (
+    <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
+      style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", marginBottom: 56, position: "relative", zIndex: 1 }}>
+      <div style={{ width: 32, height: 32, background: "rgba(255,255,255,0.12)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", bottom: 0, right: 0, width: 12, height: 12, background: C.gold, borderRadius: "4px 0 0 0" }} />
+        <span style={{ fontSize: "0.7rem", fontWeight: 800, color: "#fff", zIndex: 1, fontFamily: fonts.display }}>Px</span>
+      </div>
+      <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff", letterSpacing: "-0.03em", fontFamily: fonts.display }}>
+        Projex<span style={{ color: C.gold }}>.pk</span>
+      </span>
+    </a>
+  );
+}
+
+/* ═══════════════════════════════════════════
    LOGIN COMPONENT
-   FIX 1: accept onSuccess prop
-   FIX 2: call onSuccess() instead of window.location.href
 ═══════════════════════════════════════════ */
 export function StudentLogin({ onBack, onSwitchToRegister, onForgotPassword, onSuccess }) {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [loginHov, setLoginHov] = useState(false);
 
   const validate = () => {
     const errs = {};
@@ -469,10 +486,8 @@ export function StudentLogin({ onBack, onSwitchToRegister, onForgotPassword, onS
     setSubmitting(true);
     try {
       const res = await loginStudent({ email: loginData.email, password: loginData.password });
-      // Save token + user to localStorage
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
-      // ✅ FIX: navigate via Router instead of window.location.href
       onSuccess && onSuccess();
     } catch (err) {
       const msg = err.response?.data?.message || 'Invalid email or password.';
@@ -485,55 +500,48 @@ export function StudentLogin({ onBack, onSwitchToRegister, onForgotPassword, onS
   return (
     <>
       <FontLoader />
-      <div style={{ minHeight: "100vh", display: "flex", background: C.off }}>
+      <div style={{ minHeight: "100vh", display: "flex", background: C.cream }}>
 
         {/* ── Left Panel ── */}
         <div style={{
-          width: 380, flexShrink: 0, background: C.blue,
+          width: 380, flexShrink: 0, background: C.navy,
           display: "flex", flexDirection: "column",
           padding: "48px 40px", position: "relative", overflow: "hidden",
         }}>
-          <div style={{ position: "absolute", top: -60, right: -60, width: 280, height: 280, borderRadius: "50%", background: "rgba(163,207,62,0.08)", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", bottom: -80, left: -40, width: 200, height: 200, borderRadius: "50%", background: "rgba(163,207,62,0.05)", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", inset: 0, backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)`, backgroundSize: "24px 24px", pointerEvents: "none" }} />
-
-          {/* Logo */}
-          <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
-            style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", marginBottom: 56, position: "relative", zIndex: 1 }}>
-            <div style={{ width: 32, height: 32, background: "rgba(255,255,255,0.12)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-              <div style={{ position: "absolute", bottom: 0, right: 0, width: 12, height: 12, background: C.green, borderRadius: "4px 0 0 0" }} />
-              <span style={{ fontSize: "0.7rem", fontWeight: 800, color: "#fff", zIndex: 1 }}>Px</span>
-            </div>
-            <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "#fff", letterSpacing: "-0.4px" }}>
-              Projex<span style={{ color: C.green }}>.pk</span>
-            </span>
-          </a>
+          <PanelBg />
+          <PanelLogo onBack={onBack} />
 
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", zIndex: 1, animation: "fadeIn 0.4s ease both" }}>
-            <div style={{ fontSize: "3rem", marginBottom: 16 }}>👋</div>
-            <h3 style={{ fontSize: "1.4rem", fontWeight: 800, color: "#fff", letterSpacing: "-0.025em", marginBottom: 10, lineHeight: 1.2 }}>
+            <div style={{ width: 56, height: 56, borderRadius: 14, background: "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+              <GraduationCap size={28} color={C.gold} strokeWidth={1.7} />
+            </div>
+            <h3 style={{ fontSize: "1.4rem", fontWeight: 700, color: "#fff", letterSpacing: "-0.025em", marginBottom: 10, lineHeight: 1.2, fontFamily: fonts.display }}>
               Welcome back
             </h3>
-            <p style={{ fontSize: "0.88rem", color: "rgba(255,255,255,0.55)", lineHeight: 1.75 }}>
+            <p style={{ fontSize: "0.88rem", color: "rgba(255,255,255,0.55)", lineHeight: 1.75, fontFamily: fonts.body }}>
               Sign in to manage your projects, track company interest, and keep your profile up to date.
             </p>
             <div style={{ marginTop: 40, display: "flex", flexDirection: "column", gap: 14 }}>
-              {["🔒 Your IP stays protected", "📬 Real company connections", "🎓 Student-verified access"].map(item => (
+              {[
+                ["Your IP stays protected", Lock],
+                ["Real company connections", Building2],
+                ["Student-verified access", GraduationCap],
+              ].map(([item, Icon]) => (
                 <div key={item} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.green, flexShrink: 0 }} />
-                  <span style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>{item}</span>
+                  <Icon size={14} color={C.gold} strokeWidth={1.8} />
+                  <span style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.5)", fontWeight: 500, fontFamily: fonts.body }}>{item}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <p style={{ fontSize: "0.74rem", color: "rgba(255,255,255,0.25)", position: "relative", zIndex: 1, marginTop: 32 }}>
+          <p style={{ fontSize: "0.74rem", color: "rgba(255,255,255,0.25)", position: "relative", zIndex: 1, marginTop: 32, fontFamily: fonts.body }}>
             <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
               style={{ color: "rgba(255,255,255,0.35)", fontWeight: 500, textDecoration: "none" }}>← Back to home</a>
             {"  ·  "}
             New here?{" "}
             <a href="#" onClick={e => { e.preventDefault(); onSwitchToRegister && onSwitchToRegister(); }}
-              style={{ color: C.green, fontWeight: 600, textDecoration: "none" }}>Create account</a>
+              style={{ color: C.gold, fontWeight: 600, textDecoration: "none" }}>Create account</a>
           </p>
         </div>
 
@@ -542,12 +550,12 @@ export function StudentLogin({ onBack, onSwitchToRegister, onForgotPassword, onS
           <div style={{ width: "100%", maxWidth: 460, animation: "fadeUp 0.4s ease both" }}>
 
             <div style={{ marginBottom: 32 }}>
-              <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: C.green, marginBottom: 8 }}>Student Login</div>
-              <h2 style={{ fontSize: "1.7rem", fontWeight: 800, color: C.ink, letterSpacing: "-0.03em", marginBottom: 8 }}>Sign in to Projex</h2>
-              <p style={{ fontSize: "0.88rem", color: C.muted, lineHeight: 1.6 }}>Use your university email and password to access your account.</p>
+              <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: C.gold, marginBottom: 8, fontFamily: fonts.body }}>Student Login</div>
+              <h2 style={{ fontSize: "1.7rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.03em", marginBottom: 8, fontFamily: fonts.display }}>Sign in to Projex</h2>
+              <p style={{ fontSize: "0.88rem", color: C.muted, lineHeight: 1.6, fontFamily: fonts.body }}>Use your university email and password to access your account.</p>
             </div>
 
-            <div style={{ background: C.white, borderRadius: 16, padding: "36px", border: `1px solid ${C.border}`, boxShadow: "0 2px 12px rgba(3,62,102,0.06)" }}>
+            <div style={{ background: C.white, borderRadius: 16, padding: "36px", border: `1px solid ${C.border}`, boxShadow: "0 2px 12px rgba(12,35,64,0.06)" }}>
 
               <Input
                 label="University Email" required type="email"
@@ -569,80 +577,77 @@ export function StudentLogin({ onBack, onSwitchToRegister, onForgotPassword, onS
                     style={{
                       display: "block", width: "100%",
                       padding: "11px 44px 11px 14px", fontSize: "0.9rem",
-                      fontFamily: "'Plus Jakarta Sans',sans-serif",
+                      fontFamily: fonts.body,
                       background: C.white, color: C.text,
-                      border: `1.5px solid ${errors.password ? C.error : C.border2}`,
+                      border: `1.5px solid ${errors.password ? error : C.border}`,
                       borderRadius: 9, outline: "none",
                       transition: "border-color 0.18s, box-shadow 0.18s",
                     }}
-                    onFocus={e => { e.target.style.borderColor = C.blue; e.target.style.boxShadow = `0 0 0 3px ${C.blue}18`; }}
-                    onBlur={e => { e.target.style.borderColor = errors.password ? C.error : C.border2; e.target.style.boxShadow = "none"; }}
+                    onFocus={e => { e.target.style.borderColor = C.gold; e.target.style.boxShadow = `0 0 0 3px ${C.gold}18`; }}
+                    onBlur={e => { e.target.style.borderColor = errors.password ? error : C.border; e.target.style.boxShadow = "none"; }}
                   />
                   <button type="button" onClick={() => setShowPass(p => !p)}
-                    style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", fontSize: "1rem", color: C.muted2, padding: 2 }}>
-                    {showPass ? "🙈" : "👁️"}
+                    style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: C.muted2, padding: 2, display: "flex" }}>
+                    {showPass ? <EyeOff size={17} strokeWidth={1.7} /> : <Eye size={17} strokeWidth={1.7} />}
                   </button>
                 </div>
-                {errors.password && <p style={{ fontSize: "0.75rem", color: C.error, marginTop: 5 }}>⚠ {errors.password}</p>}
+                {errors.password && <p style={{ fontSize: "0.75rem", color: error, marginTop: 5, fontFamily: fonts.body }}>⚠ {errors.password}</p>}
               </div>
 
               <div style={{ textAlign: "right", marginBottom: 24, marginTop: 6, fontSize: "0.78rem" }}>
-                <a style={{ color: C.blue, fontWeight: 700, textDecoration: "none" }} href="#"
+                <a style={{ color: C.navy, fontWeight: 700, textDecoration: "none" }} href="#"
                   onClick={e => { e.preventDefault(); onForgotPassword && onForgotPassword(); }}>
                   Forgot password?
                 </a>
               </div>
 
               {errors.submit && (
-                <div style={{ background: C.errorPale, border: `1px solid ${C.error}20`, borderRadius: 8, padding: "10px 14px", marginBottom: 20 }}>
-                  <p style={{ fontSize: "0.8rem", color: C.error, fontWeight: 600 }}>⚠ {errors.submit}</p>
+                <div style={{ background: errorPale, border: `1px solid ${error}20`, borderRadius: 8, padding: "10px 14px", marginBottom: 20 }}>
+                  <p style={{ fontSize: "0.8rem", color: error, fontWeight: 600, fontFamily: fonts.body }}>⚠ {errors.submit}</p>
                 </div>
               )}
 
               <button type="button" onClick={handleLogin} disabled={submitting}
+                onMouseEnter={() => setLoginHov(true)} onMouseLeave={() => setLoginHov(false)}
                 style={{
-                  width: "100%", padding: "13px", borderRadius: 9,
-                  fontSize: "0.95rem", fontWeight: 700,
+                  width: "100%", padding: "13px", borderRadius: 50,
+                  fontSize: "0.95rem", fontWeight: 600,
                   cursor: submitting ? "wait" : "pointer",
                   border: "none",
-                  background: submitting ? C.muted2 : C.blue,
+                  background: submitting ? C.disabledText : loginHov ? C.gold : C.navy,
                   color: "#fff", transition: "all 0.18s",
-                  fontFamily: "'Plus Jakarta Sans',sans-serif",
+                  fontFamily: fonts.body,
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 }}
-                onMouseEnter={e => { if (!submitting) e.currentTarget.style.background = C.blueMid; }}
-                onMouseLeave={e => { if (!submitting) e.currentTarget.style.background = C.blue; }}
               >
                 {submitting
-                  ? <><span style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite" }} /> Signing in...</>
-                  : "Sign In →"
+                  ? <><Loader2 size={15} style={{ animation: "spin 0.7s linear infinite" }} /> Signing in...</>
+                  : <>Sign In <ArrowRight size={15} strokeWidth={2} /></>
                 }
               </button>
             </div>
 
-            <p style={{ textAlign: "center", fontSize: "0.78rem", color: C.muted, marginTop: 20 }}>
+            <p style={{ textAlign: "center", fontSize: "0.78rem", color: C.muted, marginTop: 20, fontFamily: fonts.body }}>
               Don't have an account?{" "}
               <a href="#" onClick={e => { e.preventDefault(); onSwitchToRegister && onSwitchToRegister(); }}
-                style={{ color: C.blue, fontWeight: 700, textDecoration: "none" }}>Register here</a>
+                style={{ color: C.navy, fontWeight: 700, textDecoration: "none" }}>Register here</a>
             </p>
           </div>
         </div>
       </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </>
   );
 }
 
 /* ═══════════════════════════════════════════
    MAIN COMPONENT (StudentOnboarding)
-   FIX 3: use onSuccess prop correctly — was
-   calling props.onSuccess() but the component
-   destructures props, so it should be onSuccess()
 ═══════════════════════════════════════════ */
 export default function StudentOnboarding({ onBack, onSwitchToLogin, onSuccess }) {
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [backHov, setBackHov] = useState(false);
+  const [nextHov, setNextHov] = useState(false);
 
   const [data, setData] = useState({
     name: "", email: "", password: "", confirmPassword: "", terms: false,
@@ -683,10 +688,8 @@ export default function StudentOnboarding({ onBack, onSwitchToLogin, onSuccess }
 
     try {
       const res = await registerStudent(payload);
-      // Save token and user data to localStorage after successful registration
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
-      // ✅ FIX: was props.onSuccess() — now correctly onSuccess()
       onSuccess && onSuccess();
     } catch (err) {
       console.log('Full error:', err.response);
@@ -703,61 +706,52 @@ export default function StudentOnboarding({ onBack, onSwitchToLogin, onSuccess }
   };
 
   const panels = [
-    { icon: "🎓", title: "Showcase your work", body: "Post your final-year project and let verified companies find you — with your IP fully protected at every step." },
-    { icon: "🏫", title: "Academic credibility", body: "Your .edu.pk email ties you to your institution. Companies trust students with verified university affiliations." },
-    { icon: "🌟", title: "Stand out from day one", body: "Skills tags, bio, and LinkedIn make your profile pop. The more you fill in, the better your matches." },
+    { Icon: GraduationCap, title: "Showcase your work", body: "Post your final-year project and let verified companies find you — with your IP fully protected at every step." },
+    { Icon: Landmark, title: "Academic credibility", body: "Your .edu.pk email ties you to your institution. Companies trust students with verified university affiliations." },
+    { Icon: Sparkles, title: "Stand out from day one", body: "Skills tags, bio, and LinkedIn make your profile pop. The more you fill in, the better your matches." },
   ];
+  const activePanel = panels[Math.min(step, panels.length - 1)];
 
   return (
     <>
       <FontLoader />
-      <div style={{ minHeight: "100vh", display: "flex", background: C.off }}>
+      <div style={{ minHeight: "100vh", display: "flex", background: C.cream }}>
 
         {/* ── Left Panel ── */}
         <div style={{
-          width: 380, flexShrink: 0, background: C.blue,
+          width: 380, flexShrink: 0, background: C.navy,
           display: "flex", flexDirection: "column",
           padding: "48px 40px", position: "relative", overflow: "hidden",
         }}>
-          <div style={{ position: "absolute", top: -60, right: -60, width: 280, height: 280, borderRadius: "50%", background: "rgba(163,207,62,0.08)", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", bottom: -80, left: -40, width: 200, height: 200, borderRadius: "50%", background: "rgba(163,207,62,0.05)", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", inset: 0, backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)`, backgroundSize: "24px 24px", pointerEvents: "none" }} />
-
-          <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
-            style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", marginBottom: 56, position: "relative", zIndex: 1 }}>
-            <div style={{ width: 32, height: 32, background: "rgba(255,255,255,0.12)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-              <div style={{ position: "absolute", bottom: 0, right: 0, width: 12, height: 12, background: C.green, borderRadius: "4px 0 0 0" }} />
-              <span style={{ fontSize: "0.7rem", fontWeight: 800, color: "#fff", zIndex: 1 }}>Px</span>
-            </div>
-            <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "#fff", letterSpacing: "-0.4px" }}>
-              Projex<span style={{ color: C.green }}>.pk</span>
-            </span>
-          </a>
+          <PanelBg />
+          <PanelLogo onBack={onBack} />
 
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", zIndex: 1 }}>
             <div key={step} style={{ animation: "fadeIn 0.4s ease both" }}>
-              <div style={{ fontSize: "3rem", marginBottom: 16 }}>{panels[Math.min(step, panels.length - 1)].icon}</div>
-              <h3 style={{ fontSize: "1.4rem", fontWeight: 800, color: "#fff", letterSpacing: "-0.025em", marginBottom: 10, lineHeight: 1.2 }}>
-                {panels[Math.min(step, panels.length - 1)].title}
+              <div style={{ width: 56, height: 56, borderRadius: 14, background: "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+                <activePanel.Icon size={28} color={C.gold} strokeWidth={1.7} />
+              </div>
+              <h3 style={{ fontSize: "1.4rem", fontWeight: 700, color: "#fff", letterSpacing: "-0.025em", marginBottom: 10, lineHeight: 1.2, fontFamily: fonts.display }}>
+                {activePanel.title}
               </h3>
-              <p style={{ fontSize: "0.88rem", color: "rgba(255,255,255,0.55)", lineHeight: 1.75 }}>
-                {panels[Math.min(step, panels.length - 1)].body}
+              <p style={{ fontSize: "0.88rem", color: "rgba(255,255,255,0.55)", lineHeight: 1.75, fontFamily: fonts.body }}>
+                {activePanel.body}
               </p>
             </div>
             <div style={{ display: "flex", gap: 6, marginTop: 40 }}>
               {STEPS.map((_, i) => (
-                <div key={i} style={{ width: i === step ? 20 : 6, height: 6, borderRadius: 3, background: i === step ? C.green : "rgba(255,255,255,0.2)", transition: "all 0.3s" }} />
+                <div key={i} style={{ width: i === step ? 20 : 6, height: 6, borderRadius: 3, background: i === step ? C.gold : "rgba(255,255,255,0.2)", transition: "all 0.3s" }} />
               ))}
             </div>
           </div>
 
-          <p style={{ fontSize: "0.74rem", color: "rgba(255,255,255,0.25)", position: "relative", zIndex: 1, marginTop: 32 }}>
+          <p style={{ fontSize: "0.74rem", color: "rgba(255,255,255,0.25)", position: "relative", zIndex: 1, marginTop: 32, fontFamily: fonts.body }}>
             <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
               style={{ color: "rgba(255,255,255,0.35)", fontWeight: 500, textDecoration: "none" }}>← Back to home</a>
             {"  ·  "}
             Already have an account?{" "}
             <a href="#" onClick={e => { e.preventDefault(); onSwitchToLogin && onSwitchToLogin(); }}
-              style={{ color: C.green, fontWeight: 600, textDecoration: "none" }}>Sign in</a>
+              style={{ color: C.gold, fontWeight: 600, textDecoration: "none" }}>Sign in</a>
           </p>
         </div>
 
@@ -766,7 +760,7 @@ export default function StudentOnboarding({ onBack, onSwitchToLogin, onSuccess }
           <div style={{ width: "100%", maxWidth: 520 }}>
             <StepBar current={step} total={STEPS.length} labels={STEPS} />
 
-            <div style={{ background: C.white, borderRadius: 16, padding: "36px 36px", border: `1px solid ${C.border}`, boxShadow: "0 2px 12px rgba(3,62,102,0.06)" }}>
+            <div style={{ background: C.white, borderRadius: 16, padding: "36px 36px", border: `1px solid ${C.border}`, boxShadow: "0 2px 12px rgba(12,35,64,0.06)" }}>
               <>
                 {step === 0 && <Step1 data={data} setData={setData} errors={errors} />}
                 {step === 1 && <Step2 data={data} setData={setData} errors={errors} />}
@@ -775,31 +769,31 @@ export default function StudentOnboarding({ onBack, onSwitchToLogin, onSuccess }
                 <div style={{ display: "flex", gap: 12, marginTop: 28, paddingTop: 24, borderTop: `1px solid ${C.border}` }}>
                   {step > 0 && (
                     <button type="button" onClick={back}
-                      style={{ flex: 1, padding: "12px", borderRadius: 9, fontSize: "0.9rem", fontWeight: 700, cursor: "pointer", border: `1.5px solid ${C.border2}`, color: C.blue, background: "transparent", transition: "all 0.18s", fontFamily: "'Plus Jakarta Sans',sans-serif" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = C.blueTint; e.currentTarget.style.borderColor = C.blue; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = C.border2; }}
-                    >← Back</button>
+                      onMouseEnter={() => setBackHov(true)} onMouseLeave={() => setBackHov(false)}
+                      style={{ flex: 1, padding: "12px", borderRadius: 50, fontSize: "0.9rem", fontWeight: 600, cursor: "pointer", border: `1.5px solid ${backHov ? C.gold : C.border}`, color: C.navy, background: backHov ? C.cream : "transparent", transition: "all 0.18s", fontFamily: fonts.body, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                    ><ArrowLeft size={15} strokeWidth={2} /> Back</button>
                   )}
                   <button type="button" onClick={next} disabled={submitting}
-                    style={{ flex: 2, padding: "13px", borderRadius: 9, fontSize: "0.9rem", fontWeight: 700, cursor: submitting ? "wait" : "pointer", border: "none", background: submitting ? C.muted2 : C.blue, color: "#fff", transition: "all 0.18s", fontFamily: "'Plus Jakarta Sans',sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
-                    onMouseEnter={e => { if (!submitting) e.currentTarget.style.background = C.blueMid; }}
-                    onMouseLeave={e => { if (!submitting) e.currentTarget.style.background = C.blue; }}
+                    onMouseEnter={() => setNextHov(true)} onMouseLeave={() => setNextHov(false)}
+                    style={{ flex: 2, padding: "13px", borderRadius: 50, fontSize: "0.9rem", fontWeight: 600, cursor: submitting ? "wait" : "pointer", border: "none", background: submitting ? C.disabledText : nextHov ? C.gold : C.navy, color: "#fff", transition: "all 0.18s", fontFamily: fonts.body, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
                   >
                     {submitting
-                      ? <><span style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite" }} /> Creating account...</>
-                      : isLast ? "Create My Account 🎓" : "Continue →"
+                      ? <><Loader2 size={15} style={{ animation: "spin 0.7s linear infinite" }} /> Creating account...</>
+                      : isLast
+                        ? <>Create My Account <GraduationCap size={16} strokeWidth={2} /></>
+                        : <>Continue <ArrowRight size={15} strokeWidth={2} /></>
                     }
                   </button>
                 </div>
 
                 {errors.submit && (
-                  <p style={{ textAlign: 'center', fontSize: '0.8rem', color: C.error, marginTop: 12 }}>
+                  <p style={{ textAlign: 'center', fontSize: '0.8rem', color: error, marginTop: 12, fontFamily: fonts.body }}>
                     ⚠ {errors.submit}
                   </p>
                 )}
 
                 {step === 2 && (
-                  <p style={{ textAlign: "center", fontSize: "0.76rem", color: C.muted2, marginTop: 12 }}>
+                  <p style={{ textAlign: "center", fontSize: "0.76rem", color: C.muted2, marginTop: 12, fontFamily: fonts.body }}>
                     All fields optional — you can update your profile anytime from settings.
                   </p>
                 )}
@@ -807,16 +801,15 @@ export default function StudentOnboarding({ onBack, onSwitchToLogin, onSuccess }
             </div>
 
             {step === 0 && (
-              <p style={{ textAlign: "center", fontSize: "0.78rem", color: C.muted, marginTop: 20 }}>
+              <p style={{ textAlign: "center", fontSize: "0.78rem", color: C.muted, marginTop: 20, fontFamily: fonts.body }}>
                 Already have an account?{" "}
                 <a href="#" onClick={e => { e.preventDefault(); onSwitchToLogin && onSwitchToLogin(); }}
-                  style={{ color: C.blue, fontWeight: 700, textDecoration: "none" }}>Sign in here</a>
+                  style={{ color: C.navy, fontWeight: 700, textDecoration: "none" }}>Sign in here</a>
               </p>
             )}
           </div>
         </div>
       </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </>
   );
 }
