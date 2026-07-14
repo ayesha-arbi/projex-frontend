@@ -162,7 +162,7 @@ function Nav({ navigate }) {
         </span>
       </a>
       <ul style={{ display: "flex", gap: 36, listStyle: "none", position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
-        {["How It Works", "Features", "Stories"].map(l => (
+        {["Features", "Stories"].map(l => (
           <li key={l}>
             <a href={`#${l.toLowerCase().replace(/\s/g, "")}`}
               style={{ fontSize: "0.875rem", fontWeight: 500, color: C.muted, textDecoration: "none", transition: "color 0.2s" }}
@@ -393,68 +393,6 @@ function StatCell({ num, label }) {
   );
 }
 
-/* ─── HOW IT WORKS ─── */
-function HowItWorks() {
-  const titleRef = useReveal();
-  const leftRef = useReveal();
-  const rightRef = useReveal();
-  const steps = {
-    student: [
-      ["Verify & Register", "Sign up with your .edu.pk university email. Your institution is verified instantly."],
-      ["Form Your Team", "Invite teammates by username. Build cross-disciplinary teams of up to 5 members."],
-      ["Post a Protected Teaser", "Only title, one-liner, and tech tags appear publicly. Technical details stay locked."],
-      ["Review Interest Requests", "Companies send formal requests with their verified profile. You decide who gets access."],
-    ],
-    company: [
-      ["Create a Business Profile", "Register with NTN or business email. Specify sector, size, and innovation needs."],
-      ["Browse Project Teasers", "Scan high-level overviews of final year projects tailored to your industry filters."],
-      ["Send an Interest Request", "Found something promising? Send a formal request — your profile is shared with the team."],
-      ["Access Full Details", "Once approved, unlock the complete submission, reports, demos, and code repositories."],
-    ],
-  };
-  return (
-    <section id="howitworks" style={{ background: C.white, borderTop: `1px solid ${C.border}` }}>
-      <div style={{ maxWidth: 1160, margin: "0 auto", padding: "100px 48px" }}>
-        <div ref={titleRef} className="reveal" style={{ marginBottom: 56 }}>
-          <Eyebrow>Platform Workflow</Eyebrow>
-          <h2 style={{ fontSize: "clamp(2rem,3vw,2.7rem)", fontWeight: 700, letterSpacing: "-0.03em", color: C.navy, fontFamily: "'Sora', sans-serif", lineHeight: 1.1 }}>
-            Two sides. One <em style={{ fontStyle: "italic", color: C.gold }}>trusted</em> exchange.
-          </h2>
-          <p style={{ fontSize: "1rem", color: C.muted, maxWidth: 460, marginTop: 12, lineHeight: 1.75, fontFamily: "'Inter', sans-serif" }}>Students keep control. Companies get access. Everyone wins through consent.</p>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64 }}>
-          <div ref={leftRef} className="reveal-left">
-            <StepsCol role="Student" color={C.navy} steps={steps.student} />
-          </div>
-          <div ref={rightRef} className="reveal-right">
-            <StepsCol role="Company" color={C.gold} steps={steps.company} />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function StepsCol({ role, color, steps }) {
-  return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28, paddingBottom: 20, borderBottom: `1.5px solid ${C.border}` }}>
-        <span style={{ background: color, color: "#fff", fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 12px", borderRadius: 5, fontFamily: "'Inter', sans-serif" }}>{role}</span>
-        <span style={{ fontSize: "1rem", fontWeight: 600, color: C.navy, fontFamily: "'Inter', sans-serif" }}>For {role}s</span>
-      </div>
-      {steps.map(([h, p], i) => (
-        <div key={i} style={{ display: "flex", gap: 16, marginBottom: 24 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, background: C.cream, border: `1.5px solid ${C.border}`, color: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.78rem", fontWeight: 700, marginTop: 2, fontFamily: "'Sora', sans-serif" }}>{i + 1}</div>
-          <div>
-            <h4 style={{ fontSize: "0.9rem", fontWeight: 600, color: C.navy, marginBottom: 4, fontFamily: "'Inter', sans-serif" }}>{h}</h4>
-            <p style={{ fontSize: "0.83rem", color: C.muted, lineHeight: 1.65, fontFamily: "'Inter', sans-serif" }}>{p}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 /* ─── IP SECTION ─── */
 function IPSection() {
   const leftRef = useReveal();
@@ -528,134 +466,133 @@ function IPCard() {
   );
 }
 
-/* ─── FEATURES CAROUSEL ─── */
+/* ─── FEATURES STICKY SCROLL ─── */
 function Features() {
-  const ref = useReveal();
-  const [index, setIndex] = useState(0);
+  const containerRef = useRef(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      const { top, height } = containerRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      
+      let p = -top / (height - windowHeight);
+      if (p < 0) p = 0;
+      if (p > 1) p = 1;
+      setProgress(p);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const featuresList = [
     { 
       title: "Protected Teaser Listings", 
       desc: "Companies see just enough to get genuinely interested—never enough to replicate the work. Keep your technical advantage completely intact.",
-      visual: (
-        <div style={{ padding: "40px 20px", textAlign: "center" }}>
-          <div style={{ width: 64, height: 64, background: C.goldPale, borderRadius: "50%", margin: "0 auto 20px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.6rem" }}>🔒</div>
-          <div style={{ height: 12, width: "70%", background: C.border, borderRadius: 10, margin: "0 auto 12px" }} />
-          <div style={{ height: 12, width: "50%", background: C.border, borderRadius: 10, margin: "0 auto 30px" }} />
-          <div style={{ background: C.white, border: `1px dashed ${C.gold}`, padding: "16px 20px", borderRadius: 12 }}>
-            <div style={{ fontSize: "0.85rem", color: C.gold, fontWeight: 700 }}>Technical Details Locked</div>
-            <div style={{ fontSize: "0.75rem", color: C.muted, marginTop: 6 }}>Requires explicit student approval</div>
-          </div>
-        </div>
-      )
+      img: "./images/feature_ip_protection.png"
     },
     { 
       title: "Student Team Formation", 
       desc: "Invite peers securely by their verified university username. Build cross-disciplinary teams up to 5 members and co-own submissions.",
-      visual: (
-        <div style={{ padding: "50px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
-          <div style={{ display: "flex", gap: 10 }}>
-            <div style={{ width: 50, height: 50, borderRadius: "50%", background: C.navy, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.9rem", border: "3px solid #fff", boxShadow: "0 4px 10px rgba(0,0,0,0.1)", zIndex: 3 }}>AH</div>
-            <div style={{ width: 50, height: 50, borderRadius: "50%", background: C.navyMid, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.9rem", border: "3px solid #fff", boxShadow: "0 4px 10px rgba(0,0,0,0.1)", marginLeft: -20, zIndex: 2 }}>SF</div>
-            <div style={{ width: 50, height: 50, borderRadius: "50%", background: C.gold, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.9rem", border: "3px solid #fff", boxShadow: "0 4px 10px rgba(0,0,0,0.1)", marginLeft: -20, zIndex: 1 }}>+2</div>
-          </div>
-          <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 20px", fontSize: "0.8rem", color: C.navy, fontWeight: 600 }}>Team 'AeroTech NED' Formed</div>
-        </div>
-      )
+      img: "./images/feature_team_formation.png"
     },
     { 
       title: "Formal Interest Requests", 
       desc: "No cold spam. Companies submit structured requests with their verified profile. You always know exactly who is asking before opening your doors.",
-      visual: (
-        <div style={{ padding: "30px 20px" }}>
-          <div style={{ background: C.white, border: `1px solid ${C.gold}`, borderRadius: 12, padding: 20, boxShadow: "0 8px 24px rgba(176,141,87,0.15)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              <div style={{ width: 36, height: 36, background: C.navy, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "0.8rem" }}>🏢</div>
-              <div>
-                <div style={{ fontSize: "0.85rem", fontWeight: 700, color: C.navy }}>Systems Ltd.</div>
-                <div style={{ fontSize: "0.7rem", color: C.muted }}>Verified IT Firm</div>
-              </div>
-            </div>
-            <p style={{ fontSize: "0.8rem", color: C.muted, lineHeight: 1.5, marginBottom: 16 }}>"We are highly interested in your AI model. We would like to review the technicals for a potential internship."</p>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button style={{ flex: 1, padding: "8px", background: C.navy, color: "#fff", border: "none", borderRadius: 6, fontSize: "0.75rem", fontWeight: 600 }}>Approve</button>
-              <button style={{ flex: 1, padding: "8px", background: C.cream, color: C.navy, border: "none", borderRadius: 6, fontSize: "0.75rem", fontWeight: 600 }}>Decline</button>
-            </div>
-          </div>
-        </div>
-      )
+      img: "./images/feature_interest_requests.png"
     },
     { 
-      title: "In-App Secure Messaging", 
-      desc: "Once a request is approved, chat directly on Projex.pk. No need to share personal numbers or emails until a formal agreement is reached.",
-      visual: (
-        <div style={{ padding: "40px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ alignSelf: "flex-start", background: C.white, border: `1px solid ${C.border}`, padding: "12px 16px", borderRadius: "14px 14px 14px 0", fontSize: "0.8rem", color: C.navy, maxWidth: "85%", lineHeight: 1.4 }}>
-            Thanks for approving our request! Is the prototype deployed yet?
-          </div>
-          <div style={{ alignSelf: "flex-end", background: C.gold, padding: "12px 16px", borderRadius: "14px 14px 0 14px", fontSize: "0.8rem", color: "#fff", maxWidth: "85%", lineHeight: 1.4 }}>
-            Yes, we have a working demo on AWS. I'll share the link.
-          </div>
-        </div>
-      )
+      title: "Smart Discovery", 
+      desc: "Scan high-level overviews of final year projects tailored to your industry filters.",
+      img: "./images/feature_smart_discovery.png"
+    },
+    { 
+      title: "NDA & Secure Messaging", 
+      desc: "Once a request is approved, chat directly on Projex.pk with built-in NDA templates. No need to share personal numbers or emails until a formal agreement is reached.",
+      img: "./images/feature_nda_security.png"
     }
   ];
 
-  const handlePrev = () => setIndex(prev => (prev === 0 ? featuresList.length - 1 : prev - 1));
-  const handleNext = () => setIndex(prev => (prev === featuresList.length - 1 ? 0 : prev + 1));
+  const totalSlides = featuresList.length;
+  const activeIndex = Math.min(Math.floor(progress * totalSlides), totalSlides - 1);
+  const slideProgress = (progress * totalSlides) % 1;
 
   return (
-    <section id="features" style={{ background: C.white, borderTop: `1px solid ${C.border}`, padding: "100px 0" }}>
-      <div ref={ref} className="reveal" style={{ maxWidth: 1160, margin: "0 auto", padding: "0 48px" }}>
+    <section ref={containerRef} id="features" style={{ position: "relative", height: `${totalSlides * 100}vh`, background: C.navy }}>
+      <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "hidden", display: "flex", alignItems: "center" }}>
         
-        <div style={{ textAlign: "center", marginBottom: 64 }}>
-          <Eyebrow>Core Infrastructure</Eyebrow>
-          <h2 style={{ fontSize: "clamp(2rem,3vw,2.7rem)", fontWeight: 700, letterSpacing: "-0.03em", color: C.navy, fontFamily: "'Sora', sans-serif", lineHeight: 1.1, marginBottom: 12 }}>
-            Built for trust. <em style={{ fontStyle: "italic", color: C.gold }}>Engineered for scale.</em>
-          </h2>
-          <p style={{ fontSize: "1rem", color: C.muted, maxWidth: 520, margin: "0 auto", lineHeight: 1.75, fontFamily: "'Inter', sans-serif" }}>
-            Everything the platform needs to work. Simple, fast, and focused on quality over noise.
-          </p>
-        </div>
-
-        {/* Carousel Container */}
-        <div style={{ position: "relative", background: C.cream, border: `1px solid ${C.border}`, borderRadius: 24, overflow: "hidden", boxShadow: "0 20px 60px rgba(12,35,64,0.05)" }}>
-          
-          <div style={{ display: "flex", transition: "transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)", transform: `translateX(-${index * 100}%)` }}>
-            {featuresList.map((feat, i) => (
-              <div key={i} style={{ minWidth: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center" }}>
-                
-                {/* Text Side */}
-                <div style={{ padding: "60px" }}>
-                  <h3 style={{ fontSize: "1.5rem", fontWeight: 700, color: C.navy, marginBottom: 16, fontFamily: "'Sora', sans-serif" }}>{feat.title}</h3>
-                  <p style={{ fontSize: "1rem", color: C.muted, lineHeight: 1.75, fontFamily: "'Inter', sans-serif" }}>{feat.desc}</p>
-                </div>
-                
-                {/* Visual Side */}
-                <div style={{ padding: "40px", background: "rgba(255,255,255,0.4)", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", borderLeft: `1px solid ${C.border}`, position: "relative" }}>
-                   <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at center, ${C.goldPale} 0%, transparent 60%)`, opacity: 0.4 }} />
-                   <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 360 }}>
-                     {feat.visual}
-                   </div>
-                </div>
-
-              </div>
-            ))}
+        {featuresList.map((feat, i) => (
+          <div key={i} style={{ 
+            position: "absolute", inset: 0, 
+            backgroundImage: `url(${feat.img})`, backgroundSize: "cover", backgroundPosition: "center",
+            opacity: activeIndex === i ? 1 : 0, transition: "opacity 0.6s ease",
+            zIndex: 0
+          }}>
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(12,35,64,0.95) 0%, rgba(12,35,64,0.7) 40%, rgba(12,35,64,0.3) 100%)" }} />
           </div>
+        ))}
 
-          {/* Carousel Controls */}
-          <div style={{ position: "absolute", bottom: 24, left: 60, display: "flex", alignItems: "center", gap: 20 }}>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={handlePrev} style={{ width: 36, height: 36, borderRadius: "50%", background: C.white, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: C.navy, transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.borderColor = C.gold} onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>←</button>
-              <button onClick={handleNext} style={{ width: 36, height: 36, borderRadius: "50%", background: C.white, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: C.navy, transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.borderColor = C.gold} onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>→</button>
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1160, margin: "0 auto", padding: "0 48px", width: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64 }}>
+          
+          <div style={{ color: "#fff" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: "0.72rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: C.gold, marginBottom: 32 }}>
+              <span style={{ width: 20, height: 1.5, background: C.gold, display: "inline-block", borderRadius: 2 }} />
+              Core Features
+              <span style={{ width: 20, height: 1.5, background: C.gold, display: "inline-block", borderRadius: 2 }} />
             </div>
-            <div style={{ display: "flex", gap: 6 }}>
-              {featuresList.map((_, i) => (
-                <div key={i} style={{ width: i === index ? 24 : 8, height: 8, borderRadius: 4, background: i === index ? C.gold : C.border, transition: "all 0.3s ease" }} />
+            
+            <div style={{ position: "relative", height: 160 }}>
+              {featuresList.map((feat, i) => (
+                <div key={i} style={{ 
+                  position: "absolute", top: 0, left: 0, width: "100%",
+                  opacity: activeIndex === i ? 1 : 0,
+                  transform: activeIndex === i ? "translateY(0)" : (i < activeIndex ? "translateY(-20px)" : "translateY(20px)"),
+                  transition: "all 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+                  pointerEvents: activeIndex === i ? "auto" : "none"
+                }}>
+                  <h2 style={{ fontSize: "clamp(2rem,3vw,2.7rem)", fontWeight: 700, letterSpacing: "-0.03em", fontFamily: "'Sora', sans-serif", lineHeight: 1.1, marginBottom: 16 }}>
+                    {feat.title}
+                  </h2>
+                  <p style={{ fontSize: "1.05rem", color: "rgba(255,255,255,0.75)", lineHeight: 1.75, fontFamily: "'Inter', sans-serif" }}>
+                    {feat.desc}
+                  </p>
+                </div>
               ))}
             </div>
-          </div>
 
+            <div style={{ marginTop: 60, display: "flex", flexDirection: "column", gap: 16 }}>
+              {featuresList.map((feat, i) => {
+                const isActive = activeIndex === i;
+                const isPast = activeIndex > i;
+                let fillHeight = "0%";
+                if (isActive) fillHeight = `${slideProgress * 100}%`;
+                if (isPast) fillHeight = "100%";
+                
+                return (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ position: "relative", width: 4, height: 48, background: "rgba(255,255,255,0.1)", borderRadius: 4, overflow: "hidden" }}>
+                      <div style={{ 
+                        position: "absolute", top: 0, left: 0, width: "100%", height: fillHeight, 
+                        background: C.gold, transition: isActive ? "none" : "height 0.3s ease" 
+                      }} />
+                    </div>
+                    <div style={{ 
+                      fontSize: isActive ? "1.05rem" : "0.9rem", 
+                      fontWeight: isActive ? 700 : 500, 
+                      fontFamily: "'Inter', sans-serif",
+                      color: isActive ? "#fff" : "rgba(255,255,255,0.4)",
+                      transition: "all 0.3s ease"
+                    }}>
+                      {feat.title}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div /> 
         </div>
       </div>
     </section>
@@ -766,7 +703,7 @@ function Footer() {
         Projex<span style={{ color: C.gold }}>.pk</span>
       </div>
       <ul style={{ display: "flex", gap: 28, listStyle: "none", flexWrap: "wrap" }}>
-        {["How It Works", "Features", "Privacy Policy", "Terms of Use", "Contact Us"].map(l => (
+        {["Features", "Privacy Policy", "Terms of Use", "Contact Us"].map(l => (
           <li key={l}>
             <a href="#" style={{ fontSize: "0.81rem", color: "rgba(255,255,255,0.3)", textDecoration: "none", transition: "color 0.2s", fontFamily: "'Inter', sans-serif" }}
               onMouseEnter={e => e.currentTarget.style.color = C.gold}
@@ -790,7 +727,6 @@ export default function App({ navigate }) {
         <Hero navigate={navigate} />
         <LogoMarquee />
         <Stats />
-        <HowItWorks />
         <IPSection />
         <Features />
         <Testimonials />

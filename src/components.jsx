@@ -1,78 +1,207 @@
 // components.jsx
-// Every reusable UI piece for Projex lives here, built only from tokens.js values.
-// Pages import what they need: import { Button, Card } from "./components";
-// Do NOT redefine colors/radius/fonts inline in a page — add a new component
-// or a new variant here instead, so every page stays visually consistent.
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { colors as C, fonts, fontSizes, fontWeights, radius, spacing } from "./assets/tokens";
 
-import React from "react";
-import { colors, fonts, fontSizes, fontWeights, radius, spacing, buttonPadding } from "./assets/tokens";
+// ---------- OriginBtn (Button) ----------
+function getCoverDiameter(w, h, x, y) {
+  return Math.ceil(2 * Math.max(Math.hypot(x, y), Math.hypot(w - x, y), Math.hypot(x, h - y), Math.hypot(w - x, h - y)));
+}
 
-// ---------- Button ----------
-// variant: "primary" | "secondary" | "disabled"
-// size: "default" | "small"
-export function Button({ children, variant = "primary", size = "default", onClick, type = "button" }) {
+export function Button({ children, variant = "primary", size = "default", onClick, type = "button", style: extra = {}, disabled = false }) {
+  const btnRef = useRef(null);
+  const [hovered, setHovered] = useState(false);
+  const [pressed, setPressed] = useState(false);
+  const [origin, setOrigin] = useState({ x: 0, y: 0 });
+  const [coverSize, setCoverSize] = useState(0);
+  const showFill = (hovered || pressed) && !disabled;
+
+  const updateOrigin = useCallback((x, y) => {
+    const node = btnRef.current;
+    if (!node) return;
+    const r = node.getBoundingClientRect();
+    setOrigin({ x, y });
+    setCoverSize(getCoverDiameter(r.width, r.height, x, y));
+  }, []);
+
+  useEffect(() => {
+    const node = btnRef.current;
+    if (!(node && showFill)) return;
+    const measure = () => {
+      const r = node.getBoundingClientRect();
+      setCoverSize(getCoverDiameter(r.width, r.height, origin.x, origin.y));
+    };
+    measure();
+    const obs = new ResizeObserver(measure);
+    obs.observe(node);
+    return () => obs.disconnect();
+  }, [showFill, origin.x, origin.y]);
+
+  const pad = size === "lg" ? "16px 36px" : size === "sm" ? "10px 22px" : "13px 30px";
+  const fs = size === "lg" ? "1rem" : size === "sm" ? "0.82rem" : "0.9rem";
+
   const base = {
-    fontFamily: fonts.body,
-    fontWeight: fontWeights.medium,
-    fontSize: fontSizes.body,
-    borderRadius: radius.button,
-    padding: size === "small" ? buttonPadding.small : buttonPadding.default,
-    border: "none",
-    cursor: variant === "disabled" ? "not-allowed" : "pointer",
-    transition: "background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
+    position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center",
+    gap: 8, overflow: "hidden", borderRadius: "50px", cursor: disabled ? "not-allowed" : "pointer", border: "none",
+    padding: pad, fontSize: fs, fontFamily: "'Inter', sans-serif", fontWeight: 600,
+    letterSpacing: "-0.01em", transition: "transform 0.15s ease, box-shadow 0.15s ease",
+    transform: pressed && !disabled ? "scale(0.975)" : "none", userSelect: "none", ...extra,
+    opacity: disabled ? 0.6 : 1,
   };
 
-  const variants = {
-    primary: {
-      backgroundColor: colors.navy,
-      color: colors.white,
-    },
-    secondary: {
-      backgroundColor: "transparent",
-      color: colors.gold,
-      border: `1.5px solid ${colors.gold}`,
-    },
-    disabled: {
-      backgroundColor: "transparent",
-      color: colors.disabledText,
-      border: `1.5px solid ${colors.disabledBorder}`,
-    },
+  const fillColor = variant === "gold" ? C.navy : variant === "outline" ? C.navy : C.gold;
+  const styles = {
+    primary: { background: C.navy, color: "#fff", boxShadow: showFill ? "0 8px 24px rgba(12,35,64,0.25)" : "0 1px 3px rgba(12,35,64,0.15)" },
+    gold: { background: C.gold, color: "#fff", boxShadow: showFill ? "0 8px 24px rgba(176,141,87,0.35)" : "0 1px 3px rgba(176,141,87,0.2)" },
+    outline: { background: "transparent", color: C.navy, border: `1.5px solid ${C.border}`, boxShadow: "none" },
+    ghost: { background: "transparent", color: C.gold, border: `1.5px solid ${C.gold}22`, boxShadow: "none" },
   };
-
-  const [hover, setHover] = React.useState(false);
-
-  const hoverStyle =
-    variant === "primary" && hover ? { backgroundColor: colors.gold } : {};
 
   return (
     <button
       type={type}
-      onClick={variant === "disabled" ? undefined : onClick}
-      disabled={variant === "disabled"}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{ ...base, ...variants[variant], ...hoverStyle }}
+      ref={btnRef}
+      style={{ ...base, ...styles[variant], color: showFill && variant !== "outline" ? "#fff" : styles[variant].color }}
+      onPointerEnter={(e) => { if(disabled) return; const r = e.currentTarget.getBoundingClientRect(); updateOrigin(e.clientX - r.left, e.clientY - r.top); setHovered(true); }}
+      onPointerLeave={() => { setHovered(false); setPressed(false); }}
+      onPointerDown={(e) => { if(disabled || e.button !== 0) return; const r = e.currentTarget.getBoundingClientRect(); updateOrigin(e.clientX - r.left, e.clientY - r.top); setPressed(true); }}
+      onPointerUp={() => setPressed(false)}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
     >
-      {children}
+      <span
+        aria-hidden
+        style={{
+          position: "absolute", borderRadius: "50%", background: fillColor,
+          width: coverSize, height: coverSize, left: origin.x, top: origin.y,
+          transform: `translate(-50%, -50%) scale(${showFill && coverSize > 0 ? 1 : 0})`,
+          transition: "transform 0.5s cubic-bezier(0.16,1,0.3,1)",
+          opacity: variant === "outline" ? 0.08 : 0.15, pointerEvents: "none",
+        }}
+      />
+      <span style={{ position: "relative", zIndex: 1, display: "inline-flex", alignItems: "center", gap: 8 }}>
+        {children}
+      </span>
     </button>
   );
 }
 
+// ---------- Label ----------
+export function Label({ children, required }) {
+  return (
+    <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, color: C.text, marginBottom: 6, letterSpacing: "0.01em", fontFamily: fonts.body }}>
+      {children}
+      {required && <span style={{ color: C.gold, marginLeft: 3 }}>*</span>}
+    </label>
+  );
+}
+
+// ---------- Input ----------
+export function Input({ label, required, error, hint, type = "text", ...props }) {
+  const [focus, setFocus] = useState(false);
+  const errColor = "#dc2626";
+  return (
+    <div style={{ marginBottom: 20 }}>
+      {label && <Label required={required}>{label}</Label>}
+      <input
+        type={type}
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
+        style={{
+          display: "block", width: "100%",
+          padding: "11px 14px", fontSize: "0.9rem",
+          fontFamily: fonts.body,
+          background: C.white, color: C.text,
+          border: `1.5px solid ${error ? errColor : focus ? C.gold : C.border}`,
+          borderRadius: 9, outline: "none",
+          transition: "border-color 0.18s, box-shadow 0.18s",
+          boxShadow: focus ? `0 0 0 3px ${C.gold}18` : error ? `0 0 0 3px ${errColor}12` : "none",
+        }}
+        {...props}
+      />
+      {hint && !error && <p style={{ fontSize: "0.75rem", color: C.muted, marginTop: 5, fontFamily: fonts.body }}>{hint}</p>}
+      {error && <p style={{ fontSize: "0.75rem", color: errColor, marginTop: 5, display: "flex", alignItems: "center", gap: 4, fontFamily: fonts.body }}>⚠ {error}</p>}
+    </div>
+  );
+}
+
+// ---------- Select ----------
+export function Select({ label, required, error, children, ...props }) {
+  const [focus, setFocus] = useState(false);
+  const errColor = "#dc2626";
+  return (
+    <div style={{ marginBottom: 20 }}>
+      {label && <Label required={required}>{label}</Label>}
+      <select
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
+        style={{
+          display: "block", width: "100%",
+          padding: "11px 14px", fontSize: "0.9rem",
+          fontFamily: fonts.body,
+          background: C.white, color: C.text,
+          border: `1.5px solid ${error ? errColor : focus ? C.gold : C.border}`,
+          borderRadius: 9, outline: "none", cursor: "pointer",
+          transition: "border-color 0.18s, box-shadow 0.18s",
+          boxShadow: focus ? `0 0 0 3px ${C.gold}18` : "none",
+          appearance: "none",
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235F5E5A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+          backgroundRepeat: "no-repeat", backgroundPosition: "right 14px center",
+        }}
+        {...props}
+      >
+        {children}
+      </select>
+      {error && <p style={{ fontSize: "0.75rem", color: errColor, marginTop: 5, fontFamily: fonts.body }}>⚠ {error}</p>}
+    </div>
+  );
+}
+
+// ---------- Textarea ----------
+export function Textarea({ label, required, error, maxChars, value, onChange, ...props }) {
+  const errColor = "#dc2626";
+  return (
+    <div style={{ marginBottom: 20 }}>
+      {label && <Label required={required}>{label}</Label>}
+      <div style={{ position: "relative" }}>
+        <textarea
+          value={value}
+          onChange={onChange}
+          style={{
+            display: "block", width: "100%",
+            padding: "11px 14px", fontSize: "0.9rem",
+            fontFamily: fonts.body,
+            background: C.white, color: C.text,
+            border: `1.5px solid ${error ? errColor : C.border}`,
+            borderRadius: 9, outline: "none", resize: "vertical",
+            minHeight: 100, lineHeight: 1.6,
+            transition: "border-color 0.18s",
+          }}
+          onFocus={e => e.target.style.borderColor = C.gold}
+          onBlur={e => e.target.style.borderColor = error ? errColor : C.border}
+          {...props}
+        />
+        {maxChars && (
+          <span style={{ position: "absolute", bottom: 10, right: 12, fontSize: "0.72rem", color: value?.length > maxChars * 0.9 ? errColor : C.muted2, fontFamily: fonts.body }}>
+            {value?.length || 0}/{maxChars}
+          </span>
+        )}
+      </div>
+      {error && <p style={{ fontSize: "0.75rem", color: errColor, marginTop: 5, fontFamily: fonts.body }}>⚠ {error}</p>}
+    </div>
+  );
+}
+
 // ---------- Card ----------
-// surface: "white" | "cream"
 export function Card({ children, surface = "white", style = {} }) {
   return (
     <div
       style={{
-        backgroundColor: surface === "cream" ? colors.cream : colors.white,
-        border: `0.5px solid ${colors.border}`,
-        borderRadius: radius.card,
-        padding: spacing.lg,
+        backgroundColor: surface === "cream" ? C.cream : C.white,
+        border: `1px solid ${C.border}`,
+        borderRadius: "16px",
+        padding: "36px",
         fontFamily: fonts.body,
+        boxShadow: "0 2px 12px rgba(12,35,64,0.06)",
         ...style,
       }}
     >
@@ -82,23 +211,24 @@ export function Card({ children, surface = "white", style = {} }) {
 }
 
 // ---------- Badge ----------
-// Small pill/tag used inside cards, e.g. "FYP", "Verified"
-export function Badge({ children, tone = "neutral" }) {
+export function Badge({ children, tone = "neutral", style = {} }) {
   const tones = {
-    neutral: { backgroundColor: colors.cream, color: colors.navy },
-    gold: { backgroundColor: colors.gold, color: colors.white },
+    neutral: { backgroundColor: C.cream, color: C.navyMid, border: `1px solid ${C.border}` },
+    gold: { backgroundColor: C.goldPale, color: "#7A5C25", border: `1px solid ${C.gold}44` },
+    success: { backgroundColor: "#EAF3DE", color: "#3B6D11", border: "none" },
+    navy: { backgroundColor: C.navy, color: "#fff", border: "none" },
   };
   return (
     <span
       style={{
         display: "inline-block",
         fontFamily: fonts.body,
-        fontSize: fontSizes.caption,
-        fontWeight: fontWeights.medium,
-        borderRadius: radius.badge,
-        padding: "4px 10px",
-        letterSpacing: "0.3px",
+        fontSize: "0.66rem",
+        fontWeight: 600,
+        borderRadius: "4px",
+        padding: "3px 8px",
         ...tones[tone],
+        ...style,
       }}
     >
       {children}
@@ -107,7 +237,6 @@ export function Badge({ children, tone = "neutral" }) {
 }
 
 // ---------- Avatar ----------
-// Circular initials avatar, used on company profile cards etc.
 export function Avatar({ initials, size = 40 }) {
   return (
     <div
@@ -115,14 +244,16 @@ export function Avatar({ initials, size = 40 }) {
         width: size,
         height: size,
         borderRadius: "50%",
-        backgroundColor: colors.navy,
-        color: colors.gold,
+        backgroundColor: C.navy,
+        color: "#fff",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         fontFamily: fonts.body,
-        fontWeight: fontWeights.medium,
-        fontSize: size * 0.32,
+        fontWeight: 700,
+        fontSize: size * 0.35,
+        border: "2px solid #fff",
+        boxShadow: "0 2px 8px rgba(12,35,64,0.1)",
       }}
     >
       {initials}
@@ -130,11 +261,34 @@ export function Avatar({ initials, size = 40 }) {
   );
 }
 
-// ---------- Headline / Text ----------
-// level: "h1" | "h2" | "h3" | "body" | "small" | "caption"
+// ---------- Logo ----------
+export function Logo({ variant = "primary", height = 40 }) {
+  const wordmarkColor = variant === "reversed" ? C.white : C.navy;
+
+  const Icon = (
+    <div style={{ width: height, height: height, background: C.navy, borderRadius: height * 0.25, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+      <div style={{ position: "absolute", bottom: 0, right: 0, width: height * 0.3, height: height * 0.3, background: C.gold, borderRadius: `${height * 0.12}px 0 0 0` }} />
+      <span style={{ fontSize: height * 0.6, fontWeight: 800, color: "#fff", zIndex: 1, letterSpacing: "-0.5px", fontFamily: fonts.display }}>Px</span>
+    </div>
+  );
+
+  if (variant === "icon") return Icon;
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: spacing.sm }}>
+      {Icon}
+      <span style={{ fontFamily: fonts.display, fontSize: height * 0.8, fontWeight: 700, color: wordmarkColor, letterSpacing: "-0.03em" }}>
+        Projex<span style={{ color: C.gold }}>.pk</span>
+      </span>
+    </div>
+  );
+}
+
+// ---------- Text ----------
 export function Text({ children, level = "body", color, style = {} }) {
-  const isDisplay = level === "h1" || level === "h2";
+  const isDisplay = level === "h1" || level === "h2" || level === "h3";
   const tag = level === "h1" ? "h1" : level === "h2" ? "h2" : level === "h3" ? "h3" : "p";
+  const sizes = { h1: "2.5rem", h2: "1.8rem", h3: "1.2rem", body: "0.95rem", small: "0.82rem", caption: "0.75rem" };
 
   return React.createElement(
     tag,
@@ -142,43 +296,14 @@ export function Text({ children, level = "body", color, style = {} }) {
       style: {
         margin: 0,
         fontFamily: isDisplay ? fonts.display : fonts.body,
-        fontSize: fontSizes[level] || fontSizes.body,
-        fontWeight: isDisplay ? fontWeights.medium : fontWeights.regular,
-        color: color || colors.navy,
+        fontSize: sizes[level] || sizes.body,
+        fontWeight: isDisplay ? 700 : 400,
+        lineHeight: isDisplay ? 1.2 : 1.6,
+        letterSpacing: isDisplay ? "-0.02em" : "0",
+        color: color || (isDisplay ? C.navy : C.muted),
         ...style,
       },
     },
     children
-  );
-}
-
-// ---------- Logo ----------
-// variant: "primary" (icon + wordmark) | "icon" (mark only) | "reversed" (on navy)
-export function Logo({ variant = "primary", height = 40 }) {
-  const wordmarkColor = variant === "reversed" ? colors.white : colors.navy;
-
-  const Icon = (
-    <svg width={height * 0.9} height={height * 0.6} viewBox="0 0 60 40" style={{ display: "block" }}>
-      <path d="M 0 4 A 18 18 0 0 1 18 22 A 18 18 0 0 1 0 40 Z" fill={colors.gold} />
-      <path d="M 20 4 A 18 18 0 0 1 38 22 A 18 18 0 0 1 20 40 Z" fill={colors.gold} />
-    </svg>
-  );
-
-  if (variant === "icon") return Icon;
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: spacing.xs }}>
-      {Icon}
-      <span
-        style={{
-          fontFamily: fonts.display,
-          fontSize: height * 0.7,
-          fontWeight: fontWeights.medium,
-          color: wordmarkColor,
-        }}
-      >
-        projex
-      </span>
-    </div>
   );
 }

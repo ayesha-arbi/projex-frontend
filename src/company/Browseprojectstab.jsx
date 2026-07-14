@@ -15,16 +15,16 @@ async function apiGet(path) {
   return data;
 }
 
-function Section({ icon: Icon, title, accent = C.blue, badge, children }) {
+function Section({ icon: Icon, title, accent = C.navy, badge, children }) {
   return (
     <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", marginBottom: 16 }}>
-      <div style={{ padding: "11px 20px", borderBottom: `1px solid ${C.border}`, background: C.off, display: "flex", alignItems: "center", gap: 10, borderLeft: `3px solid ${accent}` }}>
+      <div style={{ padding: "11px 20px", borderBottom: `1px solid ${C.border}`, background: C.cream, display: "flex", alignItems: "center", gap: 10, borderLeft: `3px solid ${accent}` }}>
         {Icon && (
           <div style={{ width: 26, height: 26, borderRadius: 7, background: `${accent}14`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <Icon size={12} color={accent} strokeWidth={2.2} />
           </div>
         )}
-        <h3 style={{ fontSize: "0.84rem", fontWeight: 800, color: C.ink, margin: 0, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>{title}</h3>
+        <h3 style={{ fontSize: "0.84rem", fontWeight: 800, color: C.navy, margin: 0, fontFamily: "'Sora',sans-serif" }}>{title}</h3>
         {badge && <span style={{ fontSize: "0.7rem", color: C.muted2, marginLeft: 2 }}>{badge}</span>}
       </div>
       <div>{children}</div>
@@ -73,7 +73,7 @@ export default function BrowseProjectsTab() {
     return (
       <div style={{ padding: "48px 32px", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
-          <span style={{ width: 32, height: 32, border: `3px solid ${C.border2}`, borderTopColor: C.blue, borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite" }} />
+          <span style={{ width: 32, height: 32, border: `3px solid ${C.border}`, borderTopColor: C.navy, borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite" }} />
           <p style={{ color: C.muted, marginTop: 14, fontSize: "0.88rem" }}>Loading projects…</p>
         </div>
       </div>
@@ -88,7 +88,7 @@ export default function BrowseProjectsTab() {
           <div>
             <p style={{ fontSize: "0.88rem", fontWeight: 700, color: C.error, margin: "0 0 4px" }}>Could not load projects</p>
             <p style={{ fontSize: "0.82rem", color: "#b91c1c", margin: "0 0 14px", lineHeight: 1.6 }}>{error}</p>
-            <button onClick={loadProjects} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: C.error, color: "#fff", border: "none", borderRadius: 7, cursor: "pointer", fontSize: "0.8rem", fontWeight: 700, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
+            <button onClick={loadProjects} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: C.error, color: "#fff", border: "none", borderRadius: 7, cursor: "pointer", fontSize: "0.8rem", fontWeight: 700, fontFamily: "'Sora',sans-serif" }}>
               <RefreshCw size={12} /> Try Again
             </button>
           </div>
@@ -101,14 +101,14 @@ export default function BrowseProjectsTab() {
     <div style={{ padding: "24px 32px", maxWidth: 960, boxSizing: "border-box", animation: "fadeUp 0.22s ease both" }}>
 
       {/* Header */}
-      <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", boxShadow: "0 2px 12px rgba(3,62,102,0.06)" }}>
+      <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", boxShadow: "0 2px 12px rgba(12,35,64,0.06)" }}>
         <div>
-          <h2 style={{ fontSize: "1rem", fontWeight: 800, color: C.ink, margin: "0 0 4px", fontFamily: "'Plus Jakarta Sans',sans-serif" }}>Browse Student Projects</h2>
+          <h2 style={{ fontSize: "1rem", fontWeight: 800, color: C.navy, margin: "0 0 4px", fontFamily: "'Sora',sans-serif" }}>Browse Student Projects</h2>
           <p style={{ fontSize: "0.78rem", color: C.muted, margin: 0 }}>Discover final-year projects from Pakistan's top universities</p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.bluePale, border: `1px solid ${C.border2}`, borderRadius: 9, padding: "6px 12px" }}>
-          <GraduationCap size={13} color={C.blue} />
-          <span style={{ fontSize: "0.75rem", fontWeight: 700, color: C.blue }}>{projects.length} projects</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.navyPale, border: `1px solid ${C.border}`, borderRadius: 9, padding: "6px 12px" }}>
+          <GraduationCap size={13} color={C.navy} />
+          <span style={{ fontSize: "0.75rem", fontWeight: 700, color: C.navy }}>{projects.length} projects</span>
         </div>
       </div>
 
@@ -120,17 +120,17 @@ export default function BrowseProjectsTab() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by title, university, or category…"
-          style={{ width: "100%", padding: "10px 14px 10px 38px", border: `1.5px solid ${C.border2}`, borderRadius: 9, fontSize: "0.84rem", fontFamily: "'Plus Jakarta Sans',sans-serif", color: C.ink, outline: "none", background: C.white, boxSizing: "border-box" }}
-          onFocus={(e) => (e.target.style.borderColor = C.blue)}
-          onBlur={(e) => (e.target.style.borderColor = C.border2)}
+          style={{ width: "100%", padding: "10px 14px 10px 38px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: "0.84rem", fontFamily: "'Sora',sans-serif", color: C.navy, outline: "none", background: C.white, boxSizing: "border-box" }}
+          onFocus={(e) => (e.target.style.borderColor = C.navy)}
+          onBlur={(e) => (e.target.style.borderColor = C.border)}
         />
       </div>
 
       {/* Project grid */}
-      <Section icon={Search} title="Projects" accent={C.blue} badge={`${filtered.length} found`}>
+      <Section icon={Search} title="Projects" accent={C.navy} badge={`${filtered.length} found`}>
         {filtered.length === 0 ? (
           <div style={{ padding: "40px 24px", textAlign: "center" }}>
-            <p style={{ fontSize: "0.84rem", fontWeight: 600, color: C.ink, margin: "0 0 4px" }}>No projects found</p>
+            <p style={{ fontSize: "0.84rem", fontWeight: 600, color: C.navy, margin: "0 0 4px" }}>No projects found</p>
             <p style={{ fontSize: "0.76rem", color: C.muted, margin: 0 }}>Try a different search term</p>
           </div>
         ) : (
@@ -144,9 +144,9 @@ export default function BrowseProjectsTab() {
 
       <button
         onClick={loadProjects}
-        style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "transparent", color: C.muted, border: `1.5px solid ${C.border2}`, borderRadius: 8, cursor: "pointer", fontSize: "0.78rem", fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif", transition: "all 0.18s", marginTop: 4 }}
-        onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.blue; e.currentTarget.style.color = C.blue; }}
-        onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border2; e.currentTarget.style.color = C.muted; }}
+        style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "transparent", color: C.muted, border: `1.5px solid ${C.border}`, borderRadius: 8, cursor: "pointer", fontSize: "0.78rem", fontWeight: 600, fontFamily: "'Sora',sans-serif", transition: "all 0.18s", marginTop: 4 }}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.navy; e.currentTarget.style.color = C.navy; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; }}
       >
         <RefreshCw size={12} /> Refresh
       </button>
@@ -160,12 +160,12 @@ function ProjectCard({ project }) {
   return (
     <div
       style={{ padding: "18px 20px", borderBottom: `1px solid ${C.border}`, borderRight: `1px solid ${C.border}`, transition: "background 0.12s" }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = C.off)}
+      onMouseEnter={(e) => (e.currentTarget.style.background = C.cream)}
       onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
     >
       {/* Poster */}
       {project.poster && (
-        <div style={{ width: "100%", height: 120, borderRadius: 8, overflow: "hidden", marginBottom: 12, background: C.bluePale }}>
+        <div style={{ width: "100%", height: 120, borderRadius: 8, overflow: "hidden", marginBottom: 12, background: C.navyPale }}>
           <img
             src={`${import.meta.env.VITE_API_URL?.replace("/api", "")}/${project.poster}`}
             alt={project.title}
@@ -176,7 +176,7 @@ function ProjectCard({ project }) {
       )}
 
       {/* Title */}
-      <h3 style={{ fontSize: "0.88rem", fontWeight: 700, color: C.ink, margin: "0 0 6px", lineHeight: 1.4, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
+      <h3 style={{ fontSize: "0.88rem", fontWeight: 700, color: C.navy, margin: "0 0 6px", lineHeight: 1.4, fontFamily: "'Sora',sans-serif" }}>
         {project.title || "Untitled Project"}
       </h3>
 
@@ -209,7 +209,7 @@ function ProjectCard({ project }) {
       {/* Status chip */}
       {project.project_status && (
         <div style={{ marginBottom: 12 }}>
-          <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "3px 8px", borderRadius: 4, background: C.bluePale, color: C.blue, border: `1px solid ${C.border2}` }}>
+          <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "3px 8px", borderRadius: 4, background: C.navyPale, color: C.navy, border: `1px solid ${C.border}` }}>
             {project.project_status}
           </span>
         </div>

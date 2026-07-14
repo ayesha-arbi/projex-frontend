@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { loginCompany } from '../services/api';
 import { C, fonts } from '../assets/tokens.js';
+import { Button, Input, Select, Textarea, Card, Label, Badge, Avatar, Text } from "../components.jsx";
 import {
   Search, Mail, MessageSquare, BarChart3, Lock, Check, Landmark,
   Eye, EyeOff, AlertTriangle, Clock, Building2, Loader2, ArrowRight,
@@ -25,39 +26,9 @@ const amber = "#d97706";
 const amberPale = "#fffbeb";
 
 /* ─── SHARED FIELD COMPONENTS ─── */
-function Label({ children, required }) {
-  return (
-    <label style={{ display:"block", fontSize:"0.8rem", fontWeight:600, color:C.text, marginBottom:6, letterSpacing:"0.01em", fontFamily:fonts.body }}>
-      {children}{required && <span style={{ color:C.gold, marginLeft:3 }}>*</span>}
-    </label>
-  );
-}
 
-function Input({ label, required, error: err, hint, type="text", ...props }) {
-  const [focus, setFocus] = useState(false);
-  return (
-    <div style={{ marginBottom:18 }}>
-      {label && <Label required={required}>{label}</Label>}
-      <input
-        type={type}
-        onFocus={() => setFocus(true)}
-        onBlur={() => setFocus(false)}
-        style={{
-          display:"block", width:"100%", padding:"11px 14px",
-          fontSize:"0.9rem", fontFamily:fonts.body,
-          background:C.white, color:C.text,
-          border:`1.5px solid ${err ? error : focus ? C.gold : C.border}`,
-          borderRadius:9, outline:"none",
-          transition:"border-color 0.18s, box-shadow 0.18s",
-          boxShadow: focus ? `0 0 0 3px ${C.gold}18` : err ? `0 0 0 3px ${error}12` : "none",
-        }}
-        {...props}
-      />
-      {hint && !err && <p style={{ fontSize:"0.75rem", color:C.muted, marginTop:5, fontFamily:fonts.body }}>{hint}</p>}
-      {err && <p style={{ fontSize:"0.75rem", color:error, marginTop:5, fontFamily:fonts.body }}>⚠ {err}</p>}
-    </div>
-  );
-}
+
+
 
 /* ═══════════════════════════════════════════
    MAIN COMPONENT
@@ -207,7 +178,7 @@ export default function CompanyLogin({ onBack, onSwitchToRegister, onForgotPassw
             </div>
 
             {/* Card */}
-            <div style={{ background:C.white, borderRadius:16, padding:"36px", border:`1px solid ${C.border}`, boxShadow:"0 2px 12px rgba(12,35,64,0.06)" }}>
+            <div style={{ background:C.white, borderRadius:16, padding:"36px", border:`1px solid ${C.border}`, boxShadow: "0 10px 40px rgba(12,35,64,0.06)" }}>
 
               {/* General error */}
               {errors.general && (

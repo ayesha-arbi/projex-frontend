@@ -5,9 +5,9 @@ import { C } from "../../assets/tokens";
 const API_BASE = import.meta.env?.VITE_API_URL || "/api";
 
 const STATUS_CONFIG = {
-  NONE:     { label: "Request Access",  icon: Building2, color: C.blue,      bg: C.bluePale,   border: C.blue },
+  NONE:     { label: "Request Access",  icon: Building2, color: C.navy,      bg: C.navyPale,   border: C.navy },
   PENDING:  { label: "Request Pending", icon: Clock,     color: "#f59e0b",   bg: "#fffbeb",    border: "#fcd34d" },
-  APPROVED: { label: "Access Granted",  icon: CheckCircle, color: C.greenDark, bg: C.greenPale, border: "#b8e060" },
+  APPROVED: { label: "Access Granted",  icon: CheckCircle, color: C.goldDark, bg: C.goldPale, border: "#b8e060" },
   REJECTED: { label: "Request Denied",  icon: XCircle,   color: C.error,     bg: C.errorPale,  border: "#fca5a5" },
 };
 
@@ -54,7 +54,7 @@ export default function RequestAccessButton({ projectId, initialStatus = "NONE",
       <span style={{
         display: "inline-flex", alignItems: "center", gap: 6,
         padding: "6px 12px", borderRadius: 7, fontSize: "0.76rem", fontWeight: 700,
-        fontFamily: "'Plus Jakarta Sans',sans-serif",
+        fontFamily: "'Sora',sans-serif",
         background: config.bg, color: config.color, border: `1px solid ${config.border}`,
       }}>
         <Icon size={12} /> {config.label}
@@ -67,7 +67,7 @@ export default function RequestAccessButton({ projectId, initialStatus = "NONE",
       <span style={{
         display: "inline-flex", alignItems: "center", gap: 6,
         padding: "6px 12px", borderRadius: 7, fontSize: "0.76rem", fontWeight: 700,
-        fontFamily: "'Plus Jakarta Sans',sans-serif",
+        fontFamily: "'Sora',sans-serif",
         background: config.bg, color: config.color, border: `1px solid ${config.border}`,
       }}>
         <Icon size={12} /> {config.label}
@@ -93,7 +93,7 @@ export default function RequestAccessButton({ projectId, initialStatus = "NONE",
           display: "inline-flex", alignItems: "center", gap: 7,
           padding: status === "PENDING" ? "6px 12px" : "7px 14px",
           borderRadius: 7, fontSize: "0.78rem", fontWeight: 700,
-          fontFamily: "'Plus Jakarta Sans',sans-serif",
+          fontFamily: "'Sora',sans-serif",
           cursor: loading || status !== "NONE" ? "not-allowed" : "pointer",
           border: `1.5px solid ${config.border}`,
           background: loading || status !== "NONE" ? config.bg : config.bg,

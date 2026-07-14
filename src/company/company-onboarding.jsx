@@ -1,10 +1,11 @@
 import { useState, useRef } from "react";
 import { registerCompany } from '../services/api';
 import { C, fonts } from '../assets/tokens.js';
+import { Button, Input, Select, Textarea, Card, Label, Badge, Avatar, Text } from "../components.jsx";
 import {
   Building2, Target, Search, ShieldCheck, Eye, EyeOff, Building,
   FileText, FolderOpen, Check, X, Loader2, Mail, Lock, Landmark,
-  Clock, AlertTriangle, ArrowLeft, ArrowRight,
+  Clock, AlertTriangle, ArrowLeft, ArrowRight, GraduationCap
 } from "lucide-react";
 const logo = "./logo.png"
 
@@ -39,86 +40,13 @@ const DOC_TYPES          = ["SECP Registration Certificate","NTN Certificate","C
 /* ═══════════════════════════════════════════
    SHARED FIELD COMPONENTS
 ═══════════════════════════════════════════ */
-function Label({ children, required }) {
-  return (
-    <label style={{ display:"block", fontSize:"0.8rem", fontWeight:600, color:C.text, marginBottom:6, letterSpacing:"0.01em", fontFamily:fonts.body }}>
-      {children}{required && <span style={{ color:C.gold, marginLeft:3 }}>*</span>}
-    </label>
-  );
-}
 
-function Input({ label, required, error: err, hint, type="text", ...props }) {
-  const [focus, setFocus] = useState(false);
-  return (
-    <div style={{ marginBottom:18 }}>
-      {label && <Label required={required}>{label}</Label>}
-      <input type={type}
-        onFocus={() => setFocus(true)}
-        onBlur={() => setFocus(false)}
-        style={{
-          display:"block", width:"100%", padding:"11px 14px",
-          fontSize:"0.9rem", fontFamily:fonts.body,
-          background:C.white, color:C.text,
-          border:`1.5px solid ${err?error:focus?C.gold:C.border}`,
-          borderRadius:9, outline:"none", transition:"border-color 0.18s, box-shadow 0.18s",
-          boxShadow: focus?`0 0 0 3px ${C.gold}18`:err?`0 0 0 3px ${error}12`:"none",
-        }}
-        {...props}
-      />
-      {hint && !err && <p style={{ fontSize:"0.75rem", color:C.muted, marginTop:5, fontFamily:fonts.body }}>{hint}</p>}
-      {err && <p style={{ fontSize:"0.75rem", color:error, marginTop:5, fontFamily:fonts.body }}>⚠ {err}</p>}
-    </div>
-  );
-}
 
-function Select({ label, required, error: err, children, value, onChange }) {
-  const [focus, setFocus] = useState(false);
-  return (
-    <div style={{ marginBottom:18 }}>
-      {label && <Label required={required}>{label}</Label>}
-      <select value={value} onChange={onChange}
-        onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
-        style={{
-          display:"block", width:"100%", padding:"11px 14px",
-          fontSize:"0.9rem", fontFamily:fonts.body,
-          background:C.white,
-          color: value ? C.text : C.muted2,
-          border:`1.5px solid ${err?error:focus?C.gold:C.border}`,
-          borderRadius:9, outline:"none", cursor:"pointer", appearance:"none",
-          transition:"border-color 0.18s, box-shadow 0.18s",
-          boxShadow: focus?`0 0 0 3px ${C.gold}18`:"none",
-          backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235F5E5A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
-          backgroundRepeat:"no-repeat", backgroundPosition:"right 14px center",
-        }}
-      >
-        {children}
-      </select>
-      {err && <p style={{ fontSize:"0.75rem", color:error, marginTop:5, fontFamily:fonts.body }}>⚠ {err}</p>}
-    </div>
-  );
-}
 
-function Textarea({ label, required, error: err, maxChars, value, onChange, ...props }) {
-  return (
-    <div style={{ marginBottom:18 }}>
-      {label && <Label required={required}>{label}</Label>}
-      <div style={{ position:"relative" }}>
-        <textarea value={value} onChange={onChange}
-          style={{ display:"block", width:"100%", padding:"11px 14px", fontSize:"0.9rem", fontFamily:fonts.body, background:C.white, color:C.text, border:`1.5px solid ${err?error:C.border}`, borderRadius:9, outline:"none", resize:"vertical", minHeight:90, lineHeight:1.6, transition:"border-color 0.18s" }}
-          onFocus={e => e.target.style.borderColor=C.gold}
-          onBlur={e => e.target.style.borderColor=err?error:C.border}
-          {...props}
-        />
-        {maxChars && (
-          <span style={{ position:"absolute", bottom:10, right:12, fontSize:"0.72rem", color: value.length>maxChars*0.9?error:C.muted2, fontFamily:fonts.body }}>
-            {value.length}/{maxChars}
-          </span>
-        )}
-      </div>
-      {err && <p style={{ fontSize:"0.75rem", color:error, marginTop:5, fontFamily:fonts.body }}>⚠ {err}</p>}
-    </div>
-  );
-}
+
+
+
+
 
 function MultiSelect({ label, required, options, selected, onChange, hint }) {
   return (
@@ -172,11 +100,7 @@ function LogoUpload({ onChange }) {
           }
         </div>
         <div>
-          <button type="button" onClick={() => inputRef.current.click()}
-            style={{ fontSize:"0.82rem", fontWeight:600, color:C.navy, background:"transparent", border:`1.5px solid ${C.border}`, borderRadius:7, padding:"7px 14px", cursor:"pointer", fontFamily:fonts.body, transition:"all 0.15s" }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor=C.gold; e.currentTarget.style.background=C.cream; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor=C.border; e.currentTarget.style.background="transparent"; }}
-          >{preview ? "Change Logo" : "Upload Logo"}</button>
+          <Button variant="outline" type="button" onClick={() => inputRef.current.click()}>{preview ? "Change Logo" : "Upload Logo"}</Button>
           <p style={{ fontSize:"0.72rem", color:C.muted, marginTop:5, fontFamily:fonts.body }}>PNG, JPG, or SVG · Max 2MB</p>
         </div>
         <input ref={inputRef} type="file" accept="image/*" style={{ display:"none" }} onChange={handle} />
@@ -707,7 +631,7 @@ export default function CompanyOnboarding({ onBack, onSwitchToLogin }) {
           <div style={{ width:"100%", maxWidth:540 }}>
             <StepBar current={step} total={STEPS.length} labels={STEPS} />
 
-            <div style={{ background:C.white, borderRadius:16, padding:"36px 36px", border:`1px solid ${C.border}`, boxShadow:"0 2px 12px rgba(12,35,64,0.06)" }}>
+            <div style={{ background:C.white, borderRadius:16, padding:"36px 36px", border:`1px solid ${C.border}`, boxShadow: "0 10px 40px rgba(12,35,64,0.06)" }}>
               {done
                 ? <SuccessScreen companyName={data.companyName} onSwitchToLogin={onSwitchToLogin} />
                 : <>
@@ -724,20 +648,9 @@ export default function CompanyOnboarding({ onBack, onSwitchToLogin }) {
 
                     <div style={{ display:"flex", gap:12, marginTop:28, paddingTop:24, borderTop:`1px solid ${C.border}` }}>
                       {step > 0 && (
-                        <button type="button" onClick={back}
-                          onMouseEnter={() => setBackHov(true)} onMouseLeave={() => setBackHov(false)}
-                          style={{ flex:1, padding:"12px", borderRadius:50, fontSize:"0.9rem", fontWeight:600, cursor:"pointer", border:`1.5px solid ${backHov?C.gold:C.border}`, color:C.navy, background:backHov?C.cream:"transparent", transition:"all 0.18s", fontFamily:fonts.body, display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}
-                        ><ArrowLeft size={15} strokeWidth={2} /> Back</button>
+                        <Button variant="outline" onClick={back} style={{ flex: 1 }}><ArrowLeft size={15} strokeWidth={2} /> Back</Button>
                       )}
-                      <button type="button" onClick={next} disabled={submitting}
-                        onMouseEnter={() => setNextHov(true)} onMouseLeave={() => setNextHov(false)}
-                        style={{ flex:2, padding:"13px", borderRadius:50, fontSize:"0.9rem", fontWeight:600, cursor: submitting?"wait":"pointer", border:"none", background: submitting?C.disabledText:nextHov?C.gold:C.navy, color:"#fff", transition:"all 0.18s", fontFamily:fonts.body, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}
-                      >
-                        {submitting
-                          ? <><Loader2 size={15} style={{ animation:"spin 0.7s linear infinite" }} /> Submitting...</>
-                          : isLast ? <>Submit Application <Building2 size={16} strokeWidth={2} /></> : <>Continue <ArrowRight size={15} strokeWidth={2} /></>
-                        }
-                      </button>
+                      <Button variant="primary" onClick={next} disabled={submitting} style={{ flex: 2 }}>{submitting ? <><Loader2 size={15} style={{ animation: "spin 0.7s linear infinite" }} /> Creating account...</> : isLast ? <>Create My Account <GraduationCap size={16} strokeWidth={2} /></> : <>Continue <ArrowRight size={15} strokeWidth={2} /></>}</Button>
                     </div>
                   </>
               }

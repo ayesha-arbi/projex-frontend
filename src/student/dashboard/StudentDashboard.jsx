@@ -73,17 +73,17 @@ export default function StudentDashboard({ onLogout }) {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
+        400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
         @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
         @keyframes spin   { to { transform: rotate(360deg) } }
         *, *::before, *::after { box-sizing: border-box; }
-        body { margin:0; background:${C.off}; }
+        body { margin:0; background:${C.cream}; }
         ::-webkit-scrollbar { width:5px; height:5px; }
         ::-webkit-scrollbar-track { background:transparent; }
-        ::-webkit-scrollbar-thumb { background:${C.border2}; border-radius:3px; }
+        ::-webkit-scrollbar-thumb { background:${C.border}; border-radius:3px; }
       `}</style>
 
-      <div style={{ display: "flex", fontFamily: "'Plus Jakarta Sans',sans-serif", minHeight: "100vh", background: C.off }}>
+      <div style={{ display: "flex", fontFamily: "'Sora',sans-serif", minHeight: "100vh", background: C.cream }}>
 
         <Sidebar
           active={tab}

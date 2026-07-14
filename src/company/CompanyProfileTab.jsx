@@ -2,16 +2,16 @@ import { useState } from "react";
 import { Building2, MapPin, Globe, Mail, CheckCircle, Clock, Tag, Users, Target } from "lucide-react";
 import { C } from "../assets/tokens";
 
-function Section({ icon: Icon, title, accent = C.blue, children }) {
+function Section({ icon: Icon, title, accent = C.navy, children }) {
   return (
     <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", marginBottom: 16 }}>
-      <div style={{ padding: "11px 20px", borderBottom: `1px solid ${C.border}`, background: C.off, display: "flex", alignItems: "center", gap: 10, borderLeft: `3px solid ${accent}` }}>
+      <div style={{ padding: "11px 20px", borderBottom: `1px solid ${C.border}`, background: C.cream, display: "flex", alignItems: "center", gap: 10, borderLeft: `3px solid ${accent}` }}>
         {Icon && (
           <div style={{ width: 26, height: 26, borderRadius: 7, background: `${accent}14`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <Icon size={12} color={accent} strokeWidth={2.2} />
           </div>
         )}
-        <h3 style={{ fontSize: "0.84rem", fontWeight: 800, color: C.ink, margin: 0, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>{title}</h3>
+        <h3 style={{ fontSize: "0.84rem", fontWeight: 800, color: C.navy, margin: 0, fontFamily: "'Sora',sans-serif" }}>{title}</h3>
       </div>
       <div>{children}</div>
     </div>
@@ -22,12 +22,12 @@ function InfoRow({ icon: Icon, label, value }) {
   if (!value) return null;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 20px", borderBottom: `1px solid ${C.border}` }}>
-      <div style={{ width: 28, height: 28, borderRadius: 7, background: C.bluePale, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <Icon size={12} color={C.blue} />
+      <div style={{ width: 28, height: 28, borderRadius: 7, background: C.navyPale, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <Icon size={12} color={C.navy} />
       </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: "0.7rem", color: C.muted2, fontWeight: 600, marginBottom: 1 }}>{label}</div>
-        <div style={{ fontSize: "0.84rem", color: C.ink, fontWeight: 600 }}>{value}</div>
+        <div style={{ fontSize: "0.84rem", color: C.navy, fontWeight: 600 }}>{value}</div>
       </div>
     </div>
   );
@@ -35,7 +35,7 @@ function InfoRow({ icon: Icon, label, value }) {
 
 function TagChip({ text }) {
   return (
-    <span style={{ fontSize: "0.72rem", fontWeight: 600, padding: "4px 10px", borderRadius: 5, background: C.bluePale, color: C.blue, border: `1px solid ${C.border2}` }}>
+    <span style={{ fontSize: "0.72rem", fontWeight: 600, padding: "4px 10px", borderRadius: 5, background: C.navyPale, color: C.navy, border: `1px solid ${C.border}` }}>
       {text}
     </span>
   );
@@ -64,20 +64,20 @@ export default function CompanyProfileTab() {
     <div style={{ padding: "24px 32px", maxWidth: 720, boxSizing: "border-box", animation: "fadeUp 0.22s ease both" }}>
 
       {/* Header card */}
-      <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "24px", marginBottom: 16, boxShadow: "0 2px 12px rgba(3,62,102,0.06)" }}>
+      <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "24px", marginBottom: 16, boxShadow: "0 2px 12px rgba(12,35,64,0.06)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
           {/* Avatar */}
-          <div style={{ width: 60, height: 60, borderRadius: 14, background: C.blue, border: `3px solid ${C.green}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem", fontWeight: 800, color: "#fff", flexShrink: 0, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
+          <div style={{ width: 60, height: 60, borderRadius: 14, background: C.navy, border: `3px solid ${C.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem", fontWeight: 800, color: "#fff", flexShrink: 0, fontFamily: "'Sora',sans-serif" }}>
             {initials}
           </div>
 
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
-              <h2 style={{ fontSize: "1.1rem", fontWeight: 800, color: C.ink, margin: 0, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
+              <h2 style={{ fontSize: "1.1rem", fontWeight: 800, color: C.navy, margin: 0, fontFamily: "'Sora',sans-serif" }}>
                 {companyName}
               </h2>
               {isVerified ? (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.66rem", fontWeight: 800, padding: "3px 9px", borderRadius: 5, background: C.greenPale, color: C.greenDark, border: `1px solid #b8e060` }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.66rem", fontWeight: 800, padding: "3px 9px", borderRadius: 5, background: C.goldPale, color: C.goldDark, border: `1px solid #b8e060` }}>
                   <CheckCircle size={9} /> VERIFIED
                 </span>
               ) : (
@@ -123,7 +123,7 @@ export default function CompanyProfileTab() {
       )}
 
       {/* Company details */}
-      <Section icon={Building2} title="Company Details" accent={C.blue}>
+      <Section icon={Building2} title="Company Details" accent={C.navy}>
         <InfoRow icon={Mail}      label="Email"        value={user.email} />
         <InfoRow icon={Building2} label="Industry"     value={user.industry} />
         <InfoRow icon={Users}     label="Company Size" value={user.company_size || user.size} />
@@ -131,7 +131,7 @@ export default function CompanyProfileTab() {
         <InfoRow icon={Globe}     label="Website"      value={user.website} />
         <div style={{ padding: "11px 20px" }}>
           <div style={{ fontSize: "0.7rem", color: C.muted2, fontWeight: 600, marginBottom: 1 }}>Verification Status</div>
-          <div style={{ fontSize: "0.84rem", fontWeight: 700, color: isVerified ? C.greenDark : "#92400e" }}>
+          <div style={{ fontSize: "0.84rem", fontWeight: 700, color: isVerified ? C.goldDark : "#92400e" }}>
             {isVerified ? "✅ Verified" : "⏳ Pending Review"}
           </div>
         </div>
@@ -139,10 +139,10 @@ export default function CompanyProfileTab() {
 
       {/* What we're looking for */}
       {lookingFor.length > 0 && (
-        <Section icon={Target} title="Looking For" accent={C.greenDark}>
+        <Section icon={Target} title="Looking For" accent={C.goldDark}>
           <div style={{ padding: "16px 20px", display: "flex", flexWrap: "wrap", gap: 8 }}>
             {lookingFor.map((item) => (
-              <span key={item} style={{ fontSize: "0.74rem", fontWeight: 700, padding: "5px 12px", borderRadius: 20, background: C.greenPale, color: C.greenDark, border: `1px solid #b8e060` }}>
+              <span key={item} style={{ fontSize: "0.74rem", fontWeight: 700, padding: "5px 12px", borderRadius: 20, background: C.goldPale, color: C.goldDark, border: `1px solid #b8e060` }}>
                 ✓ {item}
               </span>
             ))}
@@ -152,7 +152,7 @@ export default function CompanyProfileTab() {
 
       {/* Preferences */}
       {(preferredTech.length > 0 || prefIndustries.length > 0 || prefUniversities.length > 0) && (
-        <Section icon={Tag} title="Preferences" accent={C.blue}>
+        <Section icon={Tag} title="Preferences" accent={C.navy}>
           <div style={{ padding: "8px 0" }}>
             {preferredTech.length > 0 && (
               <div style={{ padding: "10px 20px", borderBottom: `1px solid ${C.border}` }}>

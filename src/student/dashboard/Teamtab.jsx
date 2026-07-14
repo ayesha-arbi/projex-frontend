@@ -66,10 +66,10 @@ function Toast({ toast }) {
   return (
     <div style={{
       position: "fixed", top: 24, right: 28, zIndex: 9999,
-      background: isErr ? "#dc2626" : C.greenDark,
+      background: isErr ? "#dc2626" : C.goldDark,
       color: "#fff", padding: "11px 20px", borderRadius: 10,
       fontSize: "0.82rem", fontWeight: 700,
-      fontFamily: "'Plus Jakarta Sans',sans-serif",
+      fontFamily: "'Sora',sans-serif",
       boxShadow: `0 8px 24px ${isErr ? "rgba(220,38,38,0.3)" : "rgba(90,138,20,0.3)"}`,
       display: "flex", alignItems: "center", gap: 9, maxWidth: 380,
       animation: "slideIn 0.2s ease",
@@ -86,13 +86,13 @@ function MemberAvatar({ name, role, size = 40 }) {
     <div style={{
       width: size, height: size, borderRadius: "50%", flexShrink: 0,
       background: isLead
-        ? `linear-gradient(135deg, ${C.blue} 0%, ${C.blueMid} 100%)`
-        : `linear-gradient(135deg, ${C.greenDark} 0%, ${C.green} 100%)`,
+        ? `linear-gradient(135deg, ${C.navy} 0%, ${C.navyMid} 100%)`
+        : `linear-gradient(135deg, ${C.goldDark} 0%, ${C.gold} 100%)`,
       display: "flex", alignItems: "center", justifyContent: "center",
       fontSize: size * 0.3 + "px", fontWeight: 800, color: "#fff",
       boxShadow: isLead
-        ? `0 0 0 2px ${C.white}, 0 0 0 4px ${C.blue}44`
-        : `0 0 0 2px ${C.white}, 0 0 0 4px ${C.greenDark}44`,
+        ? `0 0 0 2px ${C.white}, 0 0 0 4px ${C.navy}44`
+        : `0 0 0 2px ${C.white}, 0 0 0 4px ${C.goldDark}44`,
     }}>
       {initials(name)}
     </div>
@@ -194,8 +194,8 @@ export default function TeamTab() {
       <style>{keyframes}</style>
       <div style={{ width:"100%", height:"60vh", display:"flex", alignItems:"center", justifyContent:"center" }}>
         <div style={{ textAlign:"center" }}>
-          <div style={{ width:40, height:40, border:`3px solid ${C.border2}`, borderTopColor:C.blue, borderRadius:"50%", animation:"spin 0.7s linear infinite", margin:"0 auto 16px" }} />
-          <p style={{ color:C.muted, fontSize:"0.88rem", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Loading your team…</p>
+          <div style={{ width:40, height:40, border:`3px solid ${C.border}`, borderTopColor:C.navy, borderRadius:"50%", animation:"spin 0.7s linear infinite", margin:"0 auto 16px" }} />
+          <p style={{ color:C.muted, fontSize:"0.88rem", fontFamily:"'Sora',sans-serif" }}>Loading your team…</p>
         </div>
       </div>
     </>
@@ -209,9 +209,9 @@ export default function TeamTab() {
         <div style={{ background:"#fef2f2", border:"1px solid #fecaca", borderRadius:14, padding:"24px 28px", display:"flex", gap:16, alignItems:"flex-start", maxWidth:520 }}>
           <AlertTriangle size={20} color="#dc2626" style={{ flexShrink:0, marginTop:2 }} />
           <div>
-            <p style={{ fontSize:"0.9rem", fontWeight:700, color:"#dc2626", margin:"0 0 6px", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Could not load team</p>
+            <p style={{ fontSize:"0.9rem", fontWeight:700, color:"#dc2626", margin:"0 0 6px", fontFamily:"'Sora',sans-serif" }}>Could not load team</p>
             <p style={{ fontSize:"0.83rem", color:"#b91c1c", margin:"0 0 16px", lineHeight:1.6 }}>{error}</p>
-            <button onClick={loadTeam} style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"9px 18px", background:"#dc2626", color:"#fff", border:"none", borderRadius:8, cursor:"pointer", fontSize:"0.8rem", fontWeight:700, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
+            <button onClick={loadTeam} style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"9px 18px", background:"#dc2626", color:"#fff", border:"none", borderRadius:8, cursor:"pointer", fontSize:"0.8rem", fontWeight:700, fontFamily:"'Sora',sans-serif" }}>
               <RefreshCw size={13} /> Try Again
             </button>
           </div>
@@ -232,14 +232,14 @@ export default function TeamTab() {
         {/* Stats row */}
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16, marginBottom:28 }}>
           {[
-            { label:"Team Members",    value:teamSize,      max:MAX,  color:C.blue,        icon:"👤" },
+            { label:"Team Members",    value:teamSize,      max:MAX,  color:C.navy,        icon:"👤" },
             { label:"Pending Invites", value:pendingCount,  max:null, color:"#f59e0b",     icon:"📨" },
-            { label:"Open Slots",      value:spotsLeft,     max:null, color:spotsLeft > 0 ? C.greenDark : "#dc2626", icon:"🔓" },
+            { label:"Open Slots",      value:spotsLeft,     max:null, color:spotsLeft > 0 ? C.goldDark : "#dc2626", icon:"🔓" },
           ].map(({ label, value, max, color, icon }) => (
             <div key={label} style={{
               background:C.white, border:`1px solid ${C.border}`, borderRadius:14,
               padding:"20px 24px", position:"relative", overflow:"hidden",
-              boxShadow:"0 1px 6px rgba(3,62,102,0.05)",
+              boxShadow:"0 1px 6px rgba(12,35,64,0.05)",
             }}>
               <div style={{ position:"absolute", bottom:-10, right:-6, fontSize:"3.5rem", opacity:0.06, lineHeight:1, pointerEvents:"none" }}>{icon}</div>
               <div style={{ fontSize:"0.72rem", fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>{label}</div>
@@ -248,8 +248,8 @@ export default function TeamTab() {
                 {max && <span style={{ fontSize:"0.88rem", color:C.muted2, fontWeight:500 }}>/ {max}</span>}
               </div>
               {max && (
-                <div style={{ marginTop:10, height:4, background:C.off, borderRadius:4, overflow:"hidden" }}>
-                  <div style={{ height:"100%", width:`${(value/max)*100}%`, background:`linear-gradient(90deg,${C.blue},${C.blueMid})`, borderRadius:4, transition:"width 0.5s ease" }} />
+                <div style={{ marginTop:10, height:4, background:C.cream, borderRadius:4, overflow:"hidden" }}>
+                  <div style={{ height:"100%", width:`${(value/max)*100}%`, background:`linear-gradient(90deg,${C.navy},${C.navyMid})`, borderRadius:4, transition:"width 0.5s ease" }} />
                 </div>
               )}
             </div>
@@ -264,12 +264,12 @@ export default function TeamTab() {
 
             {/* Members card */}
             <div style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:16, overflow:"hidden", marginBottom:20 }}>
-              <div style={{ padding:"15px 24px", borderBottom:`1px solid ${C.border}`, background:C.off, display:"flex", alignItems:"center", gap:12, borderLeft:`3px solid ${C.greenDark}` }}>
-                <div style={{ width:28, height:28, borderRadius:8, background:`${C.greenDark}14`, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <Users size={13} color={C.greenDark} strokeWidth={2.2} />
+              <div style={{ padding:"15px 24px", borderBottom:`1px solid ${C.border}`, background:C.cream, display:"flex", alignItems:"center", gap:12, borderLeft:`3px solid ${C.goldDark}` }}>
+                <div style={{ width:28, height:28, borderRadius:8, background:`${C.goldDark}14`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <Users size={13} color={C.goldDark} strokeWidth={2.2} />
                 </div>
-                <h3 style={{ fontSize:"0.9rem", fontWeight:800, color:C.ink, margin:0, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Team Members</h3>
-                <span style={{ marginLeft:"auto", fontSize:"0.72rem", fontWeight:700, color:C.greenDark, background:C.greenPale, padding:"3px 10px", borderRadius:20, border:`1px solid ${C.greenDark}30` }}>
+                <h3 style={{ fontSize:"0.9rem", fontWeight:800, color:C.navy, margin:0, fontFamily:"'Sora',sans-serif" }}>Team Members</h3>
+                <span style={{ marginLeft:"auto", fontSize:"0.72rem", fontWeight:700, color:C.goldDark, background:C.goldPale, padding:"3px 10px", borderRadius:20, border:`1px solid ${C.goldDark}30` }}>
                   {teamSize}/{MAX}
                 </span>
               </div>
@@ -287,16 +287,16 @@ export default function TeamTab() {
                         borderBottom: i < team.members.length - 1 ? `1px solid ${C.border}` : "none",
                         transition:"background 0.15s", opacity: isRemoving ? 0.5 : 1,
                       }}
-                      onMouseEnter={e => e.currentTarget.style.background = C.off}
+                      onMouseEnter={e => e.currentTarget.style.background = C.cream}
                       onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                     >
                       <MemberAvatar name={m.full_name} role={m.role} size={42} />
 
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
-                          <span style={{ fontSize:"0.88rem", fontWeight:700, color:C.ink }}>{m.full_name}</span>
+                          <span style={{ fontSize:"0.88rem", fontWeight:700, color:C.navy }}>{m.full_name}</span>
                           {isMe && (
-                            <span style={{ fontSize:"0.64rem", color:C.muted, fontWeight:500, background:C.off, padding:"1px 7px", borderRadius:20, border:`1px solid ${C.border2}` }}>you</span>
+                            <span style={{ fontSize:"0.64rem", color:C.muted, fontWeight:500, background:C.cream, padding:"1px 7px", borderRadius:20, border:`1px solid ${C.border}` }}>you</span>
                           )}
                         </div>
                         <div style={{ fontSize:"0.74rem", color:C.muted, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{m.email}</div>
@@ -309,9 +309,9 @@ export default function TeamTab() {
                         <span style={{
                           display:"inline-flex", alignItems:"center", gap:5, fontSize:"0.66rem", fontWeight:800,
                           padding:"4px 10px", borderRadius:20,
-                          background: isThisLead ? `${C.blue}10` : C.greenPale,
-                          color: isThisLead ? C.blue : C.greenDark,
-                          border: `1px solid ${isThisLead ? `${C.blue}25` : `${C.greenDark}30`}`,
+                          background: isThisLead ? `${C.navy}10` : C.goldPale,
+                          color: isThisLead ? C.navy : C.goldDark,
+                          border: `1px solid ${isThisLead ? `${C.navy}25` : `${C.goldDark}30`}`,
                         }}>
                           {isThisLead ? <Shield size={9} /> : <Zap size={9} />}
                           {m.role}
@@ -322,7 +322,7 @@ export default function TeamTab() {
                               display:"flex", alignItems:"center", gap:4, padding:"5px 12px",
                               background:"transparent", border:"1px solid #fca5a5", borderRadius:7,
                               color:"#dc2626", fontSize:"0.72rem", fontWeight:700,
-                              fontFamily:"'Plus Jakarta Sans',sans-serif", cursor:"pointer", transition:"all 0.15s",
+                              fontFamily:"'Sora',sans-serif", cursor:"pointer", transition:"all 0.15s",
                               opacity: isRemoving ? 0.5 : 1,
                             }}
                             onMouseEnter={e => { e.currentTarget.style.background="#fef2f2"; e.currentTarget.style.borderColor="#f87171"; }}
@@ -344,11 +344,11 @@ export default function TeamTab() {
 
             {/* Pending Invites card */}
             <div style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:16, overflow:"hidden" }}>
-              <div style={{ padding:"15px 24px", borderBottom:`1px solid ${C.border}`, background:C.off, display:"flex", alignItems:"center", gap:12, borderLeft:"3px solid #f59e0b" }}>
+              <div style={{ padding:"15px 24px", borderBottom:`1px solid ${C.border}`, background:C.cream, display:"flex", alignItems:"center", gap:12, borderLeft:"3px solid #f59e0b" }}>
                 <div style={{ width:28, height:28, borderRadius:8, background:"#fffbeb", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   <Clock size={13} color="#b45309" strokeWidth={2.2} />
                 </div>
-                <h3 style={{ fontSize:"0.9rem", fontWeight:800, color:C.ink, margin:0, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Pending Invites</h3>
+                <h3 style={{ fontSize:"0.9rem", fontWeight:800, color:C.navy, margin:0, fontFamily:"'Sora',sans-serif" }}>Pending Invites</h3>
                 {pendingCount > 0 && (
                   <span style={{ marginLeft:"auto", fontSize:"0.72rem", fontWeight:700, color:"#b45309", background:"#fffbeb", padding:"3px 10px", borderRadius:20, border:"1px solid #fcd34d" }}>
                     {pendingCount} awaiting
@@ -380,7 +380,7 @@ export default function TeamTab() {
                         </svg>
                       </div>
                       <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:"0.86rem", fontWeight:600, color:C.ink, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginBottom:3 }}>{inv.invited_email}</div>
+                        <div style={{ fontSize:"0.86rem", fontWeight:600, color:C.navy, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginBottom:3 }}>{inv.invited_email}</div>
                         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                           <span style={{ width:6, height:6, borderRadius:"50%", background:"#f59e0b", display:"inline-block", animation:"pulse 2s ease infinite" }} />
                           <span style={{ fontSize:"0.72rem", color:"#b45309", fontWeight:500 }}>{relTime(inv.expires_at)}</span>
@@ -390,15 +390,15 @@ export default function TeamTab() {
                         <button onClick={() => handleCancelInvite(inv.invite_id)} disabled={isCancelling}
                           style={{
                             display:"flex", alignItems:"center", gap:4, padding:"5px 12px",
-                            background:"transparent", border:`1px solid ${C.border2}`, borderRadius:7,
+                            background:"transparent", border:`1px solid ${C.border}`, borderRadius:7,
                             color:C.muted2, fontSize:"0.72rem", fontWeight:700,
-                            fontFamily:"'Plus Jakarta Sans',sans-serif", cursor:"pointer", transition:"all 0.15s",
+                            fontFamily:"'Sora',sans-serif", cursor:"pointer", transition:"all 0.15s",
                           }}
                           onMouseEnter={e => { e.currentTarget.style.borderColor="#fca5a5"; e.currentTarget.style.color="#dc2626"; }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor=C.border2; e.currentTarget.style.color=C.muted2; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor=C.border; e.currentTarget.style.color=C.muted2; }}
                         >
                           {isCancelling
-                            ? <span style={{ width:10, height:10, border:`2px solid ${C.border2}`, borderTopColor:C.muted, borderRadius:"50%", display:"inline-block", animation:"spin 0.7s linear infinite" }} />
+                            ? <span style={{ width:10, height:10, border:`2px solid ${C.border}`, borderTopColor:C.muted, borderRadius:"50%", display:"inline-block", animation:"spin 0.7s linear infinite" }} />
                             : <X size={11} />
                           }
                           Cancel
@@ -415,20 +415,20 @@ export default function TeamTab() {
           <div style={{ position:"sticky", top:24 }}>
 
             {isLead ? (
-              <div style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:16, overflow:"hidden", boxShadow:"0 4px 20px rgba(3,62,102,0.07)", marginBottom:16 }}>
+              <div style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:16, overflow:"hidden", boxShadow:"0 4px 20px rgba(12,35,64,0.07)", marginBottom:16 }}>
                 {/* dark header */}
                 <div style={{
                   padding:"18px 22px", borderBottom:`1px solid ${C.border}`,
-                  background:`linear-gradient(135deg,${C.ink} 0%,${C.blue} 100%)`,
+                  background:`linear-gradient(135deg,${C.navy} 0%,${C.navy} 100%)`,
                   position:"relative", overflow:"hidden",
                 }}>
-                  <div style={{ position:"absolute", top:-20, right:-20, width:100, height:100, background:`radial-gradient(${C.green}25,transparent 65%)`, pointerEvents:"none" }} />
+                  <div style={{ position:"absolute", top:-20, right:-20, width:100, height:100, background:`radial-gradient(${C.gold}25,transparent 65%)`, pointerEvents:"none" }} />
                   <div style={{ display:"flex", alignItems:"center", gap:10, position:"relative" }}>
-                    <div style={{ width:32, height:32, borderRadius:8, background:"rgba(163,207,62,0.2)", border:"1px solid rgba(163,207,62,0.35)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      <Send size={14} color={C.green} />
+                    <div style={{ width:32, height:32, borderRadius:8, background:"rgba(176,141,87,0.2)", border:"1px solid rgba(176,141,87,0.35)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <Send size={14} color={C.gold} />
                     </div>
                     <div>
-                      <h3 style={{ fontSize:"0.9rem", fontWeight:800, color:"#fff", margin:0, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Invite Teammate</h3>
+                      <h3 style={{ fontSize:"0.9rem", fontWeight:800, color:"#fff", margin:0, fontFamily:"'Sora',sans-serif" }}>Invite Teammate</h3>
                       <p style={{ fontSize:"0.7rem", color:"rgba(255,255,255,0.45)", margin:0 }}>Send via .edu.pk email</p>
                     </div>
                   </div>
@@ -440,18 +440,18 @@ export default function TeamTab() {
                     <span style={{ fontSize:"0.72rem", color:C.muted, fontWeight:500 }}>Team capacity</span>
                     <span style={{
                       fontSize:"0.72rem", fontWeight:700, padding:"3px 10px", borderRadius:20,
-                      background: spotsLeft > 0 ? C.greenPale : "#fef2f2",
-                      color: spotsLeft > 0 ? C.greenDark : "#dc2626",
-                      border: `1px solid ${spotsLeft > 0 ? `${C.greenDark}30` : "#fecaca"}`,
+                      background: spotsLeft > 0 ? C.goldPale : "#fef2f2",
+                      color: spotsLeft > 0 ? C.goldDark : "#dc2626",
+                      border: `1px solid ${spotsLeft > 0 ? `${C.goldDark}30` : "#fecaca"}`,
                     }}>
                       {spotsLeft > 0 ? `${spotsLeft} spot${spotsLeft !== 1 ? "s" : ""} left` : "Team full"}
                     </span>
                   </div>
-                  <div style={{ height:5, background:C.off, borderRadius:5, overflow:"hidden", marginBottom:20 }}>
+                  <div style={{ height:5, background:C.cream, borderRadius:5, overflow:"hidden", marginBottom:20 }}>
                     <div style={{
                       height:"100%", borderRadius:5, transition:"width 0.5s ease",
                       width:`${((teamSize + pendingCount) / MAX) * 100}%`,
-                      background: spotsLeft === 0 ? "linear-gradient(90deg,#dc2626,#f87171)" : `linear-gradient(90deg,${C.blue},${C.green})`,
+                      background: spotsLeft === 0 ? "linear-gradient(90deg,#dc2626,#f87171)" : `linear-gradient(90deg,${C.navy},${C.gold})`,
                     }} />
                   </div>
 
@@ -466,14 +466,14 @@ export default function TeamTab() {
                     placeholder="teammate@university.edu.pk"
                     style={{
                       width:"100%", padding:"10px 14px", boxSizing:"border-box",
-                      border:`1.5px solid ${inviteError ? "#fca5a5" : C.border2}`,
+                      border:`1.5px solid ${inviteError ? "#fca5a5" : C.border}`,
                       borderRadius:9, fontSize:"0.84rem",
-                      fontFamily:"'Plus Jakarta Sans',sans-serif",
-                      color:C.ink, outline:"none", background:C.white,
+                      fontFamily:"'Sora',sans-serif",
+                      color:C.navy, outline:"none", background:C.white,
                       transition:"border-color 0.15s", marginBottom:inviteError ? 6 : 14,
                     }}
-                    onFocus={e => !inviteError && (e.target.style.borderColor = C.blue)}
-                    onBlur={e => !inviteError && (e.target.style.borderColor = C.border2)}
+                    onFocus={e => !inviteError && (e.target.style.borderColor = C.navy)}
+                    onBlur={e => !inviteError && (e.target.style.borderColor = C.border)}
                   />
 
                   {inviteError && (
@@ -485,15 +485,15 @@ export default function TeamTab() {
                   <button onClick={handleSendInvite} disabled={inviteLoading || spotsLeft <= 0}
                     style={{
                       width:"100%", padding:"11px", border:"none",
-                      background: spotsLeft <= 0 ? C.muted2 : C.ink,
+                      background: spotsLeft <= 0 ? C.muted2 : C.navy,
                       color:"#fff", borderRadius:9, fontSize:"0.84rem", fontWeight:700,
-                      fontFamily:"'Plus Jakarta Sans',sans-serif",
+                      fontFamily:"'Sora',sans-serif",
                       display:"flex", alignItems:"center", justifyContent:"center", gap:8,
                       cursor: inviteLoading || spotsLeft <= 0 ? "not-allowed" : "pointer",
                       transition:"background 0.18s", opacity: inviteLoading ? 0.75 : 1,
                     }}
-                    onMouseEnter={e => { if (!inviteLoading && spotsLeft > 0) e.currentTarget.style.background = C.blue; }}
-                    onMouseLeave={e => { if (!inviteLoading && spotsLeft > 0) e.currentTarget.style.background = C.ink; }}
+                    onMouseEnter={e => { if (!inviteLoading && spotsLeft > 0) e.currentTarget.style.background = C.navy; }}
+                    onMouseLeave={e => { if (!inviteLoading && spotsLeft > 0) e.currentTarget.style.background = C.navy; }}
                   >
                     {inviteLoading
                       ? <span style={{ width:14, height:14, border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#fff", borderRadius:"50%", display:"inline-block", animation:"spin 0.7s linear infinite" }} />
@@ -520,8 +520,8 @@ export default function TeamTab() {
             )}
 
             {/* Rules card */}
-            <div style={{ background:C.off, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
-              <h4 style={{ fontSize:"0.74rem", fontWeight:800, color:C.ink, margin:"0 0 14px", textTransform:"uppercase", letterSpacing:"0.08em" }}>Team Rules</h4>
+            <div style={{ background:C.cream, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
+              <h4 style={{ fontSize:"0.74rem", fontWeight:800, color:C.navy, margin:"0 0 14px", textTransform:"uppercase", letterSpacing:"0.08em" }}>Team Rules</h4>
               {[
                 ["🔒", "Only .edu.pk addresses can join"],
                 ["👥", "Maximum 5 members including lead"],
@@ -537,12 +537,12 @@ export default function TeamTab() {
                 <button onClick={loadTeam}
                   style={{
                     display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px",
-                    background:"transparent", color:C.muted, border:`1.5px solid ${C.border2}`,
+                    background:"transparent", color:C.muted, border:`1.5px solid ${C.border}`,
                     borderRadius:7, cursor:"pointer", fontSize:"0.76rem", fontWeight:600,
-                    fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all 0.18s",
+                    fontFamily:"'Sora',sans-serif", transition:"all 0.18s",
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor=C.blue; e.currentTarget.style.color=C.blue; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor=C.border2; e.currentTarget.style.color=C.muted; }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor=C.navy; e.currentTarget.style.color=C.navy; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor=C.border; e.currentTarget.style.color=C.muted; }}
                 >
                   <RefreshCw size={11} /> Refresh
                 </button>

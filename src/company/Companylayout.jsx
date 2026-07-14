@@ -34,7 +34,7 @@ export function CompanySidebar({ active, onNav, onLogout, collapsed, onToggle, w
     <aside
       style={{
         width: w, minHeight: "100vh",
-        background: C.ink,
+        background: C.navy,
         display: "flex", flexDirection: "column",
         position: "fixed", top: 0, left: 0, zIndex: 100,
         borderRight: "1px solid rgba(255,255,255,0.06)",
@@ -46,18 +46,18 @@ export function CompanySidebar({ active, onNav, onLogout, collapsed, onToggle, w
       <div style={{ padding: "18px 14px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 64 }}>
         {!collapsed && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, overflow: "hidden" }}>
-            <div style={{ width: 30, height: 30, background: C.blue, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", flexShrink: 0 }}>
-              <div style={{ position: "absolute", bottom: 0, right: 0, width: 10, height: 10, background: C.green, borderRadius: "4px 0 0 0" }} />
+            <div style={{ width: 30, height: 30, background: C.navy, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", flexShrink: 0 }}>
+              <div style={{ position: "absolute", bottom: 0, right: 0, width: 10, height: 10, background: C.gold, borderRadius: "4px 0 0 0" }} />
               <span style={{ fontSize: "0.65rem", fontWeight: 800, color: "#fff", zIndex: 1 }}>Px</span>
             </div>
-            <span style={{ fontSize: "0.98rem", fontWeight: 800, color: "#fff", letterSpacing: "-0.4px", fontFamily: "'Plus Jakarta Sans',sans-serif", whiteSpace: "nowrap" }}>
-              Projex<span style={{ color: C.green }}>.pk</span>
+            <span style={{ fontSize: "0.98rem", fontWeight: 800, color: "#fff", letterSpacing: "-0.4px", fontFamily: "'Sora',sans-serif", whiteSpace: "nowrap" }}>
+              Projex<span style={{ color: C.gold }}>.pk</span>
             </span>
           </div>
         )}
         {collapsed && (
-          <div style={{ width: 30, height: 30, background: C.blue, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", margin: "0 auto" }}>
-            <div style={{ position: "absolute", bottom: 0, right: 0, width: 10, height: 10, background: C.green, borderRadius: "4px 0 0 0" }} />
+          <div style={{ width: 30, height: 30, background: C.navy, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", margin: "0 auto" }}>
+            <div style={{ position: "absolute", bottom: 0, right: 0, width: 10, height: 10, background: C.gold, borderRadius: "4px 0 0 0" }} />
             <span style={{ fontSize: "0.65rem", fontWeight: 800, color: "#fff", zIndex: 1 }}>Px</span>
           </div>
         )}
@@ -74,7 +74,7 @@ export function CompanySidebar({ active, onNav, onLogout, collapsed, onToggle, w
       {/* Role + verification chip */}
       {!collapsed && (
         <div style={{ padding: "10px 14px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", flexDirection: "column", gap: 6 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(163,207,62,0.12)", border: "1px solid rgba(163,207,62,0.25)", borderRadius: 6, padding: "4px 10px", fontSize: "0.66rem", fontWeight: 700, color: C.green, letterSpacing: "0.06em", width: "fit-content" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(176,141,87,0.12)", border: "1px solid rgba(176,141,87,0.25)", borderRadius: 6, padding: "4px 10px", fontSize: "0.66rem", fontWeight: 700, color: C.gold, letterSpacing: "0.06em", width: "fit-content" }}>
             <Building2 size={11} /> COMPANY
           </div>
           {!isVerified && (
@@ -100,11 +100,11 @@ export function CompanySidebar({ active, onNav, onLogout, collapsed, onToggle, w
                 justifyContent: collapsed ? "center" : "flex-start",
                 padding: collapsed ? "11px 0" : "10px 12px",
                 borderRadius: 8, border: "none", cursor: "pointer",
-                fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: "0.83rem",
+                fontFamily: "'Sora',sans-serif", fontSize: "0.83rem",
                 fontWeight: isActive ? 700 : 500, marginBottom: 3, transition: "all 0.15s",
-                background: isActive ? "rgba(3,62,102,0.65)" : "transparent",
+                background: isActive ? "rgba(12,35,64,0.65)" : "transparent",
                 color: isActive ? "#fff" : "rgba(255,255,255,0.42)",
-                borderLeft: collapsed ? "none" : isActive ? `2.5px solid ${C.green}` : "2.5px solid transparent",
+                borderLeft: collapsed ? "none" : isActive ? `2.5px solid ${C.gold}` : "2.5px solid transparent",
               }}
             >
               <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
@@ -121,14 +121,14 @@ export function CompanySidebar({ active, onNav, onLogout, collapsed, onToggle, w
             <div
               onClick={onLogout}
               title="Logout"
-              style={{ width: 32, height: 32, borderRadius: "50%", background: C.blue, border: `2px solid ${C.green}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 800, color: "#fff", cursor: "pointer" }}
+              style={{ width: 32, height: 32, borderRadius: "50%", background: C.navy, border: `2px solid ${C.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 800, color: "#fff", cursor: "pointer" }}
             >
               {initials}
             </div>
           </div>
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.blue, border: `2px solid ${C.green}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 800, color: "#fff", flexShrink: 0 }}>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.navy, border: `2px solid ${C.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 800, color: "#fff", flexShrink: 0 }}>
               {initials}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -165,7 +165,7 @@ export function CompanySidebar({ active, onNav, onLogout, collapsed, onToggle, w
             window.addEventListener("mouseup", onUp);
           }}
           style={{ position: "absolute", top: 0, right: 0, width: 4, height: "100%", cursor: "col-resize", background: "transparent", transition: "background 0.2s" }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = `${C.green}60`)}
+          onMouseEnter={(e) => (e.currentTarget.style.background = `${C.gold}60`)}
           onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
         />
       )}
@@ -194,7 +194,7 @@ export function CompanyTopBar({ title, subtitle }) {
       style={{ height: 62, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 32px", background: "rgba(255,255,255,0.97)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${C.border}`, position: "sticky", top: 0, zIndex: 50 }}
     >
       <div>
-        <h1 style={{ fontSize: "1rem", fontWeight: 800, color: C.ink, letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans',sans-serif", margin: 0 }}>{title}</h1>
+        <h1 style={{ fontSize: "1rem", fontWeight: 800, color: C.navy, letterSpacing: "-0.02em", fontFamily: "'Sora',sans-serif", margin: 0 }}>{title}</h1>
         {subtitle && <p style={{ fontSize: "0.72rem", color: C.muted, margin: 0, marginTop: 1 }}>{subtitle}</p>}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -206,7 +206,7 @@ export function CompanyTopBar({ title, subtitle }) {
         <button style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Bell size={15} color={C.muted} />
         </button>
-        <div style={{ width: 36, height: 36, borderRadius: "50%", background: C.blue, border: `2px solid ${C.green}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.72rem", fontWeight: 800, color: "#fff", cursor: "pointer" }}>
+        <div style={{ width: 36, height: 36, borderRadius: "50%", background: C.navy, border: `2px solid ${C.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.72rem", fontWeight: 800, color: "#fff", cursor: "pointer" }}>
           {initials}
         </div>
       </div>
