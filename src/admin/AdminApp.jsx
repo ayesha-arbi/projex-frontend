@@ -4,15 +4,6 @@ import AdminLogin from "./AdminLogin.jsx";
 import AdminRegister from "./AdminRegister.jsx";
 import AdminDashboard from "./AdminDashboard.jsx";
 
-/**
- * Mount this at whatever route you want the admin panel to live at, e.g.
- * `/admin/*` in routing.jsx. It manages its own auth state via
- * localStorage (see services/adminApi.js) so it doesn't need react-router
- * to function — but works fine inside a <Route> too.
- *
- *   import AdminApp from "./admin/AdminApp.jsx";
- *   <Route path="/admin/*" element={<AdminApp />} />
- */
 export default function AdminApp() {
   const [admin, setAdmin] = useState(() => adminSession.getAdmin());
   const [view, setView] = useState(adminSession.isLoggedIn() ? "dashboard" : "login");

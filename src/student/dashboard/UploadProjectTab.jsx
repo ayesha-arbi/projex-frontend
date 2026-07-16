@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import {
   FileText, Layers, Lock, Paperclip, Tag, Building2, Cpu, Link2,
   CheckCircle, XCircle, Eye, ArrowLeft, ChevronRight,
-  Rocket, Plus, Briefcase, Handshake, DollarSign, Award,
+  Rocket, Plus, Briefcase, Handshake, DollarSign, Award, GraduationCap,
   Image, Video, ShieldCheck, AlertTriangle, Info,
 } from "lucide-react";
 import { C } from "../../assets/tokens";
@@ -15,6 +15,7 @@ async function submitProject(form) {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("Not authenticated. Please log in again.");
   const fd = new FormData();
+  fd.append("project_type",      form.project_type);
   fd.append("title",             form.title.trim());
   fd.append("short_description", form.short_description.trim());
   fd.append("tech_tags",         form.tech_tags.join(", "));
@@ -181,6 +182,7 @@ const STEPS = [
 const LOOKING_FOR_ICONS = { Hiring: Briefcase, Collaboration: Handshake, Investment: DollarSign, Mentoring: Award };
 
 const EMPTY_FORM = {
+  project_type: "FYP",
   title: "", short_description: "",
   tech_tags: [], industry_tags: [], custom_tags: "",
   project_status: "In Progress", looking_for: [],
@@ -208,7 +210,9 @@ export default function UploadProjectTab({ onProjectPosted }) {
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const canAdvance = () => {
-    if (step === 1) return form.title.trim() && form.short_description.trim() && form.tech_tags.length > 0;
+    if (step === 1) {
+      return form.project_type && form.title.trim() && form.short_description.trim() && form.tech_tags.length > 0;
+    }
     if (step === 2) return form.project_status && form.looking_for.length > 0;
     return true;
   };
@@ -314,6 +318,36 @@ export default function UploadProjectTab({ onProjectPosted }) {
       {/* ── Step 1 ── */}
       {step === 1 && (
         <>
+          {/* Project Type Selector — REQUIRED by backend */}
+          <FormSection icon={Award} title="Project Type" subtitle="Required — determines review process and eligibility" accent={C.navy}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 4 }}>
+              {[
+                { key: "FYP", label: "Final Year Project", desc: "Semester 7–8 · Auto-approved · University-backed", icon: GraduationCap },
+                { key: "ACADEMIC", label: "Academic Project", desc: "Any semester · Requires GitHub or demo link · Reviewed in 48h", icon: Rocket },
+              ].map(({ key, label, desc, icon: PIcon }) => {
+                const sel = form.project_type === key;
+                return (
+                  <button type="button" key={key} onClick={() => set("project_type", key)}
+                    style={{ padding: "14px 16px", borderRadius: 12, border: `2px solid ${sel ? C.navy : C.border}`, background: sel ? C.navyTint : "transparent", cursor: "pointer", textAlign: "left", transition: "all 0.18s", position: "relative" }}>
+                    {sel && <span style={{ position: "absolute", top: 10, right: 10, width: 18, height: 18, borderRadius: "50%", background: C.navy, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.65rem", color: "#fff" }}>✓</span>}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 7, background: sel ? C.navy : C.cream, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <PIcon size={14} color={sel ? "#fff" : C.muted2} strokeWidth={2} />
+                      </div>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 800, color: sel ? C.navy : C.muted, fontFamily: "'Sora',sans-serif" }}>{label}</span>
+                    </div>
+                    <p style={{ fontSize: "0.72rem", color: sel ? C.navyMid : C.muted2, margin: 0, lineHeight: 1.5 }}>{desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+            {form.project_type === "ACADEMIC" && (
+              <div style={{ marginTop: 12, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 9, padding: "10px 14px", fontSize: "0.78rem", color: "#78350f", display: "flex", gap: 8, alignItems: "flex-start" }}>
+                <AlertTriangle size={13} style={{ flexShrink: 0, marginTop: 1 }} />
+                <span>Academic projects require a <strong>GitHub link or demo link</strong> — add them in Step 3.</span>
+              </div>
+            )}
+          </FormSection>
           <FormSection icon={FileText} title="Basic Info" subtitle="Public-facing — what companies will see" accent={C.navy}>
             <TInput label="Project Title" required maxLen={80} placeholder="e.g. AI-Powered Crop Disease Detection System" value={form.title} onChange={v => set("title", v)} />
             <TInput label="Short Description" required rows={3} maxLen={150} placeholder="One punchy sentence about what your project does…" value={form.short_description} onChange={v => set("short_description", v)} hint="Max 150 characters — this is your hook." />

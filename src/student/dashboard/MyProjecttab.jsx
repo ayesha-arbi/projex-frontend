@@ -150,11 +150,8 @@ export default function MyProjectTab() {
     );
   }
 
-  const statusColor  = project.project_status === "Completed" ? C.goldDark : "#f59e0b";
-  const statusBg     = project.project_status === "Completed" ? C.goldPale : "#fef3c7";
-  const techTags     = project.tech_tags     ? project.tech_tags.split(",").map(t => t.trim()).filter(Boolean)     : [];
-  const industryTags = project.industry_tags ? project.industry_tags.split(",").map(t => t.trim()).filter(Boolean) : [];
-  const lookingFor   = project.looking_for   ? project.looking_for.split(",").map(t => t.trim()).filter(Boolean)   : [];
+  const reviewColor = project.review_status === 'APPROVED' ? '#15803d' : project.review_status === 'REJECTED' ? '#dc2626' : '#f59e0b';
+  const reviewBg    = project.review_status === 'APPROVED' ? '#dcfce7' : project.review_status === 'REJECTED' ? '#fef2f2' : '#fef3c7';
 
   return (
     <div style={{ padding: "32px 48px 48px", width: "100%", boxSizing: "border-box", animation: "fadeUp 0.3s ease both" }}>
@@ -174,11 +171,21 @@ export default function MyProjectTab() {
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: statusColor, display: "inline-block" }} />
                 {project.project_status}
               </span>
+              {project.review_status && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: "0.72rem", fontWeight: 700, color: reviewColor, background: reviewBg, padding: "3px 10px", borderRadius: 6, border: `1px solid ${reviewColor}30` }}>
+                  Review: {project.review_status}
+                </span>
+              )}
+              {project.project_type && (
+                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: C.navy, background: `${C.navy}12`, padding: "3px 10px", borderRadius: 6, border: `1px solid ${C.navy}20` }}>
+                  {project.project_type}
+                </span>
+              )}
               <span style={{ fontSize: "0.72rem", color: C.muted2, fontWeight: 500 }}>ID: {project.project_id}</span>
             </div>
           </div>
-          {project.poster_url && (
-            <img src={project.poster_url} alt="Project poster"
+          {project.poster && (
+            <img src={project.poster} alt="Project poster"
               style={{ width: 120, height: 80, objectFit: "cover", borderRadius: 10, border: `1px solid ${C.border}`, flexShrink: 0 }} />
           )}
         </div>
@@ -223,13 +230,13 @@ export default function MyProjectTab() {
       )}
 
       {/* Files */}
-      {(project.video_url || project.document_url) && (
+      {(project.video || project.document) && (
         <Section icon={FileText} title="Uploaded Files" accent={C.muted}>
-          {project.video_url && (
-            <InfoRow label="Demo Video" value={<a href={project.video_url} target="_blank" rel="noreferrer" style={{ color: C.navy, fontWeight: 600 }}>View video ↗</a>} />
+          {project.video && (
+            <InfoRow label="Demo Video" value={<a href={project.video} target="_blank" rel="noreferrer" style={{ color: C.navy, fontWeight: 600 }}>View video ↗</a>} />
           )}
-          {project.document_url && (
-            <InfoRow label="Document" value={<a href={project.document_url} target="_blank" rel="noreferrer" style={{ color: C.navy, fontWeight: 600 }}>View document ↗</a>} />
+          {project.document && (
+            <InfoRow label="Document" value={<a href={project.document} target="_blank" rel="noreferrer" style={{ color: C.navy, fontWeight: 600 }}>View document ↗</a>} />
           )}
         </Section>
       )}

@@ -4,34 +4,35 @@ import UploadProjectTab     from "./UploadProjectTab";
 import MyProjectTab         from "./MyProjecttab.jsx";
 import ProfileTab           from "./ProfileTab";
 import TeamTab from "./TeamTab";
-import { C }                from "../../assets/tokens";
+import DiscoverCompaniesTab from "./DiscoverCompaniesTab";
+import ProposalsTab         from "./ProposalsTab";
 import AccessRequestsManager from "./AccessRequestsManager";
+import { C }                from "../../assets/tokens";
 
 const TAB_META = {
   upload:     { title: "Upload Project",  subtitle: "Share your work with the world"   },
   myproject:  { title: "My Project",      subtitle: "Manage your posted project"        },
   profile:    { title: "Profile",         subtitle: "Your public student profile" },
-  team: { title: "Team", subtitle: "Manage your project team" },
-
+  team:       { title: "Team",            subtitle: "Manage your project team" },
+  discover:   { title: "Discover Companies", subtitle: "Find companies to pitch your project" },
+  proposals:  { title: "Proposals",         subtitle: "Manage your project pitches" },
+  access:     { title: "Interest Requests", subtitle: "Manage company interest in your project" },
 };
 
 const API_BASE = import.meta.env?.VITE_API_URL || "/api";
 
 export default function StudentDashboard({ onLogout }) {
   const [tab,       setTab]       = useState(() => {
-    // Bug 1 Fix: if a project_id already exists in localStorage,
-    // land on "My Project" tab instead of "Upload"
+    // land on "My Project" tab instead of "Upload" if a project exists
     return localStorage.getItem("project_id") ? "myproject" : "upload";
   });
   const [collapsed, setCollapsed] = useState(false);
   const [sideW,     setSideW]     = useState(220);
+  const [project,   setProject]   = useState(null);
 
-  // Restore project_id from backend if user has a project
+  // Restore project and project_id from backend if user has a project
   useEffect(() => {
-    const restoreProjectId = async () => {
-      const existingProjectId = localStorage.getItem("project_id");
-      if (existingProjectId) return; // Already have it, no need to fetch
-
+    const restoreProject = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
 
@@ -41,20 +42,19 @@ export default function StudentDashboard({ onLogout }) {
         });
         if (res.ok) {
           const data = await res.json();
-          const projectId = data.project?.project_id || data.project_id;
-          if (projectId) {
-            localStorage.setItem("project_id", projectId);
-            setTab("myproject");
+          const proj = data.project ?? data;
+          if (proj && proj.project_id) {
+            setProject(proj);
+            localStorage.setItem("project_id", proj.project_id);
           }
         }
       } catch (err) {
-        // Silently fail - user can still upload a new project
-        console.warn("Could not restore project_id:", err);
+        console.warn("Could not restore project:", err);
       }
     };
 
-    restoreProjectId();
-  }, []);
+    restoreProject();
+  }, [tab]);
 
   useEffect(() => {
     const handler = (e) => setSideW(e.detail);
@@ -66,7 +66,8 @@ export default function StudentDashboard({ onLogout }) {
   const meta = TAB_META[tab] || TAB_META.upload;
 
   // Called by UploadProjectTab after a successful post
-  const handleProjectPosted = (project) => {
+  const handleProjectPosted = (postedProject) => {
+    setProject(postedProject);
     setTab("myproject");
   };
 
@@ -92,8 +93,7 @@ export default function StudentDashboard({ onLogout }) {
           collapsed={collapsed}
           onToggle={() => setCollapsed(c => !c)}
           width={sideW}
-          // Pass whether a project exists so Sidebar can show/hide the tab
-          hasProject={!!localStorage.getItem("project_id")}
+          hasProject={!!project || !!localStorage.getItem("project_id")}
         />
 
         <div style={{
@@ -112,7 +112,10 @@ export default function StudentDashboard({ onLogout }) {
             )}
             {tab === "myproject" && <MyProjectTab />}
             {tab === "profile"   && <ProfileTab />}
-            {tab === "team" && <TeamTab />}
+            {tab === "team"      && <TeamTab />}
+            {tab === "discover"  && <DiscoverCompaniesTab projects={project ? [project] : []} />}
+            {tab === "proposals" && <ProposalsTab project={project} />}
+            {tab === "access"    && <AccessRequestsManager />}
           </main>
         </div>
 
