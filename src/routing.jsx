@@ -46,23 +46,19 @@ function clearSession() {
    Route guards
    ───────────────────────────────────────────────────────── */
 
-/** Only lets a logged-in student/company through; otherwise sends them
- *  to the right login screen. */
 function RequireRole({ role, loginPath, children }) {
   const session = getSession();
-  if (!session || session.user.role !== role) {
+  if (!session || session.user.role?.toLowerCase() !== role.toLowerCase()) {
     return <Navigate to={loginPath} replace />;
   }
   return children;
 }
 
-/** Keeps already-logged-in users out of the public onboarding/login
- *  screens — landing on those while authenticated just bounces you
- *  straight to your dashboard instead of showing a confusing form. */
 function RedirectIfLoggedIn({ children }) {
   const session = getSession();
-  if (session?.user?.role === "student") return <Navigate to="/student/dashboard" replace />;
-  if (session?.user?.role === "company") return <Navigate to="/company/dashboard" replace />;
+  const userRole = session?.user?.role?.toLowerCase();
+  if (userRole === "student") return <Navigate to="/student/dashboard" replace />;
+  if (userRole === "company") return <Navigate to="/company/dashboard" replace />;
   return children;
 }
 
