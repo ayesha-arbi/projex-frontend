@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Send, Users, Clock, RefreshCw, AlertTriangle, X, UserMinus, Shield, Zap } from "lucide-react";
 import { C } from "../../assets/tokens";
+import { EmptyState } from "../../proposals/ProposalUI.jsx";
 
 const API_BASE = import.meta.env?.VITE_API_URL || "/api";
 
@@ -201,23 +202,16 @@ export default function TeamTab() {
     </>
   );
 
-  /* ── Error ── */
+  /* ── Error / No Project ── */
   if (error) return (
-    <>
+    <div style={{ width: "100%", padding: "48px 40px", animation: "fadeUp 0.3s ease both" }}>
       <style>{keyframes}</style>
-      <div style={{ width:"100%", padding:"48px 40px" }}>
-        <div style={{ background:"#fef2f2", border:"1px solid #fecaca", borderRadius:14, padding:"24px 28px", display:"flex", gap:16, alignItems:"flex-start", maxWidth:520 }}>
-          <AlertTriangle size={20} color="#dc2626" style={{ flexShrink:0, marginTop:2 }} />
-          <div>
-            <p style={{ fontSize:"0.9rem", fontWeight:700, color:"#dc2626", margin:"0 0 6px", fontFamily:"'Sora',sans-serif" }}>Could not load team</p>
-            <p style={{ fontSize:"0.83rem", color:"#b91c1c", margin:"0 0 16px", lineHeight:1.6 }}>{error}</p>
-            <button onClick={loadTeam} style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"9px 18px", background:"#dc2626", color:"#fff", border:"none", borderRadius:8, cursor:"pointer", fontSize:"0.8rem", fontWeight:700, fontFamily:"'Sora',sans-serif" }}>
-              <RefreshCw size={13} /> Try Again
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
+      <EmptyState
+        icon={<Users size={34} />}
+        title="Nothing here yet"
+        desc={error}
+      />
+    </div>
   );
 
   /* ── Main ── */

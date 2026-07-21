@@ -456,7 +456,7 @@ export function StudentLogin({ onBack, onSwitchToRegister, onForgotPassword, onS
             <div style={{ marginBottom: 32 }}>
               <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: C.gold, marginBottom: 8, fontFamily: fonts.body }}>Student Login</div>
               <h2 style={{ fontSize: "1.7rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.03em", marginBottom: 8, fontFamily: fonts.display }}>Sign in to Projex</h2>
-              <p style={{ fontSize: "0.88rem", color: C.muted, lineHeight: 1.6, fontFamily: fonts.body }}>Use your university email and password to access your account.</p>
+              <p style={{ fontSize: "0.88rem", color: C.muted, lineHeight: 1.6, fontFamily: fonts.body }}>Check your email for verification and then come back here to login.</p>
             </div>
 
             <div style={{ background: C.white, borderRadius: 16, padding: "36px", border: `1px solid ${C.border}`, boxShadow: "0 10px 40px rgba(12,35,64,0.06)" }}>

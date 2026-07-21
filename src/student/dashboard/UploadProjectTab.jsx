@@ -179,7 +179,7 @@ const STEPS = [
   { n: 4, label: "Files",       Icon: Paperclip },
 ];
 
-const LOOKING_FOR_ICONS = { Hiring: Briefcase, Collaboration: Handshake, Investment: DollarSign, Mentoring: Award };
+const LOOKING_FOR_ICONS = { Partnership: Handshake, Investment: DollarSign, Mentorship: Award };
 
 const EMPTY_FORM = {
   project_type: "FYP",

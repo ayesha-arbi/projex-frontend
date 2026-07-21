@@ -19,7 +19,7 @@ export const INDUSTRY_TAGS = [
   "Manufacturing","Media","Consulting","Agriculture","Logistics","Energy",
 ];
 
-export const LOOKING_FOR_OPTIONS = ["Hiring","Collaboration","Investment","Mentoring"];
+export const LOOKING_FOR_OPTIONS = ["Partnership", "Investment", "Mentorship"];
 export const STATUS_OPTIONS      = ["In Progress","Completed"];
 
 /* ─── Mock Data (replace with API calls later) ─── */

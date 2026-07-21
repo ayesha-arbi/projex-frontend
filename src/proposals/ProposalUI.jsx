@@ -38,10 +38,10 @@ export function Tag({ children }) {
   );
 }
 
-export function EmptyState({ icon = "✉️", title, desc }) {
+export function EmptyState({ icon, title, desc }) {
   return (
     <div style={{ textAlign: "center", padding: "70px 20px", border: `1.5px dashed ${C.border}`, borderRadius: 16, background: C.cream }}>
-      <div style={{ fontSize: "2rem", marginBottom: 12 }}>{icon}</div>
+      <div style={{ marginBottom: 12, display: "flex", justifyContent: "center", color: C.muted2 }}>{icon}</div>
       <div style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, color: C.navy, fontSize: "1.02rem", marginBottom: 6 }}>{title}</div>
       {desc && <div style={{ color: C.muted, fontSize: "0.84rem", maxWidth: 360, margin: "0 auto", lineHeight: 1.6 }}>{desc}</div>}
     </div>

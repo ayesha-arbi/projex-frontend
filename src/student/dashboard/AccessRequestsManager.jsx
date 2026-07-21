@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { CheckCircle, XCircle, Clock, RefreshCw, AlertTriangle, Building2, MapPin, Mail, Filter } from "lucide-react";
 import { C } from "../../assets/tokens";
+import { EmptyState } from "../../proposals/ProposalUI.jsx";
 
 const API_BASE = import.meta.env?.VITE_API_URL || "/api";
 
@@ -174,17 +175,12 @@ export default function AccessRequestsManager() {
   /* ─── error ─── */
   if (error) {
     return (
-      <div style={{ padding: "32px" }}>
-        <div style={{ background: C.errorPale, border: "1px solid #fecaca", borderRadius: 12, padding: "20px 24px", display: "flex", gap: 14, alignItems: "flex-start", maxWidth: 520 }}>
-          <AlertTriangle size={18} color={C.error} style={{ flexShrink: 0, marginTop: 2 }} />
-          <div>
-            <p style={{ fontSize: "0.88rem", fontWeight: 700, color: C.error, margin: "0 0 4px" }}>Could not load requests</p>
-            <p style={{ fontSize: "0.82rem", color: "#b91c1c", margin: "0 0 14px", lineHeight: 1.6 }}>{error}</p>
-            <button onClick={loadRequests} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: C.error, color: "#fff", border: "none", borderRadius: 7, cursor: "pointer", fontSize: "0.8rem", fontWeight: 700, fontFamily: "'Sora',sans-serif" }}>
-              <RefreshCw size={12} /> Try Again
-            </button>
-          </div>
-        </div>
+      <div style={{ padding: "48px 32px", animation: "fadeUp 0.3s ease both" }}>
+        <EmptyState
+          icon={<AlertTriangle size={34} />}
+          title="Could not load requests"
+          desc={error}
+        />
       </div>
     );
   }
@@ -221,8 +217,12 @@ export default function AccessRequestsManager() {
         </div>
 
         {filtered.length === 0 ? (
-          <div style={{ padding: "32px 24px", textAlign: "center", color: C.muted, fontSize: "0.82rem" }}>
-            No {filter !== "ALL" ? filter.toLowerCase() : ""} requests found
+          <div style={{ padding: "40px 20px" }}>
+            <EmptyState
+              icon={<Mail size={34} />}
+              title={filter === "ALL" ? "No requests yet" : `No ${filter.toLowerCase()} requests`}
+              desc={filter === "ALL" ? "Companies interested in your project will appear here." : "Try a different filter."}
+            />
           </div>
         ) : (
           <div>

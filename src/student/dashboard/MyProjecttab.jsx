@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import {
   CheckCircle, Clock, Tag, Building2, Link2, FileText,
-  Cpu, Image, Video, Eye, EyeOff, AlertTriangle, RefreshCw,
+  Cpu, Image, Video, Eye, EyeOff, AlertTriangle, RefreshCw, FolderOpen
 } from "lucide-react";
 import { C } from "../../assets/tokens";
+import { EmptyState } from "../../proposals/ProposalUI.jsx";
 
 const API_BASE = import.meta.env?.VITE_API_URL || "/api";
 
@@ -26,8 +27,14 @@ async function fetchMyProject() {
   }
 
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Failed to load project.");
-  return data.project ?? data; // handle both {project: {...}} and bare object
+  if (!res.ok) throw new Error(data.message || "Failed to load projects.");
+  
+  const allProjects = [];
+  if (data.fyp_project) allProjects.push(data.fyp_project);
+  if (Array.isArray(data.academic_projects)) {
+    allProjects.push(...data.academic_projects);
+  }
+  return allProjects;
 }
 
 /* ── Small reusable bits ── */
@@ -85,77 +92,17 @@ function PrivateField({ label, value }) {
   );
 }
 
-/* ══════════════════════════════════════════
-   MAIN EXPORT
-══════════════════════════════════════════ */
-export default function MyProjectTab() {
-  const [project, setProject] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState(null);
-
-  const load = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const p = await fetchMyProject();
-      setProject(p);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { load(); }, []);
-
-  /* ── Loading ── */
-  if (loading) {
-    return (
-      <div style={{ padding: "48px 32px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <span style={{ width: 32, height: 32, border: `3px solid ${C.border}`, borderTopColor: C.navy, borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite" }} />
-          <p style={{ color: C.muted, marginTop: 14, fontSize: "0.88rem" }}>Loading your project…</p>
-        </div>
-      </div>
-    );
-  }
-
-  /* ── Error ── */
-  if (error) {
-    return (
-      <div style={{ padding: "32px" }}>
-        <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 12, padding: "20px 24px", display: "flex", gap: 14, alignItems: "flex-start", maxWidth: 520 }}>
-          <AlertTriangle size={18} color="#dc2626" style={{ flexShrink: 0, marginTop: 2 }} />
-          <div>
-            <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "#dc2626", margin: "0 0 4px" }}>Could not load project</p>
-            <p style={{ fontSize: "0.82rem", color: "#b91c1c", margin: "0 0 14px", lineHeight: 1.6 }}>{error}</p>
-            <button onClick={load}
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "#dc2626", color: "#fff", border: "none", borderRadius: 7, cursor: "pointer", fontSize: "0.8rem", fontWeight: 700, fontFamily: "'Sora',sans-serif" }}>
-              <RefreshCw size={12} /> Try Again
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  /* ── No project ── */
-  if (!project) {
-    return (
-      <div style={{ padding: "48px 32px", textAlign: "center" }}>
-        <p style={{ fontSize: "2rem", marginBottom: 8 }}>📭</p>
-        <h3 style={{ fontWeight: 800, color: C.navy, marginBottom: 6, fontFamily: "'Sora',sans-serif" }}>No project yet</h3>
-        <p style={{ color: C.muted, fontSize: "0.88rem" }}>Go to the Upload tab to post your first project.</p>
-      </div>
-    );
-  }
-
+function ProjectCard({ project }) {
+  const statusColor  = project.project_status === "Completed" ? C.goldDark : "#f59e0b";
+  const statusBg     = project.project_status === "Completed" ? C.goldPale : "#fef3c7";
+  const techTags     = project.tech_tags     ? project.tech_tags.split(",").map(t => t.trim()).filter(Boolean)     : [];
+  const industryTags = project.industry_tags ? project.industry_tags.split(",").map(t => t.trim()).filter(Boolean) : [];
+  const lookingFor   = project.looking_for   ? project.looking_for.split(",").map(t => t.trim()).filter(Boolean)   : [];
   const reviewColor = project.review_status === 'APPROVED' ? '#15803d' : project.review_status === 'REJECTED' ? '#dc2626' : '#f59e0b';
   const reviewBg    = project.review_status === 'APPROVED' ? '#dcfce7' : project.review_status === 'REJECTED' ? '#fef2f2' : '#fef3c7';
 
   return (
-    <div style={{ padding: "32px 48px 48px", width: "100%", boxSizing: "border-box", animation: "fadeUp 0.3s ease both" }}>
-
+    <div style={{ marginBottom: 40, borderBottom: `1px solid ${C.border}`, paddingBottom: 30 }}>
       {/* Header card */}
       <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "22px 24px", marginBottom: 20, boxShadow: "0 2px 12px rgba(12,35,64,0.06)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
@@ -240,6 +187,77 @@ export default function MyProjectTab() {
           )}
         </Section>
       )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════
+   MAIN EXPORT
+══════════════════════════════════════════ */
+export default function MyProjectTab() {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const ps = await fetchMyProject();
+      setProjects(ps);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  /* ── Loading ── */
+  if (loading) {
+    return (
+      <div style={{ padding: "48px 32px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <span style={{ width: 32, height: 32, border: `3px solid ${C.border}`, borderTopColor: C.navy, borderRadius: "50%", display: "inline-block", animation: "spin 0.7s linear infinite" }} />
+          <p style={{ color: C.muted, marginTop: 14, fontSize: "0.88rem" }}>Loading your project…</p>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Error ── */
+  if (error) {
+    return (
+      <div style={{ padding: "48px 32px", animation: "fadeUp 0.3s ease both" }}>
+        <EmptyState
+          icon={<AlertTriangle size={34} />}
+          title="Could not load project"
+          desc={error}
+        />
+      </div>
+    );
+  }
+
+  /* ── No projects ── */
+  if (!projects || projects.length === 0) {
+    return (
+      <div style={{ padding: "48px 32px", animation: "fadeUp 0.3s ease both" }}>
+        <EmptyState
+          icon={<FolderOpen size={34} />}
+          title="No projects yet"
+          desc="Go to the Upload tab to post your first project."
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: "32px 48px 48px", width: "100%", boxSizing: "border-box", animation: "fadeUp 0.3s ease both" }}>
+      
+      {projects.map((proj, idx) => (
+        <ProjectCard key={proj.project_id || idx} project={proj} />
+      ))}
 
       {/* Refresh */}
       <button onClick={load}
@@ -247,7 +265,7 @@ export default function MyProjectTab() {
         onMouseEnter={e => { e.currentTarget.style.borderColor = C.navy; e.currentTarget.style.color = C.navy; }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; }}
       >
-        <RefreshCw size={12} /> Refresh
+        <RefreshCw size={12} /> Refresh Projects
       </button>
     </div>
   );

@@ -50,7 +50,7 @@ function clearSession() {
  *  to the right login screen. */
 function RequireRole({ role, loginPath, children }) {
   const session = getSession();
-  if (!session || session.user.role !== role) {
+  if (!session || !session.user || session.user.role?.toLowerCase() !== role.toLowerCase()) {
     return <Navigate to={loginPath} replace />;
   }
   return children;
@@ -61,8 +61,9 @@ function RequireRole({ role, loginPath, children }) {
  *  straight to your dashboard instead of showing a confusing form. */
 function RedirectIfLoggedIn({ children }) {
   const session = getSession();
-  if (session?.user?.role === "student") return <Navigate to="/student/dashboard" replace />;
-  if (session?.user?.role === "company") return <Navigate to="/company/dashboard" replace />;
+  const role = session?.user?.role?.toLowerCase();
+  if (role === "student") return <Navigate to="/student/dashboard" replace />;
+  if (role === "company") return <Navigate to="/company/dashboard" replace />;
   return children;
 }
 
@@ -189,7 +190,7 @@ function Router() {
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<RedirectIfLoggedIn><LandingPage /></RedirectIfLoggedIn>} />
 
         {/* Student */}
         <Route

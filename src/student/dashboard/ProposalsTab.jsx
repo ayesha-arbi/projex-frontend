@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { Target, Handshake } from "lucide-react";
 import { C } from "../../assets/tokens.js";
 import { getMyProposals } from "../../services/proposalsApi.js";
 import {
@@ -38,13 +39,13 @@ export default function ProposalsTab({ project, onOpenChat }) {
   useEffect(() => { load(); }, [load]);
 
   if (!project?.project_id) {
-    return <EmptyState icon="🎯" title="Select a project" desc="Choose one of your projects to see the proposals you've sent from it." />;
+    return <EmptyState icon={<Target size={34} />} title="Select a project" desc="Choose one of your projects to see the proposals you've sent from it." />;
   }
 
   const filtered = proposals?.filter((p) => filter === "ALL" || p.status === filter) || [];
 
   return (
-    <div>
+    <div style={{ padding: "32px 48px 48px", width: "100%", boxSizing: "border-box", animation: "fadeUp 0.3s ease both" }}>
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontFamily: "'Sora', sans-serif", fontSize: "1.35rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.02em" }}>
           Proposals — {project.title}
@@ -78,7 +79,7 @@ export default function ProposalsTab({ project, onOpenChat }) {
 
       {proposals && filtered.length === 0 && (
         <EmptyState
-          icon="🤝"
+          icon={<Handshake size={34} />}
           title={filter === "ALL" ? "No proposals sent yet" : "Nothing here"}
           desc={filter === "ALL" ? "Once your project is approved, pitch companies straight from their profile." : "Try a different filter."}
         />

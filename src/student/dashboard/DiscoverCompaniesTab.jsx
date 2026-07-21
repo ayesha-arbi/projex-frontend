@@ -47,7 +47,7 @@ export default function DiscoverCompaniesTab({ projects = [] }) {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div>
+    <div style={{ padding: "32px 48px 48px", width: "100%", boxSizing: "border-box", animation: "fadeUp 0.3s ease both" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap", marginBottom: 20 }}>
         <div>
           <h2 style={{ fontFamily: "'Sora', sans-serif", fontSize: "1.35rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.02em" }}>Discover Companies</h2>
