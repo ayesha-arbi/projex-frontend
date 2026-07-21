@@ -46,7 +46,7 @@ function Badge({ children, color = C.navy, bg }) {
   );
 }
 
-function Section({ icon: Icon, title, children, accent = C.navy }) {
+function Section({ icon: Icon, title, subtitle, children, accent = C.navy }) {
   return (
     <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", marginBottom: 16 }}>
       <div style={{ padding: "12px 20px", borderBottom: `1px solid ${C.border}`, background: C.cream, display: "flex", alignItems: "center", gap: 10, borderLeft: `3px solid ${accent}` }}>
@@ -55,7 +55,12 @@ function Section({ icon: Icon, title, children, accent = C.navy }) {
             <Icon size={12} color={accent} strokeWidth={2.2} />
           </div>
         )}
-        <h3 style={{ fontSize: "0.84rem", fontWeight: 800, color: C.navy, margin: 0, fontFamily: "'Sora',sans-serif" }}>{title}</h3>
+        <div>
+          <h3 style={{ fontSize: "0.84rem", fontWeight: 800, color: C.navy, margin: 0, fontFamily: "'Sora',sans-serif" }}>{title}</h3>
+          {subtitle && (
+            <p style={{ fontSize: "0.72rem", color: C.muted2, margin: "2px 0 0" }}>{subtitle}</p>
+          )}
+        </div>
       </div>
       <div style={{ padding: "16px 20px" }}>{children}</div>
     </div>
@@ -100,6 +105,17 @@ function ProjectCard({ project }) {
   const lookingFor   = project.looking_for   ? project.looking_for.split(",").map(t => t.trim()).filter(Boolean)   : [];
   const reviewColor = project.review_status === 'APPROVED' ? '#15803d' : project.review_status === 'REJECTED' ? '#dc2626' : '#f59e0b';
   const reviewBg    = project.review_status === 'APPROVED' ? '#dcfce7' : project.review_status === 'REJECTED' ? '#fef2f2' : '#fef3c7';
+
+  // project_status badge color (e.g. "Ongoing" / "Completed" / "Paused")
+  const statusColor = project.project_status === 'Completed' ? '#15803d'
+    : project.project_status === 'Paused' ? '#dc2626'
+    : C.navyMid; // default (e.g. "Ongoing")
+  const statusBg = `${statusColor}18`;
+
+  // Comma-separated string fields → arrays
+  const techTags     = (project.tech_tags     || "").split(",").map(t => t.trim()).filter(Boolean);
+  const industryTags = (project.industry_tags || "").split(",").map(t => t.trim()).filter(Boolean);
+  const lookingFor   = (project.looking_for   || "").split(",").map(t => t.trim()).filter(Boolean);
 
   return (
     <div style={{ marginBottom: 40, borderBottom: `1px solid ${C.border}`, paddingBottom: 30 }}>

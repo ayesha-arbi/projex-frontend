@@ -46,8 +46,6 @@ function clearSession() {
    Route guards
    ───────────────────────────────────────────────────────── */
 
-/** Only lets a logged-in student/company through; otherwise sends them
- *  to the right login screen. */
 function RequireRole({ role, loginPath, children }) {
   const session = getSession();
   if (!session || !session.user || session.user.role?.toLowerCase() !== role.toLowerCase()) {
@@ -56,9 +54,6 @@ function RequireRole({ role, loginPath, children }) {
   return children;
 }
 
-/** Keeps already-logged-in users out of the public onboarding/login
- *  screens — landing on those while authenticated just bounces you
- *  straight to your dashboard instead of showing a confusing form. */
 function RedirectIfLoggedIn({ children }) {
   const session = getSession();
   const role = session?.user?.role?.toLowerCase();
