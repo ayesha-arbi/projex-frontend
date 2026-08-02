@@ -29,8 +29,10 @@ export default function StudentDashboard({ onLogout }) {
   const [collapsed, setCollapsed] = useState(false);
   const [sideW,     setSideW]     = useState(220);
   const [project,   setProject]   = useState(null);
+  const [allProjects, setAllProjects] = useState([]);
 
-  // Restore project and project_id from backend if user has a project
+  // Restore project and project_id from backend if user has a project.
+  // The backend returns { fyp_project, academic_projects, total_academic }.
   useEffect(() => {
     const restoreProject = async () => {
       const token = localStorage.getItem("token");
@@ -42,11 +44,21 @@ export default function StudentDashboard({ onLogout }) {
         });
         if (res.ok) {
           const data = await res.json();
-          const proj = data.project ?? data;
-          if (proj && proj.project_id) {
-            setProject(proj);
-            localStorage.setItem("project_id", proj.project_id);
+
+          // Collect all projects from the response
+          const projects = [];
+          if (data.fyp_project) projects.push(data.fyp_project);
+          if (Array.isArray(data.academic_projects)) projects.push(...data.academic_projects);
+
+          // Use the FYP project as the primary, or fallback to first academic
+          const primary = data.fyp_project || projects[0] || null;
+
+          if (primary && primary.project_id) {
+            setProject(primary);
+            localStorage.setItem("project_id", primary.project_id);
           }
+
+          setAllProjects(projects);
         }
       } catch (err) {
         console.warn("Could not restore project:", err);
@@ -54,7 +66,7 @@ export default function StudentDashboard({ onLogout }) {
     };
 
     restoreProject();
-  }, [tab]);
+  }, []);
 
   useEffect(() => {
     const handler = (e) => setSideW(e.detail);
@@ -68,6 +80,10 @@ export default function StudentDashboard({ onLogout }) {
   // Called by UploadProjectTab after a successful post
   const handleProjectPosted = (postedProject) => {
     setProject(postedProject);
+    if (postedProject?.project_id) {
+      localStorage.setItem("project_id", postedProject.project_id);
+    }
+    setAllProjects(prev => [...prev, postedProject]);
     setTab("myproject");
   };
 
@@ -113,7 +129,7 @@ export default function StudentDashboard({ onLogout }) {
             {tab === "myproject" && <MyProjectTab />}
             {tab === "profile"   && <ProfileTab />}
             {tab === "team"      && <TeamTab />}
-            {tab === "discover"  && <DiscoverCompaniesTab projects={project ? [project] : []} />}
+            {tab === "discover"  && <DiscoverCompaniesTab projects={allProjects.length > 0 ? allProjects : (project ? [project] : [])} />}
             {tab === "proposals" && <ProposalsTab project={project} />}
             {tab === "access"    && <AccessRequestsManager />}
           </main>
