@@ -98,6 +98,8 @@ function PrivateField({ label, value }) {
 }
 
 function ProjectCard({ project }) {
+  const reviewColor = project.review_status === 'APPROVED' ? '#15803d' : project.review_status === 'REJECTED' ? '#dc2626' : '#f59e0b';
+  const reviewBg    = project.review_status === 'APPROVED' ? '#dcfce7' : project.review_status === 'REJECTED' ? '#fef2f2' : '#fef3c7';
 
   // project_status badge color (e.g. "Ongoing" / "Completed" / "Paused")
   const statusColor = project.project_status === 'Completed' ? '#15803d'
