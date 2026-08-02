@@ -98,13 +98,6 @@ function PrivateField({ label, value }) {
 }
 
 function ProjectCard({ project }) {
-  const statusColor  = project.project_status === "Completed" ? C.goldDark : "#f59e0b";
-  const statusBg     = project.project_status === "Completed" ? C.goldPale : "#fef3c7";
-  const techTags     = project.tech_tags     ? project.tech_tags.split(",").map(t => t.trim()).filter(Boolean)     : [];
-  const industryTags = project.industry_tags ? project.industry_tags.split(",").map(t => t.trim()).filter(Boolean) : [];
-  const lookingFor   = project.looking_for   ? project.looking_for.split(",").map(t => t.trim()).filter(Boolean)   : [];
-  const reviewColor = project.review_status === 'APPROVED' ? '#15803d' : project.review_status === 'REJECTED' ? '#dc2626' : '#f59e0b';
-  const reviewBg    = project.review_status === 'APPROVED' ? '#dcfce7' : project.review_status === 'REJECTED' ? '#fef2f2' : '#fef3c7';
 
   // project_status badge color (e.g. "Ongoing" / "Completed" / "Paused")
   const statusColor = project.project_status === 'Completed' ? '#15803d'
