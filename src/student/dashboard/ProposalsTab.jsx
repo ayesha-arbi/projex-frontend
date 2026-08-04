@@ -20,25 +20,39 @@ const FILTERS = [
  *
  *   <ProposalsTab project={{ project_id, title, review_status }} onOpenChat={(id) => ...} />
  */
-export default function ProposalsTab({ project, onOpenChat }) {
+export default function ProposalsTab({ projects = [], onOpenChat }) {
+  const [activeProjectId, setActiveProjectId] = useState(
+    localStorage.getItem("project_id") || projects[0]?.project_id || null
+  );
+  
   const [proposals, setProposals] = useState(null);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("ALL");
 
+  const activeProject = projects.find((p) => p.project_id === activeProjectId) || projects[0];
+
+  // Keep localStorage project_id in sync when activeProjectId changes
+  useEffect(() => {
+    if (activeProjectId) {
+      localStorage.setItem("project_id", activeProjectId);
+    }
+  }, [activeProjectId]);
+
   const load = useCallback(async () => {
-    if (!project?.project_id) return;
+    if (!activeProject?.project_id) return;
     setError("");
+    setProposals(null);
     try {
-      const data = await getMyProposals(project.project_id);
+      const data = await getMyProposals(activeProject.project_id);
       setProposals(data.proposals || []);
     } catch (err) {
       setError("Couldn't load your proposals.");
     }
-  }, [project?.project_id]);
+  }, [activeProject?.project_id]);
 
   useEffect(() => { load(); }, [load]);
 
-  if (!project?.project_id) {
+  if (!activeProject?.project_id) {
     return <EmptyState icon={<Target size={34} />} title="Select a project" desc="Choose one of your projects to see the proposals you've sent from it." />;
   }
 
@@ -46,11 +60,26 @@ export default function ProposalsTab({ project, onOpenChat }) {
 
   return (
     <div style={{ padding: "32px 48px 48px", width: "100%", boxSizing: "border-box", animation: "fadeUp 0.3s ease both" }}>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontFamily: "'Sora', sans-serif", fontSize: "1.35rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.02em" }}>
-          Proposals — {project.title}
-        </h2>
-        <p style={{ fontSize: "0.85rem", color: C.muted, marginTop: 4 }}>Companies you've pitched for this project.</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
+        <div>
+          <h2 style={{ fontFamily: "'Sora', sans-serif", fontSize: "1.35rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.02em" }}>
+            Proposals
+          </h2>
+          <p style={{ fontSize: "0.85rem", color: C.muted, marginTop: 4 }}>Companies you've pitched for this project.</p>
+        </div>
+        
+        {projects.length > 1 && (
+          <div>
+            <label style={{ display: "block", fontSize: "0.72rem", fontWeight: 600, color: C.muted, marginBottom: 4 }}>Project</label>
+            <select
+              value={activeProjectId || ""}
+              onChange={(e) => setActiveProjectId(e.target.value)}
+              style={{ border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "8px 12px", fontSize: "0.83rem", fontFamily: "'Inter', sans-serif", color: C.navy, background: "#fff", cursor: "pointer", outline: "none" }}
+            >
+              {projects.map((p) => <option key={p.project_id} value={p.project_id}>{p.title}</option>)}
+            </select>
+          </div>
+        )}
       </div>
 
       <div style={{ display: "flex", gap: 6, background: C.cream, border: `1px solid ${C.border}`, borderRadius: 10, padding: 4, marginBottom: 20, width: "fit-content" }}>
@@ -88,7 +117,7 @@ export default function ProposalsTab({ project, onOpenChat }) {
       {filtered.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {filtered.map((p) => (
-            <ProposalCard key={p.proposal_id} proposal={p} project={project} onOpenChat={onOpenChat} onChanged={load} />
+            <ProposalCard key={p.proposal_id} proposal={p} project={activeProject} onOpenChat={onOpenChat} onChanged={load} />
           ))}
         </div>
       )}

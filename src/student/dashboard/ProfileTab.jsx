@@ -138,6 +138,13 @@ export default function ProfileTab() {
 
   const handleSave = () => {
     // TODO: PATCH /students/profile
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const updatedUser = { ...user, ...form };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    } catch (e) {
+      console.warn("Could not save to localStorage", e);
+    }
     setSaved(true); setEditing(false);
     setTimeout(() => setSaved(false), 3000);
   };

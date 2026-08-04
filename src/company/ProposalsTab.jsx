@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { Inbox } from "lucide-react";
 import { C } from "../assets/tokens.js";
 import { getReceivedProposals, respondToProposal } from "../services/proposalsApi.js";
 import {
@@ -56,7 +57,7 @@ export default function ProposalsTab({ onOpenChat }) {
   };
 
   return (
-    <div>
+    <div style={{ padding: "24px 32px", width: "100%", boxSizing: "border-box" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
         <h2 style={{ fontFamily: "'Sora', sans-serif", fontSize: "1.35rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.02em" }}>
           Proposals
@@ -95,7 +96,7 @@ export default function ProposalsTab({ onOpenChat }) {
 
       {proposals && filtered.length === 0 && (
         <EmptyState
-          icon="📥"
+          icon={<Inbox size={34} />}
           title={filter === "ALL" ? "No proposals yet" : "Nothing here"}
           desc={filter === "ALL" ? "When a student team pitches your company, it'll show up here." : "Try a different filter."}
         />

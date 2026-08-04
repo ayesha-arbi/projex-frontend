@@ -354,13 +354,7 @@ function PanelLogo({ onBack }) {
   return (
     <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
       style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", marginBottom: 56, position: "relative", zIndex: 1 }}>
-      <div style={{ width: 32, height: 32, background: "rgba(255,255,255,0.12)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", bottom: 0, right: 0, width: 12, height: 12, background: C.gold, borderRadius: "4px 0 0 0" }} />
-        <span style={{ fontSize: "0.7rem", fontWeight: 800, color: "#fff", zIndex: 1, fontFamily: fonts.display }}>Px</span>
-      </div>
-      <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff", letterSpacing: "-0.03em", fontFamily: fonts.display }}>
-        Projex<span style={{ color: C.gold }}>.pk</span>
-      </span>
+      <img src="/logos/logo.png" alt="Origin" style={{ height: 40, objectFit: "contain" }} />
     </a>
   );
 }
@@ -455,7 +449,7 @@ export function StudentLogin({ onBack, onSwitchToRegister, onForgotPassword, onS
 
             <div style={{ marginBottom: 32 }}>
               <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: C.gold, marginBottom: 8, fontFamily: fonts.body }}>Student Login</div>
-              <h2 style={{ fontSize: "1.7rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.03em", marginBottom: 8, fontFamily: fonts.display }}>Sign in to Projex</h2>
+              <h2 style={{ fontSize: "1.7rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.03em", marginBottom: 8, fontFamily: fonts.display }}>Sign in to Origin</h2>
               <p style={{ fontSize: "0.88rem", color: C.muted, lineHeight: 1.6, fontFamily: fonts.body }}>Check your email for verification and then come back here to login.</p>
             </div>
 

@@ -153,13 +153,7 @@ function Nav({ navigate }) {
       transition: "all 0.35s ease",
     }}>
       <a href="#" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-        <div style={{ width: 34, height: 34, background: C.navy, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-          <div style={{ position: "absolute", bottom: 0, right: 0, width: 10, height: 10, background: C.gold, borderRadius: "4px 0 0 0" }} />
-          <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#fff", zIndex: 1, letterSpacing: "-0.5px" }}>Px</span>
-        </div>
-        <span style={{ fontSize: "1.15rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.03em", fontFamily: "'Sora', sans-serif" }}>
-          Projex<span style={{ color: C.gold }}>.pk</span>
-        </span>
+        <img src="/logos/logo.png" alt="Origin" style={{ height: 40, objectFit: "contain" }} />
       </a>
       <ul style={{ display: "flex", gap: 36, listStyle: "none", position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
         {["Features", "Stories"].map(l => (
@@ -219,7 +213,7 @@ function Hero({ navigate }) {
             fontFamily: "'Inter', sans-serif", fontWeight: 400,
             animation: "fadeUp 0.55s 0.14s ease both",
           }}>
-            Projex.pk connects final-year university projects with companies seeking fresh ideas and talent — with intellectual property protection built in from day one.
+            Origin connects final-year university projects with companies seeking fresh ideas and talent — with intellectual property protection built in from day one.
           </p>
 
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 48, animation: "fadeUp 0.55s 0.21s ease both" }}>
@@ -267,7 +261,7 @@ function HeroCard() {
           {["#ff5f57", "#febc2e", "#28c840"].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />)}
         </div>
         <div style={{ flex: 1, background: C.white, border: `1px solid ${C.border}`, borderRadius: 6, padding: "6px 12px", fontSize: "0.75rem", color: C.muted, display: "flex", alignItems: "center", gap: 6, fontFamily: "'Inter', sans-serif" }}>
-          <span style={{ color: C.gold }}>🔒</span> projex.pk/discover
+          <span style={{ color: C.gold }}>🔒</span> Origin/discover
         </div>
       </div>
       <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
@@ -406,7 +400,7 @@ function IPSection() {
             Your idea stays yours —<br />until you say <em style={{ color: C.gold, fontStyle: "italic" }}>otherwise.</em>
           </h2>
           <p style={{ fontSize: "0.97rem", color: C.muted, lineHeight: 1.75, marginBottom: 32, fontFamily: "'Inter', sans-serif" }}>
-            Unlike open project portals, Projex.pk runs on a consent-first model. Companies never see technical details without your explicit approval.
+            Unlike open project portals, Origin runs on a consent-first model. Companies never see technical details without your explicit approval.
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {[
@@ -443,7 +437,7 @@ function IPCard() {
     <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 18, overflow: "hidden", boxShadow: "0 10px 40px rgba(12,35,64,0.06)" }}>
       <div style={{ background: C.navy, padding: "16px 22px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: "0.76rem", color: "rgba(255,255,255,0.5)", fontWeight: 500, fontFamily: "'Inter', sans-serif" }}>Company View — Before Approval</span>
-        <strong style={{ fontSize: "0.8rem", color: "#fff", fontFamily: "'Inter', sans-serif" }}>projex.pk/discover</strong>
+        <strong style={{ fontSize: "0.8rem", color: "#fff", fontFamily: "'Inter', sans-serif" }}>Origin/discover</strong>
       </div>
       <div style={{ padding: 22, fontFamily: "'Inter', sans-serif" }}>
         <div style={{ fontSize: "0.97rem", fontWeight: 600, color: C.navy, marginBottom: 10 }}>Smart Water Quality Monitoring System</div>
@@ -510,7 +504,7 @@ function Features() {
     },
     { 
       title: "NDA & Secure Messaging", 
-      desc: "Once a request is approved, chat directly on Projex.pk with built-in NDA templates. No need to share personal numbers or emails until a formal agreement is reached.",
+      desc: "Once a request is approved, chat directly on Origin with built-in NDA templates. No need to share personal numbers or emails until a formal agreement is reached.",
       img: "./images/feature_nda_security.png"
     }
   ];
@@ -603,8 +597,8 @@ function Features() {
 function Testimonials() {
   const ref = useReveal();
   const cards = [
-    { init: "AH", name: "Ali Hassan", role: "CS Final Year · NED University", text: "We built an AI traffic management prototype for our FYP. Before Projex, it sat in a folder. Within three weeks of posting, two Karachi startups reached out. We're now in active talks." },
-    { init: "SF", name: "Sara Farooqi", role: "CTO · Karachi-based Fintech Startup", text: "As a fintech startup, hiring fresh developers is expensive. Projex lets us scout final-year talent and co-develop prototypes before committing to full hires. The gated model means quality over noise." },
+    { init: "AH", name: "Ali Hassan", role: "CS Final Year · NED University", text: "We built an AI traffic management prototype for our FYP. Before Origin, it sat in a folder. Within three weeks of posting, two Karachi startups reached out. We're now in active talks." },
+    { init: "SF", name: "Sara Farooqi", role: "CTO · Karachi-based Fintech Startup", text: "As a fintech startup, hiring fresh developers is expensive. Origin lets us scout final-year talent and co-develop prototypes before committing to full hires. The gated model means quality over noise." },
     { init: "ZM", name: "Zainab Mirza", role: "Electrical Engg · FAST-NU KHI", text: "The IP protection model is what won me over. I've always been hesitant to share my work publicly. The fact companies can't see technical details without my approval changes everything." },
   ];
   return (
@@ -672,7 +666,7 @@ function FinalCTA({ navigate }) {
           {[
             ["🎓", "I'm a Student", "Post your final-year project safely. Get discovered by real companies. Always free."],
             ["🏢", "I'm a Company", "Scout innovations from 262+ Pakistani universities. Start finding talent today."],
-            ["🏛️", "I Represent a University", "Partner with Projex to improve graduate outcomes and industry placement rates."],
+            ["🏛️", "I Represent a University", "Partner with Origin to improve graduate outcomes and industry placement rates."],
           ].map(([icon, h, p]) => <CTABox key={h} icon={icon} title={h} desc={p} />)}
         </div>
       </div>
@@ -700,7 +694,7 @@ function Footer() {
   return (
     <footer style={{ background: "#071220", padding: "40px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
       <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff", letterSpacing: "-0.03em", fontFamily: "'Sora', sans-serif" }}>
-        Projex<span style={{ color: C.gold }}>.pk</span>
+        Origin
       </div>
       <ul style={{ display: "flex", gap: 28, listStyle: "none", flexWrap: "wrap" }}>
         {["Features", "Privacy Policy", "Terms of Use", "Contact Us"].map(l => (
@@ -712,7 +706,7 @@ function Footer() {
           </li>
         ))}
       </ul>
-      <div style={{ fontSize: "0.77rem", color: "rgba(255,255,255,0.2)", fontFamily: "'Inter', sans-serif" }}>© 2026 Projex.pk · Made in Pakistan 🇵🇰</div>
+      <div style={{ fontSize: "0.77rem", color: "rgba(255,255,255,0.2)", fontFamily: "'Inter', sans-serif" }}>© 2026 Origin · Made in Pakistan 🇵🇰</div>
     </footer>
   );
 }

@@ -37,13 +37,7 @@ export default function AdminLogin({ onLoggedIn }) {
       <AdminFontLoader />
       <div style={{ width: "100%", maxWidth: 400 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 36 }}>
-          <div style={{ width: 36, height: 36, background: C.navy, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-            <div style={{ position: "absolute", bottom: 0, right: 0, width: 10, height: 10, background: C.gold, borderRadius: "4px 0 0 0" }} />
-            <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#fff" }}>Px</span>
-          </div>
-          <span style={{ fontSize: "1.2rem", fontWeight: 700, color: C.navy, letterSpacing: "-0.03em", fontFamily: "'Sora', sans-serif" }}>
-            Projex<span style={{ color: C.gold }}>.pk</span>
-          </span>
+          <img src="/logos/logo.png" alt="Origin" style={{ height: 40, objectFit: "contain" }} />
         </div>
 
         <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 18, padding: 36, boxShadow: "0 10px 40px rgba(12,35,64,0.06)" }}>
@@ -67,7 +61,7 @@ export default function AdminLogin({ onLoggedIn }) {
             <Field label="Email">
               <input
                 type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@projex.pk" autoFocus
+                placeholder="admin@origin.com" autoFocus
                 style={inputStyle}
                 onFocus={(e) => (e.target.style.borderColor = C.gold)}
                 onBlur={(e) => (e.target.style.borderColor = C.border)}

@@ -50,7 +50,7 @@ export default function RequestAccessButton({ projectId, initialStatus = "NONE",
   /* ─── Status variants ─── */
   if (status === "PENDING") {
     return (
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 13px", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 8, fontSize: "0.75rem", fontWeight: 700, color: "#92400e", fontFamily: "'Sora',sans-serif" }}>
+      <div style={{ display: "inline-flex",  alignItems: "center", gap: 6, padding: "7px 13px", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 8, fontSize: "0.75rem", fontWeight: 700, color: "#92400e", fontFamily: "'Sora',sans-serif" }}>
         <Clock size={12} color="#f59e0b" /> Request Pending
       </div>
     );

@@ -50,14 +50,8 @@ export default function AdminDashboard({ admin, onLogout }) {
       {/* ─── SIDEBAR ─── */}
       <aside style={{ width: 250, flexShrink: 0, background: C.navy, minHeight: "100vh", display: "flex", flexDirection: "column", padding: "26px 18px", position: "sticky", top: 0, alignSelf: "flex-start", height: "100vh" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 8px", marginBottom: 34 }}>
-          <div style={{ width: 32, height: 32, background: "rgba(255,255,255,0.1)", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", flexShrink: 0 }}>
-            <div style={{ position: "absolute", bottom: 0, right: 0, width: 9, height: 9, background: C.gold, borderRadius: "4px 0 0 0" }} />
-            <span style={{ fontSize: "0.68rem", fontWeight: 800, color: "#fff" }}>Px</span>
-          </div>
+          <img src="/logos/logo.png" alt="Origin" style={{ height: 40, objectFit: "contain" }} />
           <div>
-            <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "#fff", letterSpacing: "-0.02em", fontFamily: "'Sora', sans-serif" }}>
-              Projex<span style={{ color: C.gold }}>.pk</span>
-            </div>
             <div style={{ fontSize: "0.66rem", color: "rgba(255,255,255,0.4)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Admin</div>
           </div>
         </div>

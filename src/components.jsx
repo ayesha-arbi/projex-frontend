@@ -266,10 +266,7 @@ export function Logo({ variant = "primary", height = 40 }) {
   const wordmarkColor = variant === "reversed" ? C.white : C.navy;
 
   const Icon = (
-    <div style={{ width: height, height: height, background: C.navy, borderRadius: height * 0.25, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-      <div style={{ position: "absolute", bottom: 0, right: 0, width: height * 0.3, height: height * 0.3, background: C.gold, borderRadius: `${height * 0.12}px 0 0 0` }} />
-      <span style={{ fontSize: height * 0.6, fontWeight: 800, color: "#fff", zIndex: 1, letterSpacing: "-0.5px", fontFamily: fonts.display }}>Px</span>
-    </div>
+    <img src="/logos/logo.png" alt="Origin" style={{ height: height || 40, objectFit: "contain" }} />
   );
 
   if (variant === "icon") return Icon;
@@ -277,9 +274,6 @@ export function Logo({ variant = "primary", height = 40 }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: spacing.sm }}>
       {Icon}
-      <span style={{ fontFamily: fonts.display, fontSize: height * 0.8, fontWeight: 700, color: wordmarkColor, letterSpacing: "-0.03em" }}>
-        Projex<span style={{ color: C.gold }}>.pk</span>
-      </span>
     </div>
   );
 }

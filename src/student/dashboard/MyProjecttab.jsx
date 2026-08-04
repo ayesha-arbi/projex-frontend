@@ -209,6 +209,7 @@ export default function MyProjectTab() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -263,21 +264,62 @@ export default function MyProjectTab() {
     );
   }
 
+  const selectedProject = projects.find(p => p.project_id === selectedProjectId);
+
+  if (selectedProject) {
+    return (
+      <div style={{ padding: "32px 48px 48px", width: "100%", boxSizing: "border-box", animation: "fadeUp 0.3s ease both" }}>
+        <button onClick={() => setSelectedProjectId(null)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "transparent", color: C.muted, border: `1.5px solid ${C.border}`, borderRadius: 8, cursor: "pointer", fontSize: "0.78rem", fontWeight: 600, fontFamily: "'Sora',sans-serif", transition: "all 0.18s", marginBottom: 20 }}>
+          ← Back to projects
+        </button>
+        <ProjectCard project={selectedProject} />
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: "32px 48px 48px", width: "100%", boxSizing: "border-box", animation: "fadeUp 0.3s ease both" }}>
-      
-      {projects.map((proj, idx) => (
-        <ProjectCard key={proj.project_id || idx} project={proj} />
-      ))}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24 }}>
+        <div>
+          <h2 style={{ fontSize: "1.2rem", fontWeight: 800, color: C.navy, margin: "0 0 5px", fontFamily: "'Sora',sans-serif" }}>My Projects</h2>
+          <p style={{ fontSize: "0.82rem", color: C.muted, margin: 0 }}>Select a project to view its details.</p>
+        </div>
+        <button onClick={load}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "transparent", color: C.muted, border: `1.5px solid ${C.border}`, borderRadius: 8, cursor: "pointer", fontSize: "0.78rem", fontWeight: 600, fontFamily: "'Sora',sans-serif", transition: "all 0.18s" }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = C.navy; e.currentTarget.style.color = C.navy; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; }}
+        >
+          <RefreshCw size={12} /> Refresh Projects
+        </button>
+      </div>
 
-      {/* Refresh */}
-      <button onClick={load}
-        style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "transparent", color: C.muted, border: `1.5px solid ${C.border}`, borderRadius: 8, cursor: "pointer", fontSize: "0.78rem", fontWeight: 600, fontFamily: "'Sora',sans-serif", transition: "all 0.18s", marginTop: 4 }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = C.navy; e.currentTarget.style.color = C.navy; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; }}
-      >
-        <RefreshCw size={12} /> Refresh Projects
-      </button>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 20 }}>
+        {projects.map((proj, idx) => {
+          const statusColor = proj.project_status === 'Completed' ? '#15803d' : proj.project_status === 'Paused' ? '#dc2626' : C.navyMid;
+          return (
+            <div key={proj.project_id || idx} onClick={() => setSelectedProjectId(proj.project_id)} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "20px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", display: "flex", flexDirection: "column" }} onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(12,35,64,0.08)"; }} onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
+              <div style={{ display: "flex", gap: 12, marginBottom: 12, alignItems: "flex-start" }}>
+                {proj.poster ? (
+                  <img src={proj.poster} alt="" style={{ width: 64, height: 48, objectFit: "cover", borderRadius: 8, border: `1px solid ${C.border}` }} />
+                ) : (
+                  <div style={{ width: 64, height: 48, background: C.cream, borderRadius: 8, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}><FolderOpen size={20} color={C.muted} /></div>
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h3 style={{ fontSize: "1rem", fontWeight: 700, color: C.navy, margin: "0 0 4px", fontFamily: "'Sora',sans-serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{proj.title}</h3>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <Badge color={statusColor} bg={`${statusColor}18`}>{proj.project_status}</Badge>
+                    <Badge color={C.navyMid}>{proj.project_type}</Badge>
+                  </div>
+                </div>
+              </div>
+              <p style={{ fontSize: "0.8rem", color: C.muted, margin: "0 0 14px", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", flex: 1 }}>{proj.short_description}</p>
+              <div style={{ fontSize: "0.72rem", color: C.navy, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "right" }}>
+                View Details →
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

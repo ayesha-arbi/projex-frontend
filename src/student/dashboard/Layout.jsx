@@ -44,20 +44,14 @@ export function Sidebar({ active, onNav, onLogout, collapsed, onToggle, width })
       <div style={{ padding:"18px 14px 16px", borderBottom:"1px solid rgba(255,255,255,0.07)", display:"flex", alignItems:"center", justifyContent:"space-between", minHeight:64 }}>
         {!collapsed && (
           <div style={{ display:"flex", alignItems:"center", gap:8, overflow:"hidden" }}>
-            <div style={{ width:30, height:30, background:C.navy, borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden", flexShrink:0 }}>
-              <div style={{ position:"absolute", bottom:0, right:0, width:10, height:10, background:C.gold, borderRadius:"4px 0 0 0" }} />
-              <span style={{ fontSize:"0.65rem", fontWeight:800, color:"#fff", zIndex:1 }}>Px</span>
-            </div>
+            <img src="/logos/logo.png" alt="Origin" style={{ width: 30, height: 30, objectFit: "contain", flexShrink: 0 }} />
             <span style={{ fontSize:"0.98rem", fontWeight:800, color:"#fff", letterSpacing:"-0.4px", fontFamily:"'Sora',sans-serif", whiteSpace:"nowrap" }}>
-              Projex<span style={{ color:C.gold }}>.pk</span>
+              Origin
             </span>
           </div>
         )}
         {collapsed && (
-          <div style={{ width:30, height:30, background:C.navy, borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden", margin:"0 auto" }}>
-            <div style={{ position:"absolute", bottom:0, right:0, width:10, height:10, background:C.gold, borderRadius:"4px 0 0 0" }} />
-            <span style={{ fontSize:"0.65rem", fontWeight:800, color:"#fff", zIndex:1 }}>Px</span>
-          </div>
+          <img src="/logos/logo.png" alt="Origin" style={{ width: 30, height: 30, objectFit: "contain", margin: "0 auto" }} />
         )}
         <button onClick={onToggle} style={{ background:"rgba(255,255,255,0.06)", border:"none", borderRadius:6, width:26, height:26, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"rgba(255,255,255,0.4)", transition:"all 0.15s" }}
           onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.12)"}

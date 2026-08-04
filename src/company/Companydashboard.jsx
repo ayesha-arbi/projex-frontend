@@ -4,10 +4,13 @@ import { CompanySidebar, CompanyTopBar } from "./CompanyLayout";
 import BrowseProjectsTab  from "./BrowseProjectsTab";
 import AccessRequestPanel from "./AccessRequestPanel";
 import CompanyProfileTab  from "./CompanyProfileTab";
+import ProposalsTab       from "./ProposalsTab";   // ← add, check exact filename/casing
+
 import { C } from "../assets/tokens";
 
 const TAB_META = {
   browse:   { title: "Browse Projects",  subtitle: "Discover student projects from top universities" },
+    proposals: { title: "Proposals",        subtitle: "Manage proposals sent to student teams"          },
   requests: { title: "My Requests",      subtitle: "Track your project access requests"              },
   profile:  { title: "Company Profile",  subtitle: "Your company information and preferences"        },
 };
@@ -63,6 +66,7 @@ export default function CompanyDashboard({ onLogout }) {
 
           <main style={{ flex: 1, width: "100%", minWidth: 0, overflow: "auto", display: "flex", flexDirection: "column" }}>
             {tab === "browse"   && <BrowseProjectsTab />}
+             {tab === "proposals" && <ProposalsTab />}      
             {tab === "requests" && <AccessRequestPanel />}
             {tab === "profile"  && <CompanyProfileTab />}
           </main>

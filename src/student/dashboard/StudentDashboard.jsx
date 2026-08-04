@@ -128,9 +128,9 @@ export default function StudentDashboard({ onLogout }) {
             )}
             {tab === "myproject" && <MyProjectTab />}
             {tab === "profile"   && <ProfileTab />}
-            {tab === "team"      && <TeamTab />}
+            {tab === "team"      && <TeamTab projects={allProjects} />}
             {tab === "discover"  && <DiscoverCompaniesTab projects={allProjects.length > 0 ? allProjects : (project ? [project] : [])} />}
-            {tab === "proposals" && <ProposalsTab project={project} />}
+            {tab === "proposals" && <ProposalsTab projects={allProjects.length > 0 ? allProjects : (project ? [project] : [])} />}
             {tab === "access"    && <AccessRequestsManager />}
           </main>
         </div>

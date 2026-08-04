@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Clock, CheckCircle, XCircle, RefreshCw, AlertTriangle, FolderOpen, Filter, University } from "lucide-react";
+import { Clock, CheckCircle, XCircle, RefreshCw, AlertTriangle, FolderOpen, Filter, GraduationCap, Check } from "lucide-react";
 import { C } from "../assets/tokens";
 
 const API_BASE = import.meta.env?.VITE_API_URL || "/api";
@@ -16,9 +16,9 @@ function timeAgo(iso) {
 }
 
 const STATUS_CONFIG = {
-  PENDING:  { color: "#f59e0b", bg: "#fffbeb", border: "#fcd34d", label: "Pending Review", icon: "⏳" },
-  APPROVED: { color: C.goldDark, bg: C.goldPale, border: "#b8e060", label: "Access Granted", icon: "✅" },
-  REJECTED: { color: C.error, bg: C.errorPale, border: "#fca5a5", label: "Declined", icon: "❌" },
+  PENDING: { color: "#f59e0b", bg: "#fffbeb", border: "#fcd34d", label: "Pending Review", Icon: Clock },
+  APPROVED: { color: C.goldDark, bg: C.goldPale, border: "#b8e060", label: "Access Granted", Icon: CheckCircle },
+  REJECTED: { color: C.error, bg: C.errorPale, border: "#fca5a5", label: "Declined", Icon: XCircle },
 };
 
 /* ─── API ──────────────────────────────────────────────────────── */
@@ -55,16 +55,17 @@ function Toast({ toast }) {
   const isError = toast.type === "error";
   return (
     <div style={{ position: "fixed", top: 20, right: 24, zIndex: 9999, background: isError ? "#dc2626" : C.goldDark, color: "#fff", padding: "10px 18px", borderRadius: 9, fontSize: "0.82rem", fontWeight: 700, fontFamily: "'Sora',sans-serif", boxShadow: "0 4px 20px rgba(0,0,0,0.18)", display: "flex", alignItems: "center", gap: 8, maxWidth: 360 }}>
-      {isError ? <AlertTriangle size={13} /> : "✓"} {toast.msg}
+      {isError ? <AlertTriangle size={13} /> : <Check size={13} />} {toast.msg}
     </div>
   );
 }
 
 function StatusBadge({ status }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.PENDING;
+  const Icon = cfg.Icon;
   return (
-    <span style={{ fontSize: "0.66rem", fontWeight: 800, padding: "3px 9px", borderRadius: 5, background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
-      {cfg.icon} {cfg.label}
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.66rem", fontWeight: 800, padding: "3px 9px", borderRadius: 5, background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
+      <Icon size={10} /> {cfg.label}
     </span>
   );
 }
@@ -100,10 +101,10 @@ function FilterBar({ active, onChange }) {
 ═══════════════════════════════════════════════════════════════ */
 export default function AccessRequestPanel() {
   const [requests, setRequests] = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState(null);
-  const [filter, setFilter]     = useState("ALL");
-  const [toast, setToast]       = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [filter, setFilter] = useState("ALL");
+  const [toast, setToast] = useState(null);
   const [toastTimer, setToastTimer] = useState(null);
 
   const showToast = useCallback((msg, type = "success") => {
@@ -128,7 +129,7 @@ export default function AccessRequestPanel() {
   useEffect(() => { loadRequests(); }, [loadRequests]);
 
   const filtered = filter === "ALL" ? requests : requests.filter((r) => r.status === filter);
-  const pendingCount  = requests.filter((r) => r.status === "PENDING").length;
+  const pendingCount = requests.filter((r) => r.status === "PENDING").length;
   const approvedCount = requests.filter((r) => r.status === "APPROVED").length;
 
   /* ─── loading ─── */
@@ -163,7 +164,7 @@ export default function AccessRequestPanel() {
 
   /* ─── main UI ─── */
   return (
-    <div style={{ padding: "24px 32px", maxWidth: 860, boxSizing: "border-box", animation: "fadeUp 0.22s ease both" }}>
+    <div style={{ padding: "24px 32px", width: "100%", boxSizing: "border-box", animation: "fadeUp 0.22s ease both" }}>
       <Toast toast={toast} />
 
       {/* Header */}
@@ -195,7 +196,7 @@ export default function AccessRequestPanel() {
       </div>
 
       {/* Requests list */}
-      <Section icon={FolderOpen} title="Sent Requests" accent={C.navy} badge={`${filtered.length} shown`}>
+      <div icon={FolderOpen} title="Sent Requests" accent={C.navy} badge={`${filtered.length} shown`}>
         <div style={{ padding: "12px 20px", borderBottom: `1px solid ${C.border}`, background: C.cream }}>
           <FilterBar active={filter} onChange={setFilter} />
         </div>
@@ -238,8 +239,8 @@ export default function AccessRequestPanel() {
 
                   <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                     {req.project?.university && (
-                      <span style={{ fontSize: "0.72rem", color: C.muted }}>
-                        🎓 {req.project.university}
+                      <span style={{ fontSize: "0.72rem", color: C.muted, display: "flex", alignItems: "center", gap: 3 }}>
+                        <GraduationCap size={11} /> {req.project.university}
                       </span>
                     )}
                     {req.project?.project_status && (
@@ -272,17 +273,17 @@ export default function AccessRequestPanel() {
             ))}
           </div>
         )}
-      </Section>
+        </div>
 
-      {/* Refresh */}
-      <button
-        onClick={loadRequests}
-        style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "transparent", color: C.muted, border: `1.5px solid ${C.border}`, borderRadius: 8, cursor: "pointer", fontSize: "0.78rem", fontWeight: 600, fontFamily: "'Sora',sans-serif", transition: "all 0.18s", marginTop: 4 }}
-        onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.navy; e.currentTarget.style.color = C.navy; }}
-        onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; }}
-      >
-        <RefreshCw size={12} /> Refresh
-      </button>
+        {/* Refresh */}
+        <button
+          onClick={loadRequests}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: "transparent", color: C.muted, border: `1.5px solid ${C.border}`, borderRadius: 8, cursor: "pointer", fontSize: "0.78rem", fontWeight: 600, fontFamily: "'Sora',sans-serif", transition: "all 0.18s", marginTop: 4 }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.navy; e.currentTarget.style.color = C.navy; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; }}
+        >
+          <RefreshCw size={12} /> Refresh
+        </button>
     </div>
   );
 }

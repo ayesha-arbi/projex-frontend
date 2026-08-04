@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { Send, Users, Clock, RefreshCw, AlertTriangle, X, UserMinus, Shield, Zap } from "lucide-react";
+import {
+  Send, Users, Clock, RefreshCw, AlertTriangle, X, UserMinus,
+  Shield, Zap, Mail, Unlock, Lock, Inbox, User, Target
+} from "lucide-react";
 import { C } from "../../assets/tokens";
 import { EmptyState } from "../../proposals/ProposalUI.jsx";
 
@@ -103,7 +106,11 @@ function MemberAvatar({ name, role, size = 40 }) {
 /* ═══════════════════════════════════════════════════════════════
    MAIN EXPORT
 ═══════════════════════════════════════════════════════════════ */
-export default function TeamTab() {
+export default function TeamTab({ projects = [] }) {
+  const [activeProjectId, setActiveProjectId] = useState(
+    localStorage.getItem("project_id") || projects[0]?.project_id || null
+  );
+
   const [team, setTeam]                   = useState(null);
   const [loading, setLoading]             = useState(true);
   const [error, setError]                 = useState(null);
@@ -118,7 +125,17 @@ export default function TeamTab() {
 
   let currentUser = {};
   try { currentUser = JSON.parse(localStorage.getItem("user") || "{}"); } catch {}
-  const projectId = localStorage.getItem("project_id");
+
+  // Keep localStorage project_id in sync when activeProjectId changes
+  useEffect(() => {
+    if (activeProjectId) {
+      localStorage.setItem("project_id", activeProjectId);
+    }
+  }, [activeProjectId]);
+
+  // ── defensive fallbacks, cave-safe — no crash if backend shape off ──
+  const members         = team?.members ?? [];
+  const pendingInvites   = team?.pending_invites ?? [];
 
   const showToast = useCallback((msg, type = "success") => {
     setToast({ msg, type });
@@ -128,16 +145,16 @@ export default function TeamTab() {
   }, [toastTimer]);
 
   const loadTeam = useCallback(async () => {
-    if (!projectId) {
+    if (!activeProjectId) {
       setError("No project found. Upload a project first.");
       setLoading(false);
       return;
     }
     setLoading(true); setError(null);
-    try { setTeam(await apiGet(`/team/${projectId}`)); }
+    try { setTeam(await apiGet(`/team/${activeProjectId}`)); }
     catch (err) { setError(err.message); }
     finally { setLoading(false); }
-  }, [projectId]);
+  }, [activeProjectId]);
 
   useEffect(() => { loadTeam(); }, [loadTeam]);
 
@@ -169,18 +186,22 @@ export default function TeamTab() {
   async function handleRemoveMember(studentId) {
     setRemovingId(studentId);
     try {
-      await apiDelete(`/team/${projectId}/remove/${studentId}`);
+      await apiDelete(`/team/${activeProjectId}/remove/${studentId}`);
       showToast("Member removed.", "info");
       await loadTeam();
     } catch (err) { showToast(err.message, "error"); }
     finally { setRemovingId(null); }
   }
 
-  const isLead      = team?.members?.find((m) => m.student_id === currentUser?.student_id)?.role === "LEAD";
-  const teamSize    = team?.members?.length ?? 0;
-  const pendingCount = team?.pending_invites?.length ?? 0;
-  const MAX         = 5;
-  const spotsLeft   = MAX - teamSize - pendingCount;
+  // toUpperCase guard — cave-safe against case mismatch
+  const isLead = members.find(
+    (m) => m.student_id === currentUser?.student_id
+  )?.role?.toUpperCase() === "LEAD";
+
+  const teamSize     = members.length;
+  const pendingCount = pendingInvites.length;
+  const MAX          = 5;
+  const spotsLeft     = MAX - teamSize - pendingCount;
 
   const keyframes = `
     @keyframes fadeUp  { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
@@ -223,19 +244,32 @@ export default function TeamTab() {
       {/* ══ Body — full width with padding ══ */}
       <div style={{ width:"100%", padding:"32px 48px 48px", boxSizing:"border-box", animation:"fadeUp 0.3s ease both" }}>
 
+        {projects.length > 1 && (
+          <div style={{ marginBottom: 24, display: "flex", alignItems: "center", gap: 12 }}>
+            <label style={{ fontSize: "0.8rem", fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.04em" }}>Project</label>
+            <select
+              value={activeProjectId || ""}
+              onChange={(e) => setActiveProjectId(e.target.value)}
+              style={{ border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "8px 12px", fontSize: "0.88rem", fontFamily: "'Inter', sans-serif", color: C.navy, background: "#fff", cursor: "pointer", outline: "none" }}
+            >
+              {projects.map((p) => <option key={p.project_id} value={p.project_id}>{p.title}</option>)}
+            </select>
+          </div>
+        )}
+
         {/* Stats row */}
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16, marginBottom:28 }}>
           {[
-            { label:"Team Members",    value:teamSize,      max:MAX,  color:C.navy,        icon:"👤" },
-            { label:"Pending Invites", value:pendingCount,  max:null, color:"#f59e0b",     icon:"📨" },
-            { label:"Open Slots",      value:spotsLeft,     max:null, color:spotsLeft > 0 ? C.goldDark : "#dc2626", icon:"🔓" },
+            { label:"Team Members",    value:teamSize,      max:MAX,  color:C.navy,        icon:<Users size={40} /> },
+            { label:"Pending Invites", value:pendingCount,  max:null, color:"#f59e0b",     icon:<Mail size={40} /> },
+            { label:"Open Slots",      value:spotsLeft,     max:null, color:spotsLeft > 0 ? C.goldDark : "#dc2626", icon:<Unlock size={40} /> },
           ].map(({ label, value, max, color, icon }) => (
             <div key={label} style={{
               background:C.white, border:`1px solid ${C.border}`, borderRadius:14,
               padding:"20px 24px", position:"relative", overflow:"hidden",
               boxShadow:"0 1px 6px rgba(12,35,64,0.05)",
             }}>
-              <div style={{ position:"absolute", bottom:-10, right:-6, fontSize:"3.5rem", opacity:0.06, lineHeight:1, pointerEvents:"none" }}>{icon}</div>
+              <div style={{ position:"absolute", bottom:-10, right:-6, opacity:0.08, color, pointerEvents:"none" }}>{icon}</div>
               <div style={{ fontSize:"0.72rem", fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:8 }}>{label}</div>
               <div style={{ display:"flex", alignItems:"baseline", gap:6 }}>
                 <span style={{ fontSize:"2rem", fontWeight:800, color, letterSpacing:"-0.04em", lineHeight:1 }}>{value}</span>
@@ -268,23 +302,23 @@ export default function TeamTab() {
                 </span>
               </div>
 
-              {team.members.length === 0
+              {members.length === 0
                 ? <div style={{ padding:"40px 24px", textAlign:"center", color:C.muted, fontSize:"0.85rem" }}>No members yet.</div>
-                : team.members.map((m, i) => {
-                  const isThisLead = m.role === "LEAD";
+                : members.map((m, i) => {
+                  const isThisLead = m.role?.toUpperCase() === "LEAD";
                   const isMe       = m.student_id === currentUser?.student_id;
                   const isRemoving = removingId === m.student_id;
                   return (
                     <div key={m.member_id}
                       style={{
                         display:"flex", alignItems:"center", gap:16, padding:"16px 24px",
-                        borderBottom: i < team.members.length - 1 ? `1px solid ${C.border}` : "none",
+                        borderBottom: i < members.length - 1 ? `1px solid ${C.border}` : "none",
                         transition:"background 0.15s", opacity: isRemoving ? 0.5 : 1,
                       }}
                       onMouseEnter={e => e.currentTarget.style.background = C.cream}
                       onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                     >
-                      <MemberAvatar name={m.full_name} role={m.role} size={42} />
+                      <MemberAvatar name={m.full_name} role={m.role?.toUpperCase()} size={42} />
 
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
@@ -295,7 +329,7 @@ export default function TeamTab() {
                         </div>
                         <div style={{ fontSize:"0.74rem", color:C.muted, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{m.email}</div>
                         <div style={{ fontSize:"0.68rem", color:C.muted2, marginTop:2 }}>
-                          Joined {new Date(m.joined_at).toLocaleDateString("en-PK", { day:"numeric", month:"short", year:"numeric" })}
+                          Joined {m.joined_at ? new Date(m.joined_at).toLocaleDateString("en-PK", { day:"numeric", month:"short", year:"numeric" }) : "—"}
                         </div>
                       </div>
 
@@ -350,28 +384,25 @@ export default function TeamTab() {
                 )}
               </div>
 
-              {team.pending_invites.length === 0
+              {pendingInvites.length === 0
                 ? (
                   <div style={{ padding:"32px 24px", textAlign:"center" }}>
-                    <div style={{ fontSize:"1.6rem", marginBottom:8 }}>📭</div>
+                    <Inbox size={26} color={C.muted2} style={{ marginBottom:8 }} />
                     <p style={{ fontSize:"0.82rem", color:C.muted, margin:0 }}>No pending invites right now.</p>
                   </div>
                 )
-                : team.pending_invites.map((inv, i) => {
+                : pendingInvites.map((inv, i) => {
                   const isCancelling = cancellingId === inv.invite_id;
                   return (
                     <div key={inv.invite_id}
                       style={{
                         display:"flex", alignItems:"center", gap:16, padding:"16px 24px",
-                        borderBottom: i < team.pending_invites.length - 1 ? `1px solid ${C.border}` : "none",
+                        borderBottom: i < pendingInvites.length - 1 ? `1px solid ${C.border}` : "none",
                         opacity: isCancelling ? 0.5 : 1, transition:"opacity 0.2s",
                       }}
                     >
                       <div style={{ width:42, height:42, borderRadius:"50%", background:"#fef3c7", border:"2px solid #fcd34d", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#92400e" strokeWidth="2.2" strokeLinecap="round">
-                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                          <polyline points="22,6 12,13 2,6"/>
-                        </svg>
+                        <Mail size={16} color="#92400e" strokeWidth={2.2} />
                       </div>
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ fontSize:"0.86rem", fontWeight:600, color:C.navy, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginBottom:3 }}>{inv.invited_email}</div>
@@ -486,8 +517,6 @@ export default function TeamTab() {
                       cursor: inviteLoading || spotsLeft <= 0 ? "not-allowed" : "pointer",
                       transition:"background 0.18s", opacity: inviteLoading ? 0.75 : 1,
                     }}
-                    onMouseEnter={e => { if (!inviteLoading && spotsLeft > 0) e.currentTarget.style.background = C.navy; }}
-                    onMouseLeave={e => { if (!inviteLoading && spotsLeft > 0) e.currentTarget.style.background = C.navy; }}
                   >
                     {inviteLoading
                       ? <span style={{ width:14, height:14, border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"#fff", borderRadius:"50%", display:"inline-block", animation:"spin 0.7s linear infinite" }} />
@@ -508,7 +537,7 @@ export default function TeamTab() {
               </div>
             ) : (
               <div style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:16, padding:"28px 22px", marginBottom:16, textAlign:"center" }}>
-                <div style={{ fontSize:"2rem", marginBottom:10 }}>👤</div>
+                <User size={28} color={C.muted2} style={{ marginBottom:10 }} />
                 <p style={{ fontSize:"0.83rem", color:C.muted, margin:0, lineHeight:1.6 }}>Only the project lead can invite new teammates.</p>
               </div>
             )}
@@ -517,13 +546,13 @@ export default function TeamTab() {
             <div style={{ background:C.cream, border:`1px solid ${C.border}`, borderRadius:14, padding:"18px 20px" }}>
               <h4 style={{ fontSize:"0.74rem", fontWeight:800, color:C.navy, margin:"0 0 14px", textTransform:"uppercase", letterSpacing:"0.08em" }}>Team Rules</h4>
               {[
-                ["🔒", "Only .edu.pk addresses can join"],
-                ["👥", "Maximum 5 members including lead"],
-                ["⏱️", "Invites expire after 48 hours"],
-                ["🎯", "Each student can be in one FYP team"],
+                [<Lock size={13} />, "Only .edu.pk addresses can join"],
+                [<Users size={13} />, "Maximum 5 members including lead"],
+                [<Clock size={13} />, "Invites expire after 48 hours"],
+                [<Target size={13} />, "Each student can be in one FYP team"],
               ].map(([icon, rule]) => (
                 <div key={rule} style={{ display:"flex", gap:10, marginBottom:10, fontSize:"0.78rem", color:C.muted, alignItems:"flex-start" }}>
-                  <span style={{ fontSize:"0.82rem", flexShrink:0 }}>{icon}</span>
+                  <span style={{ flexShrink:0, color:C.goldDark, marginTop:1 }}>{icon}</span>
                   <span style={{ lineHeight:1.5 }}>{rule}</span>
                 </div>
               ))}
@@ -535,8 +564,6 @@ export default function TeamTab() {
                     borderRadius:7, cursor:"pointer", fontSize:"0.76rem", fontWeight:600,
                     fontFamily:"'Sora',sans-serif", transition:"all 0.18s",
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor=C.navy; e.currentTarget.style.color=C.navy; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor=C.border; e.currentTarget.style.color=C.muted; }}
                 >
                   <RefreshCw size={11} /> Refresh
                 </button>

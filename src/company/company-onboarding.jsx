@@ -558,7 +558,7 @@ export default function CompanyOnboarding({ onBack, onSwitchToLogin }) {
   };
 
   const panels = [
-    { Icon: Building2,   title:"Built for serious companies", body:"Projex.pk is invitation-and-verification based. Only vetted companies can contact students — keeping your talent pipeline clean and trustworthy." },
+    { Icon: Building2,   title:"Built for serious companies", body:"Origin is invitation-and-verification based. Only vetted companies can contact students — keeping your talent pipeline clean and trustworthy." },
     { Icon: Target,       title:"Get matched instantly", body:"A complete company profile gets 3× more project responses. Students choose who they talk to — make your profile count." },
     { Icon: Search,       title:"Precision discovery", body:"Set your interests once and let our matching engine surface relevant final-year projects from Pakistan's top universities — daily." },
     { Icon: ShieldCheck,  title:"Why we verify companies", body:"Student IP is protected on this platform. Verification ensures that only legitimate businesses gain full platform access. It keeps everyone safe." },
@@ -579,13 +579,7 @@ export default function CompanyOnboarding({ onBack, onSwitchToLogin }) {
           <a href="#" onClick={e => { e.preventDefault(); onBack && onBack(); }}
             style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none", marginBottom:56, position:"relative", zIndex:1 }}
           >
-            <div style={{ width:32, height:32, background:"rgba(255,255,255,0.12)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
-              <div style={{ position:"absolute", bottom:0, right:0, width:12, height:12, background:C.gold, borderRadius:"4px 0 0 0" }} />
-              <span style={{ fontSize:"0.7rem", fontWeight:800, color:"#fff", zIndex:1, fontFamily:fonts.display }}>Px</span>
-            </div>
-            <span style={{ fontSize:"1.1rem", fontWeight:700, color:"#fff", letterSpacing:"-0.03em", fontFamily:fonts.display }}>
-              Projex<span style={{ color:C.gold }}>.pk</span>
-            </span>
+            <img src="/logos/logo.png" alt="Origin" style={{ height: 40, objectFit: "contain" }} />
           </a>
 
           <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center", position:"relative", zIndex:1 }}>
