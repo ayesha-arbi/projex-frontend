@@ -164,7 +164,7 @@ export default function TeamTab({ projects = [] }) {
     if (!validateEduPk(inviteEmail)) { setInviteError("Must be a valid .edu.pk address."); return; }
     setInviteLoading(true);
     try {
-      const data = await apiPost("/team/invite", { invited_email: inviteEmail, project_id: projectId });
+      const data = await apiPost("/team/invite", { invited_email: inviteEmail, project_id: activeProjectId,});
       showToast(`Invite sent to ${inviteEmail}`);
       setInviteEmail("");
       if (data.invite?.inviteToken) setDevToken(data.invite.inviteToken);
