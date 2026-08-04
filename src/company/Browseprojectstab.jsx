@@ -42,7 +42,7 @@ export default function BrowseProjectsTab() {
   const loadProjects = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const data = await apiGet("/projects");
+      const data = await apiGet("/discover/projects");
       const list = data.projects || data || [];
       setProjects(list);
       setFiltered(list);
