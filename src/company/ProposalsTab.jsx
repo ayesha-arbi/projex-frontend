@@ -47,14 +47,14 @@ export default function ProposalsTab({ onOpenChat }) {
   const filtered = proposals?.filter((p) => filter === "ALL" || p.status === filter) || [];
 
   const handleResponded = (proposalId, updatedProposal, chatRoomId) => {
-    setProposals((prev) => prev.map((p) => (p.proposal_id === proposalId ? { ...p, ...updatedProposal } : p)));
-    setRespondTarget(null);
-    if (chatRoomId) {
-      setToast("You expressed interest — a chat room is now open.");
-    } else {
-      setToast("Response recorded.");
-    }
-  };
+  setProposals((prev) => prev.map((p) =>
+    p.proposal_id === proposalId
+      ? { ...p, ...updatedProposal, ...(chatRoomId && { chat_room_id: chatRoomId }) }
+      : p
+  ));
+  setRespondTarget(null);
+  setToast(chatRoomId ? "You expressed interest — a chat room is now open." : "Response recorded.");
+};
 
   return (
     <div style={{ padding: "24px 32px", width: "100%", boxSizing: "border-box" }}>

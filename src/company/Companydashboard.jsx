@@ -5,26 +5,37 @@ import BrowseProjectsTab  from "./BrowseProjectsTab";
 import AccessRequestPanel from "./AccessRequestPanel";
 import CompanyProfileTab  from "./CompanyProfileTab";
 import ProposalsTab       from "./ProposalsTab";   // ← add, check exact filename/casing
+import ChatInbox          from "./ChatInbox";       // ← adjust path if ChatInbox lives elsewhere
 
 import { C } from "../assets/tokens";
 
 const TAB_META = {
-  browse:   { title: "Browse Projects",  subtitle: "Discover student projects from top universities" },
-    proposals: { title: "Proposals",        subtitle: "Manage proposals sent to student teams"          },
-  requests: { title: "My Requests",      subtitle: "Track your project access requests"              },
-  profile:  { title: "Company Profile",  subtitle: "Your company information and preferences"        },
+  browse:    { title: "Browse Projects",  subtitle: "Discover student projects from top universities" },
+  proposals: { title: "Proposals",        subtitle: "Manage proposals sent to student teams"          },
+  messages:  { title: "Messages",         subtitle: "Chat with student teams"                         },
+  requests:  { title: "My Requests",      subtitle: "Track your project access requests"              },
+  profile:   { title: "Company Profile",  subtitle: "Your company information and preferences"        },
 };
 
 export default function CompanyDashboard({ onLogout }) {
   const [tab,       setTab]       = useState("browse");
   const [collapsed, setCollapsed] = useState(false);
   const [sideW,     setSideW]     = useState(220);
+  const [chatRoomId, setChatRoomId] = useState(null);
 
   useEffect(() => {
     const handler = (e) => setSideW(e.detail);
     document.addEventListener("sidebar-resize", handler);
     return () => document.removeEventListener("sidebar-resize", handler);
   }, []);
+
+  // Called from ProposalsTab (or anywhere else) when the user wants
+  // to jump straight into a specific chat room — switches to the
+  // Messages tab and tells ChatInbox which room to open.
+  const handleOpenChat = (roomId) => {
+    setChatRoomId(roomId);
+    setTab("messages");
+  };
 
   const activeWidth = collapsed ? 64 : sideW;
   const meta = TAB_META[tab] || TAB_META.browse;
@@ -65,10 +76,11 @@ export default function CompanyDashboard({ onLogout }) {
           <CompanyTopBar title={meta.title} subtitle={meta.subtitle} />
 
           <main style={{ flex: 1, width: "100%", minWidth: 0, overflow: "auto", display: "flex", flexDirection: "column" }}>
-            {tab === "browse"   && <BrowseProjectsTab />}
-             {tab === "proposals" && <ProposalsTab />}      
-            {tab === "requests" && <AccessRequestPanel />}
-            {tab === "profile"  && <CompanyProfileTab />}
+            {tab === "browse"    && <BrowseProjectsTab />}
+            {tab === "proposals" && <ProposalsTab onOpenChat={handleOpenChat} />}
+            {tab === "messages"  && <ChatInbox initialChatRoomId={chatRoomId} />}
+            {tab === "requests"  && <AccessRequestPanel />}
+            {tab === "profile"   && <CompanyProfileTab />}
           </main>
         </div>
 

@@ -7,6 +7,7 @@ import TeamTab from "./TeamTab";
 import DiscoverCompaniesTab from "./DiscoverCompaniesTab";
 import ProposalsTab         from "./ProposalsTab";
 import AccessRequestsManager from "./AccessRequestsManager";
+import ChatInbox            from "./ChatInbox"; // ← adjust path if ChatInbox.jsx lives elsewhere
 import { C }                from "../../assets/tokens";
 
 const TAB_META = {
@@ -17,6 +18,7 @@ const TAB_META = {
   discover:   { title: "Discover Companies", subtitle: "Find companies to pitch your project" },
   proposals:  { title: "Proposals",         subtitle: "Manage your project pitches" },
   access:     { title: "Interest Requests", subtitle: "Manage company interest in your project" },
+  messages:   { title: "Messages",          subtitle: "Chat with interested companies" },
 };
 
 const API_BASE = import.meta.env?.VITE_API_URL || "/api";
@@ -30,6 +32,7 @@ export default function StudentDashboard({ onLogout }) {
   const [sideW,     setSideW]     = useState(220);
   const [project,   setProject]   = useState(null);
   const [allProjects, setAllProjects] = useState([]);
+  const [chatRoomId, setChatRoomId] = useState(null);
 
   // Restore project and project_id from backend if user has a project.
   // The backend returns { fyp_project, academic_projects, total_academic }.
@@ -87,6 +90,13 @@ export default function StudentDashboard({ onLogout }) {
     setTab("myproject");
   };
 
+  // Called by ProposalsTab's "Open Chat →" button on an INTERESTED proposal
+  const handleOpenChat = (proposal) => {
+    if (!proposal?.chat_room_id) return;
+    setChatRoomId(proposal.chat_room_id);
+    setTab("messages");
+  };
+
   return (
     <>
       <style>{`
@@ -130,8 +140,9 @@ export default function StudentDashboard({ onLogout }) {
             {tab === "profile"   && <ProfileTab />}
             {tab === "team"      && <TeamTab projects={allProjects} />}
             {tab === "discover"  && <DiscoverCompaniesTab projects={allProjects.length > 0 ? allProjects : (project ? [project] : [])} />}
-            {tab === "proposals" && <ProposalsTab projects={allProjects.length > 0 ? allProjects : (project ? [project] : [])} />}
+            {tab === "proposals" && <ProposalsTab projects={allProjects.length > 0 ? allProjects : (project ? [project] : [])} onOpenChat={handleOpenChat} />}
             {tab === "access"    && <AccessRequestsManager />}
+            {tab === "messages"  && <ChatInbox initialChatRoomId={chatRoomId} />}
           </main>
         </div>
 
