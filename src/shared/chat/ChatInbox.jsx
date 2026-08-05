@@ -10,7 +10,8 @@ import ChatRoom from "./ChatRoom.jsx";
  *
  *   <ChatInbox />
  */
-export default function ChatInbox() {
+
+  export default function ChatInbox({ initialChatRoomId }) {
   const [rooms, setRooms] = useState(null);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState(null);
@@ -26,6 +27,15 @@ export default function ChatInbox() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // ─── Auto-select a room passed in from another tab ────────
+  useEffect(() => {
+    if (initialChatRoomId && rooms && rooms.length > 0) {
+      const match = rooms.find(r => r.chat_room_id === initialChatRoomId);
+      if (match) setSelected(match);
+    }
+  }, [initialChatRoomId, rooms]);
+
 
   // Refresh the list (unread counts, last message) whenever we return from a thread
   const closeThread = () => { setSelected(null); load(); };
