@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   UploadCloud, User, Bell, GraduationCap, LogOut,
   ChevronLeft, ChevronRight, Menu, Users, KeyRound,
-  Building2, FileText,
+  Building2, FileText,MessageCircle
 } from "lucide-react";
 import { C } from "../../assets/tokens";
 
@@ -13,6 +13,8 @@ const NAV_ITEMS = [
   { id:"discover", Icon:Building2,   label:"Discover"       },
   { id:"proposals",Icon:FileText,    label:"Proposals"      },
   { id:"access",  Icon:KeyRound,    label:"Requests"       },
+  { id:"messages",Icon:MessageCircle,label:"Messages"       },
+
   { id:"profile", Icon:User,        label:"Profile"        },
 ];
 

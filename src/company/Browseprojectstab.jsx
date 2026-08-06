@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Search, RefreshCw, AlertTriangle, GraduationCap, MapPin, Tag, ExternalLink } from "lucide-react";
 import { C } from "../assets/tokens";
 import RequestAccessButton from "./RequestAccessButton";
+import ProjectDetailsModal from "./Projectdetailsmodal";
 
 const API_BASE = import.meta.env?.VITE_API_URL || "/api";
 
@@ -38,6 +39,7 @@ export default function BrowseProjectsTab() {
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
   const [search, setSearch]     = useState("");
+  const [openProjectId, setOpenProjectId] = useState(null); // ← NEW: which project's modal is open
 
   const loadProjects = useCallback(async () => {
     setLoading(true); setError(null);
@@ -136,7 +138,11 @@ export default function BrowseProjectsTab() {
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 0 }}>
             {filtered.map((project, i) => (
-              <ProjectCard key={project.project_id || i} project={project} />
+              <ProjectCard
+                key={project.project_id || i}
+                project={project}
+                onViewDetails={() => setOpenProjectId(project.project_id)}
+              />
             ))}
           </div>
         )}
@@ -150,11 +156,19 @@ export default function BrowseProjectsTab() {
       >
         <RefreshCw size={12} /> Refresh
       </button>
+
+      {/* Modal — only renders when a project is selected */}
+      {openProjectId && (
+        <ProjectDetailsModal
+          projectId={openProjectId}
+          onClose={() => setOpenProjectId(null)}
+        />
+      )}
     </div>
   );
 }
 
-function ProjectCard({ project }) {
+function ProjectCard({ project, onViewDetails }) {
   const [reqStatus, setReqStatus] = useState(project.myRequestStatus || "NONE");
 
   return (
@@ -223,12 +237,12 @@ function ProjectCard({ project }) {
           onSuccess={setReqStatus}
         />
         {reqStatus === "APPROVED" && (
-          <a
-            href={`/projects/${project.project_id}/full`}
-            style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.72rem", color: C.muted, textDecoration: "none" }}
+          <button
+            onClick={onViewDetails}
+            style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.72rem", color: C.muted, background: "none", border: "none", cursor: "pointer", padding: 0 }}
           >
             <ExternalLink size={11} /> Full details
-          </a>
+          </button>
         )}
       </div>
     </div>

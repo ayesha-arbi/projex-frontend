@@ -139,7 +139,6 @@ function ProjectCard({ project }) {
                   {project.project_type}
                 </span>
               )}
-              <span style={{ fontSize: "0.72rem", color: C.muted2, fontWeight: 500 }}>ID: {project.project_id}</span>
             </div>
           </div>
           {project.poster && (

@@ -5,7 +5,7 @@ import BrowseProjectsTab  from "./BrowseProjectsTab";
 import AccessRequestPanel from "./AccessRequestPanel";
 import CompanyProfileTab  from "./CompanyProfileTab";
 import ProposalsTab       from "./ProposalsTab";   // ← add, check exact filename/casing
-import ChatInbox          from "./ChatInbox";       // ← adjust path if ChatInbox lives elsewhere
+import ChatInbox          from "../shared/chat/ChatInbox";       // ← adjust path if ChatInbox lives elsewhere
 
 import { C } from "../assets/tokens";
 

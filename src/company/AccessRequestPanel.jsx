@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Clock, CheckCircle, XCircle, RefreshCw, AlertTriangle, FolderOpen, Filter, GraduationCap, Check } from "lucide-react";
 import { C } from "../assets/tokens";
+import ProjectDetailsModal from "./ProjectDetailsModal";
 
 const API_BASE = import.meta.env?.VITE_API_URL || "/api";
 
@@ -106,6 +107,7 @@ export default function AccessRequestPanel() {
   const [filter, setFilter] = useState("ALL");
   const [toast, setToast] = useState(null);
   const [toastTimer, setToastTimer] = useState(null);
+  const [openProjectId, setOpenProjectId] = useState(null); // ← NEW: which project's modal is open
 
   const showToast = useCallback((msg, type = "success") => {
     setToast({ msg, type });
@@ -258,16 +260,16 @@ export default function AccessRequestPanel() {
                   )}
                 </div>
 
-                {/* Approved CTA */}
+                {/* Approved CTA — now opens modal instead of dead link */}
                 {req.status === "APPROVED" && (
-                  <a
-                    href={`/projects/${req.project_id}`}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 14px", background: C.goldPale, color: C.goldDark, border: `1px solid ${C.goldDark}44`, borderRadius: 7, fontSize: "0.75rem", fontWeight: 700, fontFamily: "'Sora',sans-serif", textDecoration: "none", flexShrink: 0, transition: "all 0.15s" }}
+                  <button
+                    onClick={() => setOpenProjectId(req.project_id)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 14px", background: C.goldPale, color: C.goldDark, border: `1px solid ${C.goldDark}44`, borderRadius: 7, fontSize: "0.75rem", fontWeight: 700, fontFamily: "'Sora',sans-serif", cursor: "pointer", flexShrink: 0, transition: "all 0.15s" }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = C.goldDark; e.currentTarget.style.color = "#fff"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = C.goldPale; e.currentTarget.style.color = C.goldDark; }}
                   >
                     View Details →
-                  </a>
+                  </button>
                 )}
               </div>
             ))}
@@ -284,6 +286,14 @@ export default function AccessRequestPanel() {
         >
           <RefreshCw size={12} /> Refresh
         </button>
+
+      {/* Modal — only renders when a project is selected */}
+      {openProjectId && (
+        <ProjectDetailsModal
+          projectId={openProjectId}
+          onClose={() => setOpenProjectId(null)}
+        />
+      )}
     </div>
   );
 }

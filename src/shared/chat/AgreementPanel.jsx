@@ -12,15 +12,10 @@ const COLLAB_TYPES = ["Mentorship", "Partnership", "Investment"];
 
 /**
  * Sits in the chat sidebar for one room.
- *
- *   <AgreementPanel
- *     chatRoomId={room.chat_room_id}
- *     viewerSide={your_role === "COMPANY" ? "COMPANY" : "STUDENT"}   // from GET messages your_role
- *     canPropose={your_role !== "MEMBER"}
- *   />
+ *   <AgreementPanel chatRoomId={room.chat_room_id} viewerSide={...} canPropose={...} />
  */
 export default function AgreementPanel({ chatRoomId, viewerSide, canPropose }) {
-  const [history, setHistory] = useState(null); // { deal_status, active_agreement_id, agreements }
+  const [history, setHistory] = useState(null);
   const [activeAgreement, setActiveAgreement] = useState(null);
   const [error, setError] = useState("");
   const [showPropose, setShowPropose] = useState(false);
@@ -50,14 +45,20 @@ export default function AgreementPanel({ chatRoomId, viewerSide, canPropose }) {
     return () => clearTimeout(t);
   }, [toast]);
 
-  if (!history && !error) return <div style={{ display: "flex", justifyContent: "center", padding: "30px 0" }}><Spinner size={22} /></div>;
+  if (!history && !error) {
+    return <div style={{ display: "flex", justifyContent: "center", padding: "30px 0" }}><Spinner size={22} /></div>;
+  }
 
   const pending = history?.agreements?.find((a) => a.status === "PENDING");
   const roomLocked = history?.deal_status === "CLOSED";
+  const rejected = history?.agreements?.filter((a) => a.status === "REJECTED") || [];
 
   return (
     <div>
-      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>
+      <div style={{
+        fontSize: "0.72rem", fontWeight: 800, color: C.muted, textTransform: "uppercase",
+        letterSpacing: "0.07em", marginBottom: 14, paddingBottom: 10, borderBottom: `1px solid ${C.border}`,
+      }}>
         Agreement
       </div>
 
@@ -93,13 +94,13 @@ export default function AgreementPanel({ chatRoomId, viewerSide, canPropose }) {
         )
       )}
 
-      {history?.agreements?.filter((a) => a.status === "REJECTED").length > 0 && (
-        <details style={{ marginTop: 16 }}>
-          <summary style={{ fontSize: "0.78rem", fontWeight: 600, color: C.navy, cursor: "pointer" }}>
-            Earlier attempts ({history.agreements.filter((a) => a.status === "REJECTED").length})
+      {rejected.length > 0 && (
+        <details style={{ marginTop: 18 }}>
+          <summary style={{ fontSize: "0.78rem", fontWeight: 700, color: C.navy, cursor: "pointer" }}>
+            Earlier attempts ({rejected.length})
           </summary>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
-            {history.agreements.filter((a) => a.status === "REJECTED").map((a) => (
+            {rejected.map((a) => (
               <div key={a.agreement_id} style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 12px", fontSize: "0.78rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                   <strong style={{ color: C.navy }}>{a.collaboration_type}</strong>
@@ -130,7 +131,7 @@ export default function AgreementPanel({ chatRoomId, viewerSide, canPropose }) {
   );
 }
 
-/* ─── Pending proposal (awaiting accept/reject) ─── */
+/* Pending proposal — awaiting accept/reject */
 function PendingAgreementCard({ agreement, viewerSide, canPropose, onChanged }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -159,14 +160,14 @@ function PendingAgreementCard({ agreement, viewerSide, canPropose, onChanged }) 
   };
 
   return (
-    <Card style={{ borderColor: C.gold, marginBottom: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-        <strong style={{ color: C.navy, fontSize: "0.88rem" }}>{agreement.collaboration_type}</strong>
+    <Card style={{ borderColor: C.gold, borderWidth: 1.5, marginBottom: 16, padding: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <strong style={{ color: C.navy, fontSize: "0.9rem" }}>{agreement.collaboration_type}</strong>
         <StatusPill status="PENDING" />
       </div>
       <OwnershipSummary agreement={agreement} />
-      {error && <div style={{ fontSize: "0.78rem", color: "#B3261E", marginTop: 8 }}>{error}</div>}
-      <div style={{ marginTop: 12 }}>
+      {error && <div style={{ fontSize: "0.78rem", color: "#B3261E", marginTop: 10 }}>{error}</div>}
+      <div style={{ marginTop: 14 }}>
         {isMine ? (
           <span style={{ fontSize: "0.78rem", color: C.muted, fontStyle: "italic" }}>Waiting for the other party to respond…</span>
         ) : canPropose ? (
@@ -178,9 +179,7 @@ function PendingAgreementCard({ agreement, viewerSide, canPropose, onChanged }) 
           <span style={{ fontSize: "0.78rem", color: C.muted }}>Only the lead can respond to this.</span>
         )}
       </div>
-      {showReject && (
-        <RejectModal onClose={() => setShowReject(false)} onConfirm={reject} loading={busy} />
-      )}
+      {showReject && <RejectModal onClose={() => setShowReject(false)} onConfirm={reject} loading={busy} />}
     </Card>
   );
 }
@@ -190,8 +189,13 @@ function RejectModal({ onClose, onConfirm, loading }) {
   return (
     <Modal onClose={loading ? () => {} : onClose} width={420}>
       <h3 style={{ fontFamily: "'Sora', sans-serif", fontSize: "1.05rem", fontWeight: 700, color: C.navy, marginBottom: 10 }}>Reject this proposal?</h3>
-      <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional note — e.g. what terms you'd prefer instead" rows={3}
-        style={{ width: "100%", border: `1.5px solid ${C.border}`, borderRadius: 10, padding: 12, fontSize: "0.85rem", fontFamily: "'Inter', sans-serif", color: C.navy, resize: "vertical", outline: "none", marginBottom: 18 }} />
+      <textarea
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        placeholder="Optional note — e.g. what terms you'd prefer instead"
+        rows={3}
+        style={{ width: "100%", border: `1.5px solid ${C.border}`, borderRadius: 10, padding: 12, fontSize: "0.85rem", fontFamily: "'Inter', sans-serif", color: C.navy, resize: "vertical", outline: "none", marginBottom: 18 }}
+      />
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
         <Btn variant="ghost" onClick={onClose} disabled={loading}>Cancel</Btn>
         <Btn variant="danger" onClick={() => onConfirm(note.trim() || undefined)} loading={loading}>Reject</Btn>
@@ -202,7 +206,10 @@ function RejectModal({ onClose, onConfirm, loading }) {
 
 function OwnershipSummary({ agreement }) {
   return (
-    <div style={{ fontSize: "0.8rem", color: C.navy, lineHeight: 1.8 }}>
+    <div style={{
+      fontSize: "0.8rem", color: C.navy, lineHeight: 1.9, background: C.cream,
+      border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 14px",
+    }}>
       <div>Student <strong>{agreement.student_ownership_pct}%</strong> · Company <strong>{agreement.company_ownership_pct}%</strong></div>
       {agreement.investment_amount != null && <div>Investment: <strong>Rs {Number(agreement.investment_amount).toLocaleString()}</strong></div>}
       <div>Starts {formatDate(agreement.start_date)} · {agreement.duration_days} days</div>
@@ -210,12 +217,12 @@ function OwnershipSummary({ agreement }) {
   );
 }
 
-/* ─── Active / accepted deal — deal tracking ─── */
+/* Active / accepted deal — deal tracking */
 function ActiveDealCard({ agreement, viewerSide, canPropose, onChanged, onToast, onViewRecord }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [showDispute, setShowDispute] = useState(false);
-  const dealStatus = agreement.deal_status; // ACTIVE | COMPLETED | DISPUTED
+  const dealStatus = agreement.deal_status;
   const requestedByMe = agreement.completion_requested_by === viewerSide;
   const requestedByThem = agreement.completion_requested_by && !requestedByMe;
 
@@ -244,29 +251,29 @@ function ActiveDealCard({ agreement, viewerSide, canPropose, onChanged, onToast,
   };
 
   return (
-    <Card style={{ marginBottom: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-        <strong style={{ color: C.navy, fontSize: "0.88rem" }}>{agreement.collaboration_type}</strong>
+    <Card style={{ marginBottom: 16, padding: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <strong style={{ color: C.navy, fontSize: "0.9rem" }}>{agreement.collaboration_type}</strong>
         <StatusPill status={dealStatus} />
       </div>
       <OwnershipSummary agreement={agreement} />
 
-      {error && <div style={{ fontSize: "0.78rem", color: "#B3261E", marginTop: 8 }}>{error}</div>}
+      {error && <div style={{ fontSize: "0.78rem", color: "#B3261E", marginTop: 10 }}>{error}</div>}
 
       {dealStatus === "COMPLETED" && (
-        <div style={{ marginTop: 12, background: "#DCEFFB", border: "1px solid #b7dcf0", borderRadius: 10, padding: "10px 12px", fontSize: "0.82rem", color: "#1B5E85", fontWeight: 600 }}>
+        <div style={{ marginTop: 14, background: "#DCEFFB", border: "1px solid #b7dcf0", borderRadius: 10, padding: "10px 12px", fontSize: "0.82rem", color: "#1B5E85", fontWeight: 600 }}>
           ✅ Verified Complete — {formatDate(agreement.completed_at)}
         </div>
       )}
 
       {dealStatus === "DISPUTED" && (
-        <div style={{ marginTop: 12, background: "#FBE9E7", border: "1px solid #f3c6c1", borderRadius: 10, padding: "10px 12px", fontSize: "0.82rem", color: "#B3261E" }}>
+        <div style={{ marginTop: 14, background: "#FBE9E7", border: "1px solid #f3c6c1", borderRadius: 10, padding: "10px 12px", fontSize: "0.82rem", color: "#B3261E" }}>
           🚩 Under review — our team has been notified and will reach out to both parties.
         </div>
       )}
 
       {dealStatus === "ACTIVE" && (
-        <div style={{ marginTop: 12 }}>
+        <div style={{ marginTop: 14 }}>
           {!agreement.completion_requested_by && (
             <div style={{ display: "flex", gap: 8 }}>
               <Btn size="sm" variant="primary" onClick={doRequestComplete} loading={busy}>Mark as Complete</Btn>
@@ -288,15 +295,13 @@ function ActiveDealCard({ agreement, viewerSide, canPropose, onChanged, onToast,
         </div>
       )}
 
-      <div style={{ marginTop: 12 }}>
+      <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
         <button onClick={onViewRecord} style={{ background: "none", border: "none", color: C.navy, fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", textDecoration: "underline", padding: 0 }}>
           View formal record
         </button>
       </div>
 
-      {showDispute && (
-        <DisputeModal onClose={() => setShowDispute(false)} onConfirm={doDispute} loading={busy} />
-      )}
+      {showDispute && <DisputeModal onClose={() => setShowDispute(false)} onConfirm={doDispute} loading={busy} />}
     </Card>
   );
 }
@@ -307,8 +312,13 @@ function DisputeModal({ onClose, onConfirm, loading }) {
     <Modal onClose={loading ? () => {} : onClose} width={420}>
       <h3 style={{ fontFamily: "'Sora', sans-serif", fontSize: "1.05rem", fontWeight: 700, color: C.navy, marginBottom: 6 }}>File a dispute</h3>
       <p style={{ fontSize: "0.8rem", color: C.muted, marginBottom: 14, lineHeight: 1.55 }}>Explain what went wrong — our team will review and reach out to both parties.</p>
-      <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Work was not delivered as described." rows={4}
-        style={{ width: "100%", border: `1.5px solid ${C.border}`, borderRadius: 10, padding: 12, fontSize: "0.85rem", fontFamily: "'Inter', sans-serif", color: C.navy, resize: "vertical", outline: "none", marginBottom: 18 }} />
+      <textarea
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        placeholder="e.g. Work was not delivered as described."
+        rows={4}
+        style={{ width: "100%", border: `1.5px solid ${C.border}`, borderRadius: 10, padding: 12, fontSize: "0.85rem", fontFamily: "'Inter', sans-serif", color: C.navy, resize: "vertical", outline: "none", marginBottom: 18 }}
+      />
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
         <Btn variant="ghost" onClick={onClose} disabled={loading}>Cancel</Btn>
         <Btn variant="danger" onClick={() => onConfirm(note.trim())} disabled={!note.trim()} loading={loading}>File Dispute</Btn>
@@ -317,7 +327,7 @@ function DisputeModal({ onClose, onConfirm, loading }) {
   );
 }
 
-/* ─── Propose modal ─── */
+/* Propose modal */
 function ProposeModal({ chatRoomId, onClose, onProposed }) {
   const [collabType, setCollabType] = useState("Mentorship");
   const rule = OWNERSHIP_RULES[collabType];
@@ -374,8 +384,16 @@ function ProposeModal({ chatRoomId, onClose, onProposed }) {
       <label style={fieldLabel}>Collaboration type</label>
       <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
         {COLLAB_TYPES.map((t) => (
-          <button key={t} type="button" onClick={() => selectType(t)}
-            style={{ flex: 1, padding: "9px 0", borderRadius: 9, cursor: "pointer", fontSize: "0.8rem", fontWeight: 700, fontFamily: "'Inter', sans-serif", border: `1.5px solid ${collabType === t ? C.navy : C.border}`, background: collabType === t ? C.navy : "#fff", color: collabType === t ? "#fff" : C.navy }}>
+          <button
+            key={t}
+            type="button"
+            onClick={() => selectType(t)}
+            style={{
+              flex: 1, padding: "9px 0", borderRadius: 9, cursor: "pointer", fontSize: "0.8rem", fontWeight: 700,
+              fontFamily: "'Inter', sans-serif", border: `1.5px solid ${collabType === t ? C.navy : C.border}`,
+              background: collabType === t ? C.navy : "#fff", color: collabType === t ? "#fff" : C.navy,
+            }}
+          >
             {t}
           </button>
         ))}
@@ -423,13 +441,15 @@ function ProposeModal({ chatRoomId, onClose, onProposed }) {
 const fieldLabel = { display: "block", fontSize: "0.78rem", fontWeight: 600, color: C.navy, marginBottom: 6 };
 const inputStyle = { width: "100%", border: `1.5px solid ${C.border}`, borderRadius: 10, padding: "9px 12px", fontSize: "0.85rem", fontFamily: "'Inter', sans-serif", color: C.navy, outline: "none" };
 
-/* ─── Printable formal record ─── */
+/* Printable formal record */
 function FormalRecordModal({ agreement, onClose }) {
   return (
     <Modal onClose={onClose} width={520}>
       <div id="agreement-record">
         <div style={{ textAlign: "center", marginBottom: 22 }}>
-          <div style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: "1.1rem", color: C.navy }}>Projex<span style={{ color: C.gold }}>.pk</span> — Agreement Record</div>
+          <div style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: "1.1rem", color: C.navy }}>
+            Projex<span style={{ color: C.gold }}>.pk</span> — Agreement Record
+          </div>
           <div style={{ fontSize: "0.76rem", color: C.muted, marginTop: 2 }}>Agreement ID: {agreement.agreement_id}</div>
         </div>
 
@@ -465,7 +485,7 @@ function FormalRecordModal({ agreement, onClose }) {
 function RecordRow({ label, value }) {
   if (!value) return null;
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${C.border}`, fontSize: "0.83rem" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${C.border}`, fontSize: "0.83rem" }}>
       <span style={{ color: C.muted }}>{label}</span>
       <span style={{ color: C.navy, fontWeight: 600 }}>{value}</span>
     </div>

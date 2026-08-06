@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   Search, Bell, LogOut,
   ChevronLeft, ChevronRight,
-  FolderOpen, Inbox, User, Building2,FileText
+  FolderOpen, Inbox, User, Building2,FileText, MessageCircle
 } from "lucide-react";
 import { C } from "../assets/tokens";
 
@@ -10,6 +10,8 @@ const NAV_ITEMS = [
   { id: "browse",   Icon: Search,     label: "Browse Projects" },
   { id: "requests", Icon: Inbox,      label: "My Requests"     },
    { id: "proposals", Icon: FileText,   label: "Proposals"       },  
+  { id: "messages",  Icon: MessageCircle, label: "Messages"     },
+
   { id: "profile",  Icon: User,       label: "Profile"         }
    
 ];

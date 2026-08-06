@@ -7,7 +7,7 @@ import TeamTab from "./TeamTab";
 import DiscoverCompaniesTab from "./DiscoverCompaniesTab";
 import ProposalsTab         from "./ProposalsTab";
 import AccessRequestsManager from "./AccessRequestsManager";
-import ChatInbox            from "./ChatInbox"; // ← adjust path if ChatInbox.jsx lives elsewhere
+import ChatInbox            from "../../shared/chat/ChatInbox"; // ← adjust path if ChatInbox.jsx lives elsewhere
 import { C }                from "../../assets/tokens";
 
 const TAB_META = {
